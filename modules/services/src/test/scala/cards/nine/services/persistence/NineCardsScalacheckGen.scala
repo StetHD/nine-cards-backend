@@ -1,15 +1,19 @@
 package cards.nine.services.persistence
 
+import java.sql.Timestamp
+import java.time.Instant
+
 import cards.nine.domain.account._
 import cards.nine.domain.analytics._
+import cards.nine.domain.application.{ Moment, Package }
+import cards.nine.services.free.domain.Ranking.GoogleAnalyticsRanking
 import cards.nine.domain.ScalaCheck._
 import cards.nine.services.free.interpreter.collection.Services.SharedCollectionData
 import cards.nine.services.free.interpreter.user.Services.UserData
 import cards.nine.services.persistence.NineCardsGenEntities._
-import cats.Monad
-import java.sql.Timestamp
-import java.time.Instant
-
+import cats.instances.list._
+import cats.instances.map._
+import cats.syntax.semigroup._
 import org.scalacheck.{ Arbitrary, Gen }
 
 object NineCardsGenEntities {
@@ -74,27 +78,83 @@ trait NineCardsScalacheckGen {
 
   implicit val abWrongIsoCode2: Arbitrary[WrongIsoCode2] = Arbitrary(fixedLengthNumericString(2).map(WrongIsoCode2.apply))
 
-  private[this] val genMonad: Monad[Gen] = new Monad[Gen] {
-    def pure[A](a: A): Gen[A] = Gen.const(a)
-    def flatMap[A, B](fa: Gen[A])(f: A ⇒ Gen[B]): Gen[B] = fa flatMap f
-    override def tailRecM[A, B](a: A)(f: (A) ⇒ Gen[Either[A, B]]): Gen[B] =
-      flatMap(f(a)) {
-        case Right(b) ⇒ pure(b)
-        case Left(nextA) ⇒ tailRecM(nextA)(f)
-      }
+  val genRankingByCategory: Gen[(String, List[Package])] =
+    for {
+      category ← arbCategory.arbitrary
+      size ← Gen.choose(10, 20)
+      packages ← Gen.listOfN(size, arbPackage.arbitrary)
+    } yield (category.entryName, packages)
+
+  val genRankingsByCategory =
+    for {
+      categories ← arbDistinctCategories.arbitrary
+      categoriesCount = categories.size
+      packagesCount ← Gen.choose(10, 20)
+      packages ← Gen.listOfN(categoriesCount, Gen.listOfN(packagesCount, arbPackage.arbitrary))
+    } yield {
+      categories
+        .map(_.entryName)
+        .zip(packages)
+    }
+
+  implicit val arbRanking: Arbitrary[GoogleAnalyticsRanking] = Arbitrary {
+    for {
+      size ← Gen.choose(10, 20)
+      categoryRanking ← Gen.listOfN(size, genRankingByCategory)
+    } yield GoogleAnalyticsRanking(categoryRanking.toMap)
   }
 
-  private[this] def listOfDistinctN[A](min: Int, max: Int, gen: Gen[A]): Gen[List[A]] =
+  implicit val arbUnrankedAppList: Arbitrary[Set[UnrankedApp]] = Arbitrary {
     for {
-      num ← Gen.choose(min, max)
-      elems ← Gen.listOfN(num, gen)
-    } yield elems.distinct
+      size ← Gen.choose(10, 20)
+      categoryRanking ← Gen.listOfN(size, genRankingByCategory)
+    } yield categoryRanking
+      .flatMap { case (category, packages) ⇒ packages map (p ⇒ UnrankedApp(p, category)) }
+      .toSet
+  }
 
-  val genDeviceApp: Gen[UnrankedApp] = for {
-    p ← arbPackage.arbitrary
-    c ← arbCategory.arbitrary
-  } yield UnrankedApp(p, c.entryName)
+  private[this] def toPackageList(data: List[(String, List[Package])]) =
+    data flatMap { case (category, packages) ⇒ packages }
 
-  implicit val abDeviceApp: Arbitrary[UnrankedApp] = Arbitrary(genDeviceApp)
+  private[this] def toUnrankedAppList(data: List[(String, List[Package])]) =
+    data flatMap { case (category, packages) ⇒ packages map (UnrankedApp(_, category)) }
+
+  private[this] def mergeCategoryAndMoments(data: List[(String, List[Package])], moments: List[String]) =
+    data
+      .flatMap {
+        case (category, packages) ⇒
+          (category +: moments) map (c ⇒ (c, packages))
+      }
+
+  private[this] def splitRankingsByCategory(data: List[(String, List[Package])], groupsCount: Int) =
+    data.grouped((data.size + groupsCount - 1) / groupsCount).toList
+
+  case class GetRankingForAppsSample(
+    unrankedApps: Set[UnrankedApp],
+    appsWithRanking: List[Package],
+    appsWithoutRanking: List[Package],
+    ranking: GoogleAnalyticsRanking
+  )
+
+  implicit val arbGetRankingForAppsSample: Arbitrary[GetRankingForAppsSample] = Arbitrary {
+    for {
+      rankingsByCategory ← genRankingsByCategory
+      moments ← Gen.someOf(Moment.values.map(_.entryName))
+      List(unrankedCategories, onlyCategories, categoriesAndMoments) = splitRankingsByCategory(rankingsByCategory, 3)
+      unrankedAppsSample1 ← Gen.someOf(onlyCategories)
+      unrankedAppsSample2 ← Gen.someOf(categoriesAndMoments)
+    } yield {
+      GetRankingForAppsSample(
+        unrankedApps       = (toUnrankedAppList(unrankedCategories) ++
+          toUnrankedAppList(unrankedAppsSample1.toList) ++
+          toUnrankedAppList(unrankedAppsSample2.toList)).toSet,
+        appsWithRanking    = toPackageList(unrankedAppsSample1.toList ++ unrankedAppsSample2.toList),
+        appsWithoutRanking = toPackageList(unrankedCategories),
+        ranking            = GoogleAnalyticsRanking(
+          onlyCategories.toMap combine mergeCategoryAndMoments(categoriesAndMoments, moments.toList).toMap
+        )
+      )
+    }
+  }
 
 }

@@ -3,6 +3,8 @@ package cards.nine.services.free.interpreter.user
 import cards.nine.commons.NineCardsErrors._
 import cards.nine.domain.account._
 import cards.nine.domain.ScalaCheck._
+import cards.nine.services.free.algebra
+import cards.nine.services.free.algebra.User._
 import cards.nine.services.free.domain.{ Installation, SharedCollection, SharedCollectionSubscription, User }
 import cards.nine.services.free.interpreter.collection.Services.SharedCollectionData
 import cards.nine.services.free.interpreter.user.Services.UserData
@@ -20,8 +22,6 @@ class ServicesSpec
   with DomainDatabaseContext
   with DisjunctionMatchers
   with NineCardsScalacheckGen {
-
-  sequential
 
   object WithData {
 
@@ -51,6 +51,22 @@ class ServicesSpec
     def apply[A](
       userData: UserData,
       androidId: AndroidId,
+      deviceToken: Option[DeviceToken]
+    )(check: (Long, Long) ⇒ MatchResult[A]) = {
+      val (userId, installationId) = {
+        for {
+          _ ← deleteAllRows
+          u ← insertItem(User.Queries.insert, userData.toTuple)
+          i ← insertItem(Installation.Queries.insert, (u, deviceToken, androidId.value))
+        } yield (u, i)
+      }.transactAndRun
+
+      check(userId, installationId)
+    }
+
+    def apply[A](
+      userData: UserData,
+      androidId: AndroidId,
       deviceToken: DeviceToken,
       collectionData: SharedCollectionData
     )(check: ⇒ MatchResult[A]) = {
@@ -71,14 +87,20 @@ class ServicesSpec
     }
   }
 
+  def runService[A](op: algebra.User.Ops[A]) = userPersistenceServices.apply(op)
+
+  sequential
+
   "addUser" should {
     "new users can be created" in {
       prop { userData: UserData ⇒
         WithEmptyDatabase {
-          val insertedUser = userPersistenceServices.addUser(
-            email        = Email(userData.email),
-            apiKey       = ApiKey(userData.apiKey),
-            sessionToken = SessionToken(userData.sessionToken)
+          val insertedUser = runService(
+            Add(
+              email        = Email(userData.email),
+              apiKey       = ApiKey(userData.apiKey),
+              sessionToken = SessionToken(userData.sessionToken)
+            )
           ).transactAndRun
 
           insertedUser must beRight[User].which { user ⇒
@@ -92,10 +114,13 @@ class ServicesSpec
   "getUserByEmail" should {
     "return an UserNotFound error if the table is empty" in {
       prop { (email: Email) ⇒
-        WithEmptyDatabase {
-          val user = userPersistenceServices.getUserByEmail(email).transactAndRun
 
-          user should beLeft(UserNotFound(s"User with email ${email.value} not found"))
+        WithEmptyDatabase {
+          val user = runService(
+            GetByEmail(email)
+          ).transactAndRun
+
+          user must beLeft(UserNotFound(s"User with email ${email.value} not found"))
         }
       }
     }
@@ -103,9 +128,11 @@ class ServicesSpec
       prop { userData: UserData ⇒
 
         WithData(userData) { id ⇒
-          val user = userPersistenceServices.getUserByEmail(Email(userData.email)).transactAndRun
+          val user = runService(
+            GetByEmail(Email(userData.email))
+          ).transactAndRun
 
-          user should beRight[User].which {
+          user must beRight[User].which {
             user ⇒
               user.id must_== id
               user.apiKey.value must_== userData.apiKey
@@ -118,12 +145,14 @@ class ServicesSpec
     "return an UserNotFound error if there isn't any user with the given email in the database" in {
       prop { userData: UserData ⇒
 
-        WithData(userData) { id ⇒
+        WithData(userData) { _ ⇒
           val wrongEmail = Email(userData.email.reverse)
 
-          val user = userPersistenceServices.getUserByEmail(wrongEmail).transactAndRun
+          val user = runService(
+            GetByEmail(wrongEmail)
+          ).transactAndRun
 
-          user should beLeft(UserNotFound(s"User with email ${wrongEmail.value} not found"))
+          user must beLeft(UserNotFound(s"User with email ${wrongEmail.value} not found"))
         }
       }
     }
@@ -132,12 +161,13 @@ class ServicesSpec
   "getUserBySessionToken" should {
     "return an UserNotFound error if the table is empty" in {
       prop { (email: Email, sessionToken: SessionToken) ⇒
+
         WithEmptyDatabase {
-          val user = userPersistenceServices.getUserBySessionToken(
-            sessionToken = sessionToken
+          val user = runService(
+            GetBySessionToken(sessionToken)
           ).transactAndRun
 
-          user should beLeft(UserNotFound(s"User with sessionToken ${sessionToken.value} not found"))
+          user must beLeft(UserNotFound(s"User with sessionToken ${sessionToken.value} not found"))
         }
       }
     }
@@ -146,12 +176,11 @@ class ServicesSpec
       prop { userData: UserData ⇒
 
         WithData(userData) { id ⇒
-
-          val user = userPersistenceServices.getUserBySessionToken(
-            sessionToken = SessionToken(userData.sessionToken)
+          val user = runService(
+            GetBySessionToken(SessionToken(userData.sessionToken))
           ).transactAndRun
 
-          user should beRight[User].which {
+          user must beRight[User].which {
             user ⇒
               user.id must_== id
               user.apiKey.value must_== userData.apiKey
@@ -165,12 +194,14 @@ class ServicesSpec
     "return an UserNotFound error if there isn't any user with the given sessionToken in the database" in {
       prop { userData: UserData ⇒
 
-        WithData(userData) { id ⇒
+        WithData(userData) { _ ⇒
           val wrongSessionToken = SessionToken(userData.sessionToken.reverse)
 
-          val user = userPersistenceServices.getUserBySessionToken(wrongSessionToken).transactAndRun
+          val user = runService(
+            GetBySessionToken(wrongSessionToken)
+          ).transactAndRun
 
-          user should beLeft(UserNotFound(s"User with sessionToken ${wrongSessionToken.value} not found"))
+          user must beLeft(UserNotFound(s"User with sessionToken ${wrongSessionToken.value} not found"))
         }
       }
     }
@@ -181,10 +212,12 @@ class ServicesSpec
       prop { (androidId: AndroidId, userData: UserData) ⇒
 
         WithData(userData) { userId ⇒
-          val insertedInstallation = userPersistenceServices.createInstallation(
-            userId      = userId,
-            deviceToken = None,
-            androidId   = androidId
+          val insertedInstallation = runService(
+            AddInstallation(
+              user        = userId,
+              deviceToken = None,
+              androidId   = androidId
+            )
           ).transactAndRun
 
           insertedInstallation must beRight[Installation].which { installation ⇒
@@ -200,10 +233,13 @@ class ServicesSpec
   "getInstallationByUserAndAndroidId" should {
     "return an InstallationNotFound error if the table is empty" in {
       prop { (androidId: AndroidId, userId: Long) ⇒
+
         WithEmptyDatabase {
-          val installation = userPersistenceServices.getInstallationByUserAndAndroidId(
-            userId    = userId,
-            androidId = androidId
+          val installation = runService(
+            GetInstallationByUserAndAndroidId(
+              user      = userId,
+              androidId = androidId
+            )
           ).transactAndRun
 
           installation must beLeft(InstallationNotFound(s"Installation for android id ${androidId.value} not found"))
@@ -215,12 +251,14 @@ class ServicesSpec
 
         WithData(userData, androidId) { (userId, installationId) ⇒
 
-          val installation = userPersistenceServices.getInstallationByUserAndAndroidId(
-            userId    = userId,
-            androidId = androidId
+          val installation = runService(
+            GetInstallationByUserAndAndroidId(
+              user      = userId,
+              androidId = androidId
+            )
           ).transactAndRun
 
-          installation should beRight[Installation].which {
+          installation must beRight[Installation].which {
             install ⇒ install.id must_== installationId
           }
         }
@@ -230,13 +268,15 @@ class ServicesSpec
       "and androidId in the database" in {
         prop { (androidId: AndroidId, userData: UserData) ⇒
 
-          WithData(userData, androidId) { (userId, installationId) ⇒
+          WithData(userData, androidId) { (userId, _) ⇒
 
             val wrongAndroidId = AndroidId(androidId.value.reverse)
 
-            val installation = userPersistenceServices.getInstallationByUserAndAndroidId(
-              userId    = userId,
-              androidId = wrongAndroidId
+            val installation = runService(
+              GetInstallationByUserAndAndroidId(
+                user      = userId,
+                androidId = wrongAndroidId
+              )
             ).transactAndRun
 
             installation must beLeft(InstallationNotFound(s"Installation for android id ${wrongAndroidId.value} not found"))
@@ -248,9 +288,12 @@ class ServicesSpec
   "getSubscribedInstallationByCollection" should {
     "return an empty list if the table is empty" in {
       prop { (publicIdentifier: PublicIdentifier) ⇒
+
         WithEmptyDatabase {
-          val installation = userPersistenceServices.getSubscribedInstallationByCollection(
-            publicIdentifier = publicIdentifier.value
+          val installation = runService(
+            GetSubscribedInstallationByCollection(
+              collectionPublicId = publicIdentifier.value
+            )
           ).transactAndRun
 
           installation must beRight[List[Installation]](Nil)
@@ -261,9 +304,10 @@ class ServicesSpec
       prop { (userData: UserData, collectionData: SharedCollectionData, androidId: AndroidId, deviceToken: DeviceToken) ⇒
 
         WithData(userData, androidId, deviceToken, collectionData) {
-
-          val installation = userPersistenceServices.getSubscribedInstallationByCollection(
-            publicIdentifier = collectionData.publicIdentifier
+          val installation = runService(
+            GetSubscribedInstallationByCollection(
+              collectionPublicId = collectionData.publicIdentifier
+            )
           ).transactAndRun
 
           installation must beRight[List[Installation]].which { list ⇒
@@ -276,9 +320,10 @@ class ServicesSpec
       prop { (userData: UserData, collectionData: SharedCollectionData, androidId: AndroidId, deviceToken: DeviceToken) ⇒
 
         WithData(userData, androidId, deviceToken, collectionData) {
-
-          val installation = userPersistenceServices.getSubscribedInstallationByCollection(
-            publicIdentifier = collectionData.publicIdentifier.reverse
+          val installation = runService(
+            GetSubscribedInstallationByCollection(
+              collectionPublicId = collectionData.publicIdentifier.reverse
+            )
           ).transactAndRun
 
           installation must beRight[List[Installation]](Nil)
@@ -287,4 +332,56 @@ class ServicesSpec
     }
   }
 
+  "updateInstallation" should {
+    "fail if the table is empty" in {
+      prop { (userId: Long, androidId: AndroidId, deviceToken: Option[DeviceToken]) ⇒
+
+        WithEmptyDatabase {
+          val installation = runService(
+            UpdateInstallation(
+              user        = userId,
+              deviceToken = deviceToken,
+              androidId   = androidId
+            )
+          ).transactAndAttempt
+
+          installation must be_-\/[Throwable]
+        }
+      }
+    }
+    "return the updated installation if there is an installation for the given user and android id" in {
+      prop { (userData: UserData, androidId: AndroidId, deviceToken: Option[DeviceToken], newDeviceToken: Option[DeviceToken]) ⇒
+
+        WithData(userData, androidId, deviceToken) { (userId, _) ⇒
+          val updatedInstallation = runService(
+            UpdateInstallation(
+              user        = userId,
+              deviceToken = newDeviceToken,
+              androidId   = androidId
+            )
+          ).transactAndRun
+
+          updatedInstallation must beRight[Installation].which { installation ⇒
+            installation.deviceToken must_== newDeviceToken
+          }
+        }
+      }
+    }
+    "fail if there isn't an installation for the given user and android id" in {
+      prop { (userData: UserData, androidId: AndroidId, deviceToken: Option[DeviceToken], newDeviceToken: Option[DeviceToken]) ⇒
+
+        WithData(userData, androidId, deviceToken) { (userId, _) ⇒
+          val updatedInstallation = runService(
+            UpdateInstallation(
+              user        = userId,
+              deviceToken = newDeviceToken,
+              androidId   = AndroidId(androidId.value.reverse)
+            )
+          ).transactAndAttempt
+
+          updatedInstallation must be_-\/[Throwable]
+        }
+      }
+    }
+  }
 }

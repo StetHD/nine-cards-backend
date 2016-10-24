@@ -6,7 +6,6 @@ import cards.nine.commons.ScalazInstances
 import cards.nine.commons.NineCardsErrors.SharedCollectionNotFound
 import cards.nine.domain.application.Package
 import cards.nine.domain.pagination.Page
-import cards.nine.services.common.ConnectionIOInstances._
 import cards.nine.services.common.PersistenceService
 import cards.nine.services.common.PersistenceService._
 import cards.nine.services.free.algebra.SharedCollection._

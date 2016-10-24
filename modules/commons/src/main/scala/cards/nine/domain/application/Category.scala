@@ -31,8 +31,8 @@ object Category extends Enum[Category] {
   case object PERSONALIZATION extends Category
   case object PHOTOGRAPHY extends Category
   case object PRODUCTIVITY extends Category
-  case object SOCIAL extends Category
   case object SHOPPING extends Category
+  case object SOCIAL extends Category
   case object SPORTS extends Category
   case object TOOLS extends Category
   case object TRAVEL_AND_LOCAL extends Category

@@ -4,6 +4,8 @@ import cards.nine.commons.config.Domain.{ GoogleFirebaseConfiguration, GoogleFir
 import cards.nine.commons.NineCardsErrors.NineCardsError
 import cards.nine.domain.account.DeviceToken
 import cards.nine.domain.application.Package
+import cards.nine.services.free.algebra.Firebase
+import cards.nine.services.free.algebra.Firebase.SendUpdatedCollectionNotification
 import cards.nine.services.free.domain.Firebase._
 import cards.nine.services.utils.MockServerService
 import org.mockserver.model.HttpRequest.{ request ⇒ mockRequest }
@@ -93,6 +95,8 @@ class ServicesSpec
 
   val services = Services.services(configuration)
 
+  def runService[A](op: Firebase.Ops[A]) = services.apply(op)
+
   "sendUpdatedCollectionNotification" should {
 
     "respond 200 OK and return a NotificationResponse object if a valid info is provided" in {
@@ -102,7 +106,7 @@ class ServicesSpec
         packagesName     = List(packages.package1, packages.package2, packages.package3) map Package
       )
 
-      val response = services.sendUpdatedCollectionNotification(info).unsafePerformSync
+      val response = runService(SendUpdatedCollectionNotification(info)).unsafePerformSync
 
       response should beRight[SendNotificationResponse].which {
         info ⇒
@@ -119,7 +123,7 @@ class ServicesSpec
           packagesName     = List(packages.package1, packages.package2, packages.package3) map Package
         )
 
-        val response = services.sendUpdatedCollectionNotification(info).unsafePerformSync
+        val response = runService(SendUpdatedCollectionNotification(info)).unsafePerformSync
 
         response should beRight[SendNotificationResponse].which { info ⇒
           info.failure must be_>(0)
@@ -151,7 +155,7 @@ class ServicesSpec
         packagesName     = List(packages.package1, packages.package2, packages.package3) map Package
       )
 
-      val response = services.sendUpdatedCollectionNotification(info).unsafePerformSync
+      val response = runService(SendUpdatedCollectionNotification(info)).unsafePerformSync
 
       response should beRight[SendNotificationResponse](SendNotificationResponse.emptyResponse)
     }

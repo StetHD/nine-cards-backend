@@ -2,14 +2,15 @@ package cards.nine.services.free.interpreter.collection
 
 import cards.nine.commons.NineCardsErrors.NineCardsError
 import cards.nine.domain.pagination.Page
-import cards.nine.services.free.domain.{SharedCollection, SharedCollectionWithAggregatedInfo, User}
+import cards.nine.services.free.algebra
+import cards.nine.services.free.algebra.SharedCollection._
+import cards.nine.services.free.domain.{ SharedCollection, SharedCollectionWithAggregatedInfo, User }
 import cards.nine.services.free.interpreter.collection.Services.SharedCollectionData
 import cards.nine.services.free.interpreter.user.Services.UserData
-import cards.nine.services.persistence.NineCardsGenEntities.{CollectionTitle, PublicIdentifier}
-import cards.nine.services.persistence.{DomainDatabaseContext, NineCardsScalacheckGen}
+import cards.nine.services.persistence.NineCardsGenEntities.{ CollectionTitle, PublicIdentifier }
+import cards.nine.services.persistence.{ DomainDatabaseContext, NineCardsScalacheckGen }
 import doobie.contrib.postgresql.pgtypes._
-import doobie.imports._
-import org.scalacheck.{Arbitrary, Gen}
+import doobie.imports.ConnectionIO
 import org.specs2.ScalaCheck
 import org.specs2.matcher.{ DisjunctionMatchers, MatchResult }
 import org.specs2.mutable.Specification
@@ -162,6 +163,7 @@ trait SharedCollectionPersistenceServicesContext extends DomainDatabaseContext {
     }
   }
 
+  def runService[A](op: algebra.SharedCollection.Ops[A]) = collectionPersistenceServices.apply(op)
 }
 
 class ServicesSpec
@@ -178,8 +180,8 @@ class ServicesSpec
       prop { (userData: UserData, collectionData: SharedCollectionData) ⇒
 
         WithData(userData) { user ⇒
-          val insertedCollection = collectionPersistenceServices.add(
-            collectionData.copy(userId = Option(user))
+          val insertedCollection = runService(
+            Add(collectionData.copy(userId = Option(user)))
           ).transactAndRun
 
           insertedCollection must beRight[SharedCollection].which { collection ⇒
@@ -209,9 +211,7 @@ class ServicesSpec
     "return a SharedCollectionNotFound error if the table is empty" in {
       prop { (id: Long) ⇒
         WithEmptyDatabase {
-          val collection = collectionPersistenceServices.getById(
-            id = id
-          ).transactAndRun
+          val collection = runService(GetById(id)).transactAndRun
 
           collection must beLeft[NineCardsError]
         }
@@ -221,8 +221,8 @@ class ServicesSpec
       prop { (userData: UserData, collectionData: SharedCollectionData) ⇒
 
         WithData(userData, collectionData) { collectionId ⇒
-          val collection = collectionPersistenceServices.getById(
-            id = collectionId
+          val collection = runService(
+            GetById(collectionId)
           ).transactAndRun
 
           collection must beRight[SharedCollection].which {
@@ -236,8 +236,8 @@ class ServicesSpec
 
         WithData(userData, collectionData) { collectionId ⇒
 
-          val collection = collectionPersistenceServices.getById(
-            id = collectionId * -1
+          val collection = runService(
+            GetById(collectionId * -1)
           ).transactAndRun
 
           collection must beLeft[NineCardsError]
@@ -250,8 +250,8 @@ class ServicesSpec
     "return a SharedCollectionNotFound error if the table is empty" in {
       prop { publicIdentifier: PublicIdentifier ⇒
         WithEmptyDatabase {
-          val collection = collectionPersistenceServices.getByPublicIdentifier(
-            publicIdentifier = publicIdentifier.value
+          val collection = runService(
+            GetByPublicId(publicIdentifier.value)
           ).transactAndRun
 
           collection must beLeft[NineCardsError]
@@ -262,8 +262,8 @@ class ServicesSpec
       prop { (userData: UserData, collectionData: SharedCollectionData) ⇒
         WithData(userData, collectionData) { collectionId ⇒
 
-          val collection = collectionPersistenceServices.getByPublicIdentifier(
-            publicIdentifier = collectionData.publicIdentifier
+          val collection = runService(
+            GetByPublicId(collectionData.publicIdentifier)
           ).transactAndRun
 
           collection must beRight[SharedCollection].which {
@@ -280,8 +280,8 @@ class ServicesSpec
 
           WithData(userData, collectionData) { _ ⇒
 
-            val collection = collectionPersistenceServices.getByPublicIdentifier(
-              publicIdentifier = collectionData.publicIdentifier.reverse
+            val collection = runService(
+              GetByPublicId(collectionData.publicIdentifier.reverse)
             ).transactAndRun
 
             collection must beLeft[NineCardsError]
@@ -298,7 +298,9 @@ class ServicesSpec
 
         WithData(ownerData, otherData, ownedData, disownedData, foreignData) { (owner, ownedCollections) ⇒
 
-          val response = collectionPersistenceServices.getByUser(owner).transactAndRun
+          val response = runService(
+            GetByUser(owner)
+          ).transactAndRun
 
           response must beRight[List[SharedCollectionWithAggregatedInfo]].which { list ⇒
 
@@ -313,9 +315,12 @@ class ServicesSpec
     "return an empty list of collections if the table is empty" in {
       prop { category: String ⇒
         WithEmptyDatabase {
-          val response = collectionPersistenceServices
-            .getLatestByCategory(category, pageParams)
-            .transactAndRun
+          val response = runService(
+            GetLatestByCategory(
+              category   = category,
+              pageParams = pageParams
+            )
+          ).transactAndRun
 
           response must beRight[List[SharedCollection]](Nil)
         }
@@ -325,9 +330,12 @@ class ServicesSpec
       prop { (userData: UserData, collectionsData: List[SharedCollectionData]) ⇒
 
         WithData(userData, collectionsData, socialCategory) {
-          val response = collectionPersistenceServices
-            .getLatestByCategory(communicationCategory, pageParams)
-            .transactAndRun
+          val response = runService(
+            GetLatestByCategory(
+              category   = communicationCategory,
+              pageParams = pageParams
+            )
+          ).transactAndRun
 
           response must beRight[List[SharedCollection]](Nil)
         }
@@ -340,9 +348,11 @@ class ServicesSpec
 
         WithData(userData, socialCollections, socialCategory, otherCollections, communicationCategory) {
 
-          val collections = collectionPersistenceServices.getLatestByCategory(
-            category   = socialCategory,
-            pageParams = pageParams
+          val collections = runService(
+            GetLatestByCategory(
+              category   = socialCategory,
+              pageParams = pageParams
+            )
           ).transactAndRun
 
           val sortedSocialCollections = socialCollections.sortWith(_.publishedOn.getTime > _.publishedOn.getTime)
@@ -361,9 +371,12 @@ class ServicesSpec
     "return an empty list of collections if the table is empty" in {
       prop { i: Int ⇒
         WithEmptyDatabase {
-          val response = collectionPersistenceServices
-            .getLatestByCategory(socialCategory, pageParams)
-            .transactAndRun
+          val response = runService(
+            GetTopByCategory(
+              category   = socialCategory,
+              pageParams = pageParams
+            )
+          ).transactAndRun
 
           response must beRight[List[SharedCollection]](Nil)
         }
@@ -373,9 +386,12 @@ class ServicesSpec
       prop { (userData: UserData, collectionsData: List[SharedCollectionData]) ⇒
 
         WithData(userData, collectionsData, socialCategory) {
-          val response = collectionPersistenceServices
-            .getTopByCategory(communicationCategory, pageParams)
-            .transactAndRun
+          val response = runService(
+            GetTopByCategory(
+              category   = communicationCategory,
+              pageParams = pageParams
+            )
+          ).transactAndRun
 
           response must beRight[List[SharedCollection]](Nil)
         }
@@ -388,16 +404,18 @@ class ServicesSpec
 
         WithData(userData, socialCollections, socialCategory, otherCollections, communicationCategory) {
 
-          val collections = collectionPersistenceServices.getTopByCategory(
-            category   = socialCategory,
-            pageParams = pageParams
+          val collections = runService(
+            GetTopByCategory(
+              category   = socialCategory,
+              pageParams = pageParams
+            )
           ).transactAndRun
 
-        val maxViews =
-          if (socialCollections.isEmpty)
-            None
-          else
-            Option(socialCollections.map(_.views).max)
+          val maxViews =
+            if (socialCollections.isEmpty)
+              None
+            else
+              Option(socialCollections.map(_.views).max)
 
           collections must beRight[List[SharedCollection]].which { list ⇒
             list.size must be_<=(pageSize)
@@ -412,9 +430,11 @@ class ServicesSpec
     "return 0 updated rows if the table is empty" in {
       prop { (id: Long, title: CollectionTitle) ⇒
         WithEmptyDatabase {
-          val updatedCollectionCount = collectionPersistenceServices.updateCollectionInfo(
-            id    = id,
-            title = title.value
+          val updatedCollectionCount = runService(
+            Update(
+              id    = id,
+              title = title.value
+            )
           ).transactAndRun
 
           updatedCollectionCount must beRight[Int](0)
@@ -426,9 +446,11 @@ class ServicesSpec
 
         WithData(userData, collectionData) { collectionId ⇒
 
-          collectionPersistenceServices.updateCollectionInfo(
-            id    = collectionId,
-            title = newTitle.value
+          runService(
+            Update(
+              id    = collectionId,
+              title = newTitle.value
+            )
           ).transactAndRun
 
           val collection = getItem[Long, SharedCollection](
@@ -445,9 +467,11 @@ class ServicesSpec
 
         WithData(userData, collectionData) { collectionId ⇒
 
-          val updatedCollectionCount = collectionPersistenceServices.updateCollectionInfo(
-            id    = collectionId * -1,
-            title = newTitle.value
+          val updatedCollectionCount = runService(
+            Update(
+              id    = collectionId * -1,
+              title = newTitle.value
+            )
           ).transactAndRun
 
           updatedCollectionCount must beRight[Int](0)

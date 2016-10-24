@@ -1,6 +1,8 @@
 package cards.nine.services.free.interpreter.subscription
 
 import cards.nine.commons.ScalazInstances
+import cards.nine.services.free.algebra.Subscription
+import cards.nine.services.free.algebra.Subscription._
 import cards.nine.services.free.domain.SharedCollectionSubscription.Queries.{ insert ⇒ subscriptionInsert }
 import cards.nine.services.free.domain.{ SharedCollection, SharedCollectionSubscription, User }
 import cards.nine.services.free.interpreter.collection.Services.SharedCollectionData
@@ -89,6 +91,8 @@ class ServicesSpec
     }
   }
 
+  def runService[A](op: Subscription.Ops[A]) = subscriptionPersistenceServices.apply(op)
+
   sequential
 
   "addSubscription" should {
@@ -97,10 +101,12 @@ class ServicesSpec
 
         WithData(publisherData, collectionData, subscriberData, false) { (collection, subscriber) ⇒
 
-          subscriptionPersistenceServices.add(
-            collectionId       = collection,
-            userId             = subscriber,
-            collectionPublicId = collectionData.publicIdentifier
+          runService(
+            Add(
+              collection         = collection,
+              user               = subscriber,
+              collectionPublicId = collectionData.publicIdentifier
+            )
           ).transactAndRun
 
           val subscription = getOptionalItem[(Long, Long), SharedCollectionSubscription](
@@ -121,10 +127,9 @@ class ServicesSpec
     "return an empty list if the table is empty" in {
       prop { (collection: Long) ⇒
         WithEmptyDatabase {
-          val subscriptions =
-            subscriptionPersistenceServices.getByCollection(
-              collectionId = collection
-            ).transactAndRun
+          val subscriptions = runService(
+            GetByCollection(collection)
+          ).transactAndRun
 
           subscriptions must beRight[List[SharedCollectionSubscription]](Nil)
         }
@@ -135,10 +140,9 @@ class ServicesSpec
 
         WithData(publisher, collectionData, users) { (collection, subscriptionsCount) ⇒
 
-          val subscriptions =
-            subscriptionPersistenceServices.getByCollection(
-              collectionId = collection
-            ).transactAndRun
+          val subscriptions = runService(
+            GetByCollection(collection)
+          ).transactAndRun
 
           subscriptions must beRight[List[SharedCollectionSubscription]].which { list ⇒
             list must haveSize(subscriptionsCount)
@@ -154,8 +158,8 @@ class ServicesSpec
 
         WithData(publisher, collectionData, users) { (collection, _) ⇒
 
-          val subscriptions = subscriptionPersistenceServices.getByCollection(
-            collectionId = collection * -1
+          val subscriptions = runService(
+            GetByCollection(collection * -1)
           ).transactAndRun
 
           subscriptions must beRight[List[SharedCollectionSubscription]](Nil)
@@ -168,9 +172,8 @@ class ServicesSpec
     "return None if the table is empty" in {
       prop { (userId: Long, collectionId: Long) ⇒
         WithEmptyDatabase {
-          val subscription = subscriptionPersistenceServices.getByCollectionAndUser(
-            collectionId = collectionId,
-            userId       = userId
+          val subscription = runService(
+            GetByCollectionAndUser(collectionId, userId)
           ).transactAndRun
 
           subscription must beRight[Option[SharedCollectionSubscription]](None)
@@ -182,9 +185,11 @@ class ServicesSpec
 
         WithData(publisherData, collectionData, subscriberData) { (collection, subscriber) ⇒
 
-          val subscription = subscriptionPersistenceServices.getByCollectionAndUser(
-            collectionId = collection,
-            userId       = subscriber
+          val subscription = runService(
+            GetByCollectionAndUser(
+              collection = collection,
+              user       = subscriber
+            )
           ).transactAndRun
 
           subscription must beRight[Option[SharedCollectionSubscription]].which {
@@ -202,9 +207,11 @@ class ServicesSpec
 
         WithData(publisherData, collectionData, subscriberData) { (collection, subscriber) ⇒
 
-          val subscription = subscriptionPersistenceServices.getByCollectionAndUser(
-            collectionId = collection,
-            userId       = subscriber * -1
+          val subscription = runService(
+            GetByCollectionAndUser(
+              collection = collection,
+              user       = subscriber * -1
+            )
           ).transactAndRun
 
           subscription must beRight[Option[SharedCollectionSubscription]](None)
@@ -217,8 +224,8 @@ class ServicesSpec
     "return an empty list if the table is empty" in {
       prop { (userId: Long) ⇒
         WithEmptyDatabase {
-          val subscriptions = subscriptionPersistenceServices.getByUser(
-            userId = userId
+          val subscriptions = runService(
+            GetByUser(userId)
           ).transactAndRun
 
           subscriptions must beRight[List[SharedCollectionSubscription]](Nil)
@@ -230,8 +237,8 @@ class ServicesSpec
 
         WithData(publisherData, collectionsData, subscriberData) { (user, subscriptionCount) ⇒
 
-          val subscriptions = subscriptionPersistenceServices.getByUser(
-            userId = user
+          val subscriptions = runService(
+            GetByUser(user)
           ).transactAndRun
 
           subscriptions must beRight[List[SharedCollectionSubscription]].which {
@@ -249,8 +256,8 @@ class ServicesSpec
 
         WithData(publisherData, collectionsData, subscriberData) { (user, subscriptionCount) ⇒
 
-          val subscriptions = subscriptionPersistenceServices.getByUser(
-            userId = user * -1
+          val subscriptions = runService(
+            GetByUser(user * -1)
           ).transactAndRun
 
           subscriptions must beRight[List[SharedCollectionSubscription]](Nil)
@@ -265,9 +272,11 @@ class ServicesSpec
 
         WithData(publisherData, collectionData, subscriberData) { (collection, subscriber) ⇒
 
-          val deleted = subscriptionPersistenceServices.removeByCollectionAndUser(
-            collectionId = collection,
-            userId       = subscriber * -1
+          val deleted = runService(
+            RemoveByCollectionAndUser(
+              collection = collection,
+              user       = subscriber * -1
+            )
           ).transactAndRun
 
           deleted must beRight[Int](0)
@@ -279,9 +288,11 @@ class ServicesSpec
 
         WithData(publisherData, collectionData, subscriberData) { (collection, subscriber) ⇒
 
-          val deleted = subscriptionPersistenceServices.removeByCollectionAndUser(
-            collectionId = collection,
-            userId       = subscriber
+          val deleted = runService(
+            RemoveByCollectionAndUser(
+              collection = collection,
+              user       = subscriber
+            )
           ).transactAndRun
 
           deleted must beRight[Int](1)

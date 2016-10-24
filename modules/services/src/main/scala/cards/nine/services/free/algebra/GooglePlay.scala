@@ -22,14 +22,14 @@ object GooglePlay {
   case class RecommendationsByCategory(
     category: String,
     priceFilter: PriceFilter,
-    excludesPackages: List[Package],
+    excludedPackages: List[Package],
     limit: Int,
     auth: MarketCredentials
   ) extends Ops[Result[CardList[FullCard]]]
 
   case class RecommendationsForApps(
     packagesName: List[Package],
-    excludesPackages: List[Package],
+    excludedPackages: List[Package],
     limitPerApp: Int,
     limit: Int,
     auth: MarketCredentials
@@ -37,7 +37,7 @@ object GooglePlay {
 
   case class SearchApps(
     query: String,
-    excludePackages: List[Package],
+    excludedPackages: List[Package],
     limit: Int,
     auth: MarketCredentials
   ) extends Ops[Result[CardList[BasicCard]]]

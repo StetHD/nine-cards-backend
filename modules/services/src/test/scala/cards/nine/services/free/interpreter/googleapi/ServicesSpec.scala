@@ -4,6 +4,8 @@ import cards.nine.commons.NineCardsErrors.{ NineCardsError, WrongGoogleAuthToken
 import cards.nine.commons.NineCardsService.Result
 import cards.nine.commons.config.Domain.{ GoogleApiConfiguration, GoogleApiTokenInfo }
 import cards.nine.domain.account.GoogleIdToken
+import cards.nine.services.free.algebra.GoogleApi
+import cards.nine.services.free.algebra.GoogleApi.GetTokenInfo
 import cards.nine.services.free.domain.TokenInfo
 import cards.nine.services.utils.MockServerService
 import org.mockserver.model.HttpRequest._
@@ -140,9 +142,11 @@ class GoogleApiServicesSpec
 
   val googleApiServices = Services.services(config)
 
+  def runService[A](op: GoogleApi.Ops[A]) = googleApiServices.apply(op)
+
   "getTokenInfo" should {
     "return the TokenInfo object when a valid token id is provided" in {
-      val response = googleApiServices.getTokenInfo(GoogleIdToken(validTokenId))
+      val response = runService(GetTokenInfo(GoogleIdToken(validTokenId)))
 
       response.unsafePerformSyncAttempt should be_\/-[Result[TokenInfo]].which {
         content ⇒
@@ -151,7 +155,7 @@ class GoogleApiServicesSpec
     }
     "return the TokenInfo object when a valid token id is provided and the hd field isn't" +
       "included into the response" in {
-        val response = googleApiServices.getTokenInfo(GoogleIdToken(otherTokenId))
+        val response = runService(GetTokenInfo(GoogleIdToken(otherTokenId)))
 
         response.unsafePerformSyncAttempt should be_\/-[Result[TokenInfo]].which {
           content ⇒
@@ -159,7 +163,7 @@ class GoogleApiServicesSpec
         }
       }
     "return a WrongGoogleAuthToken error when a wrong token id is provided" in {
-      val result = googleApiServices.getTokenInfo(GoogleIdToken(wrongTokenId))
+      val result = runService(GetTokenInfo(GoogleIdToken(wrongTokenId)))
 
       result.unsafePerformSyncAttempt should be_\/-[Result[TokenInfo]].which {
         content ⇒
@@ -167,7 +171,7 @@ class GoogleApiServicesSpec
       }
     }
     "return an exception when something fails during the call to the Google API" in {
-      val result = googleApiServices.getTokenInfo(GoogleIdToken(failingTokenId))
+      val result = runService(GetTokenInfo(GoogleIdToken(failingTokenId)))
 
       result.unsafePerformSyncAttempt should be_-\/[Throwable]
     }

@@ -2,7 +2,6 @@ package cards.nine.services.common
 
 import cards.nine.commons.ScalazInstances
 import cards.nine.commons.NineCardsErrors.NineCardsError
-import cards.nine.services.common.ConnectionIOInstances._
 import cats.data.EitherT
 import cats.syntax.either._
 import doobie.imports._

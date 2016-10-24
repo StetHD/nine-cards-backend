@@ -12,13 +12,16 @@ object Ranking {
 
   case class RankingError(code: Int, message: String, status: String)
 
-  case class AppRankingInfo(packageName: Package, position: Int)
-
   case class CacheKey(scope: GeoScope, reportType: ReportType)
 
   case class CacheVal(ranking: Option[GoogleAnalyticsRanking])
 
   object CacheKey {
+
+    def fromScope(scope: GeoScope) = scope match {
+      case WorldScope ⇒ CacheKey.worldScope
+      case CountryScope(code) ⇒ CacheKey.countryScope(code.value)
+    }
 
     def worldScope: CacheKey = CacheKey(WorldScope, AppsRankingByCategory)
 

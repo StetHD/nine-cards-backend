@@ -1,7 +1,7 @@
 package cards.nine.services.free.interpreter.ranking
 
 import cards.nine.commons.redis.CacheWrapper
-import cards.nine.commons.NineCardsErrors.{ NineCardsError, RankingNotFound }
+import cards.nine.commons.NineCardsErrors.RankingNotFound
 import cards.nine.domain.analytics._
 import cards.nine.domain.application.{ Moment, Package, Widget }
 import cards.nine.googleplay.processes.withTypes.WithRedisClient
@@ -28,14 +28,9 @@ class Services(
   valParse: Parse[Option[CacheVal]]
 ) extends (Ops ~> WithRedisClient) {
 
-  private[this] def generateCacheKey(scope: GeoScope) = scope match {
-    case WorldScope ⇒ CacheKey.worldScope
-    case CountryScope(code) ⇒ CacheKey.countryScope(code.value)
-  }
-
   private[this] def getRankingByScope(scope: GeoScope, wrap: CacheWrapper[CacheKey, CacheVal]) =
     wrap
-      .get(generateCacheKey(scope))
+      .get(CacheKey.fromScope(scope))
       .flatMap(_.ranking)
       .getOrElse(GoogleAnalyticsRanking(Map.empty))
 
@@ -58,7 +53,7 @@ class Services(
         val wrap = CacheWrapper[CacheKey, CacheVal](client)
 
         val value = wrap
-          .get(generateCacheKey(scope))
+          .get(CacheKey.fromScope(scope))
           .flatMap(_.ranking)
 
         Either.fromOption(value, RankingNotFound(s"Ranking not found for $scope"))
@@ -124,7 +119,7 @@ class Services(
               .map { case (widget, position) ⇒ RankedWidget(widget, moment, Option(position)) }
         }
 
-        Either.right[NineCardsError, List[RankedWidget]](rankedByMoment.toList)
+        Either.right(rankedByMoment.toList)
       }
 
     case UpdateRanking(scope, ranking) ⇒ client: RedisClient ⇒
