@@ -215,7 +215,7 @@ class RankingsProcessesSpec extends RankingsProcessesSpecification {
         r must contain(allWidgetsHaveRankingInfo(true)).forall
       }
     }
-    "return all the widgets as unranked if there is no ranking info for them" in new BasicScope {
+    "return an empty response if there is no ranking info for them" in new BasicScope {
       countryServices.getCountryByIsoCode2("US") returns NineCardsService.right(country)
       rankingServices.getRankingForWidgets(mockEq(usaScope), any, mockEq(widgetMoments)) returns
         rankingForWidgetsEmptyResponse
