@@ -3,9 +3,11 @@ package cards.nine.processes
 import cards.nine.domain.account.AndroidId
 import cards.nine.domain.application.{ FullCard, FullCardList, Package, PriceFilter }
 import cards.nine.domain.market.{ Localization, MarketCredentials, MarketToken }
-import cards.nine.processes.NineCardsServices._
+import cards.nine.processes.App.NineCardsApp
 import cards.nine.services.free.algebra.GooglePlay.Services
+import cats.Id
 import cats.free.Free
+import io.freestyle.syntax._
 import org.specs2.matcher.Matchers
 import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
@@ -20,8 +22,8 @@ trait RecommendationsProcessesSpecification
 
   trait BasicScope extends Scope {
 
-    implicit val googlePlayServices: Services[NineCardsServices] = mock[Services[NineCardsServices]]
-    implicit val recommendationsProcesses = new RecommendationsProcesses[NineCardsServices]
+    implicit val googlePlayServices: Services[NineCardsApp.T] = mock[Services[NineCardsApp.T]]
+    implicit val recommendationsProcesses = new RecommendationsProcesses[NineCardsApp.T]
 
   }
 
@@ -110,7 +112,7 @@ class RecommendationsProcessesSpec extends RecommendationsProcessesSpecification
         auth.marketAuth
       )
 
-      response.foldMap(testInterpreters) must beLike[FullCardList] {
+      response.exec[Id] must beLike[FullCardList] {
         case r ⇒
           r.cards must_== googlePlayRecommendations
       }
@@ -128,7 +130,7 @@ class RecommendationsProcessesSpec extends RecommendationsProcessesSpecification
         auth.marketAuth
       )
 
-      response.foldMap(testInterpreters) must beLike[FullCardList] {
+      response.exec[Id] must beLike[FullCardList] {
         case r ⇒
           r.cards must beEmpty
           there was noCallsTo(googlePlayServices)
@@ -144,7 +146,7 @@ class RecommendationsProcessesSpec extends RecommendationsProcessesSpecification
         auth.marketAuth
       )
 
-      response.foldMap(testInterpreters) must beLike[FullCardList] {
+      response.exec[Id] must beLike[FullCardList] {
         case r ⇒
           r.cards must_== googlePlayRecommendations
       }

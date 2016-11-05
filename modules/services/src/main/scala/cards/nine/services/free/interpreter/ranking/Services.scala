@@ -5,16 +5,15 @@ import cards.nine.commons.NineCardsErrors.{ NineCardsError, RankingNotFound }
 import cards.nine.domain.analytics._
 import cards.nine.domain.application.{ Moment, Package, Widget }
 import cards.nine.googleplay.processes.withTypes.WithRedisClient
-import cards.nine.services.free.algebra.Ranking._
-import cards.nine.services.free.domain.Ranking._
-import cats.~>
+import cards.nine.services.free.algebra.Ranking
+import cards.nine.services.free.domain.Ranking.{ CacheKey, CacheVal, GoogleAnalyticsRanking, UpdateRankingSummary }
 import cats.syntax.either._
 import com.redis.RedisClient
 import com.redis.serialization.{ Format, Parse }
-import io.circe.{ Decoder, Encoder }
 import io.circe.generic.auto._
 import io.circe.generic.semiauto._
 import io.circe.parser._
+import io.circe.{ Decoder, Encoder }
 
 import scalaz.concurrent.Task
 
@@ -23,15 +22,17 @@ class Services(
   format: Format,
   keyParse: Parse[Option[CacheKey]],
   valParse: Parse[Option[CacheVal]]
-) extends (Ops ~> WithRedisClient) {
+) extends Ranking.Services.Interpreter[WithRedisClient] {
 
   private[this] def generateCacheKey(scope: GeoScope) = scope match {
     case WorldScope ⇒ CacheKey.worldScope
     case CountryScope(code) ⇒ CacheKey.countryScope(code.value)
   }
 
-  def apply[A](fa: Ops[A]): WithRedisClient[A] = fa match {
-    case GetRanking(scope) ⇒ client: RedisClient ⇒
+  def getRankingFImpl(
+    scope: GeoScope
+  ): WithRedisClient[NineCardsError Either GoogleAnalyticsRanking] = {
+    client: RedisClient ⇒
       Task.delay {
         val wrap = CacheWrapper[CacheKey, CacheVal](client)
 
@@ -39,8 +40,13 @@ class Services(
 
         Either.fromOption(value.flatMap(_.ranking), RankingNotFound(s"Ranking not found for $scope"))
       }
+  }
 
-    case GetRankingForApps(scope, apps) ⇒ client: RedisClient ⇒
+  def getRankingForAppsFImpl(
+    scope: GeoScope,
+    apps: Set[UnrankedApp]
+  ): WithRedisClient[NineCardsError Either List[RankedApp]] = {
+    client: RedisClient ⇒
       Task.delay {
         val wrap = CacheWrapper[CacheKey, CacheVal](client)
 
@@ -62,8 +68,14 @@ class Services(
 
         Either.right(rankedByCategory.toList)
       }
+  }
 
-    case GetRankingForAppsWithinMoments(scope, apps, moments) ⇒ client: RedisClient ⇒
+  def getRankingForAppsWithinMomentsFImpl(
+    scope: GeoScope,
+    apps: List[Package],
+    moments: List[String]
+  ): WithRedisClient[Either[NineCardsError, List[RankedApp]]] = {
+    client: RedisClient ⇒
       Task.delay {
         val wrap = CacheWrapper[CacheKey, CacheVal](client)
 
@@ -83,8 +95,13 @@ class Services(
 
         Either.right(rankedByMoment.toList)
       }
+  }
 
-    case GetRankingForWidgets(scope, apps, moments) ⇒ client: RedisClient ⇒
+  def getRankingForWidgetsFImpl(
+    scope: GeoScope,
+    apps: List[Package], moments: List[String]
+  ): WithRedisClient[NineCardsError Either List[RankedWidget]] = {
+    client: RedisClient ⇒
       Task.delay {
         val wrap = CacheWrapper[CacheKey, CacheVal](client)
 
@@ -108,8 +125,13 @@ class Services(
 
         Either.right[NineCardsError, List[RankedWidget]](rankedByMoment.toList)
       }
+  }
 
-    case UpdateRanking(scope, ranking) ⇒ client: RedisClient ⇒
+  def updateRankingFImpl(
+    scope: GeoScope,
+    ranking: GoogleAnalyticsRanking
+  ): WithRedisClient[NineCardsError Either UpdateRankingSummary] = {
+    client: RedisClient ⇒
       Task.delay {
         val wrap = CacheWrapper[CacheKey, CacheVal](client)
 

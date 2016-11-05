@@ -1,69 +1,34 @@
 package cards.nine.services.free.algebra
 
-import cats.free.{ Free, Inject }
 import cards.nine.domain.application.Package
 import cards.nine.services.free.domain
 import cards.nine.services.free.interpreter.collection.Services.SharedCollectionData
+import cats.free.Free
+import io.freestyle.free
 
 object SharedCollection {
 
-  sealed trait Ops[A]
+  @free trait Services[F[_]] {
 
-  case class Add(collection: SharedCollectionData) extends Ops[domain.SharedCollection]
+    def add(collection: SharedCollectionData): Free[F, domain.SharedCollection]
 
-  case class AddPackages(collection: Long, packages: List[Package]) extends Ops[Int]
+    def addPackages(collection: Long, packages: List[Package]): Free[F, Int]
 
-  case class GetById(id: Long) extends Ops[Option[domain.SharedCollection]]
+    def getById(id: Long): Free[F, Option[domain.SharedCollection]]
 
-  case class GetByPublicId(publicId: String) extends Ops[Option[domain.SharedCollection]]
+    def getByPublicId(publicId: String): Free[F, Option[domain.SharedCollection]]
 
-  case class GetByUser(user: Long) extends Ops[List[domain.SharedCollectionWithAggregatedInfo]]
+    def getByUser(user: Long): Free[F, List[domain.SharedCollectionWithAggregatedInfo]]
 
-  case class GetLatestByCategory(category: String, pageNumber: Int, pageSize: Int) extends Ops[List[domain.SharedCollection]]
+    def getLatestByCategory(category: String, pageNumber: Int, pageSize: Int): Free[F, List[domain.SharedCollection]]
 
-  case class GetTopByCategory(category: String, pageNumber: Int, pageSize: Int) extends Ops[List[domain.SharedCollection]]
+    def getTopByCategory(category: String, pageNumber: Int, pageSize: Int): Free[F, List[domain.SharedCollection]]
 
-  case class GetPackagesByCollection(collection: Long) extends Ops[List[domain.SharedCollectionPackage]]
+    def getPackagesByCollection(collection: Long): Free[F, List[domain.SharedCollectionPackage]]
 
-  case class Update(id: Long, title: String) extends Ops[Int]
+    def update(id: Long, title: String): Free[F, Int]
 
-  case class UpdatePackages(collection: Long, packages: List[Package]) extends Ops[(List[Package], List[Package])]
-
-  class Services[F[_]](implicit I: Inject[Ops, F]) {
-
-    def add(collection: SharedCollectionData): Free[F, domain.SharedCollection] =
-      Free.inject[Ops, F](Add(collection))
-
-    def addPackages(collection: Long, packages: List[Package]): Free[F, Int] =
-      Free.inject[Ops, F](AddPackages(collection, packages))
-
-    def getById(id: Long): Free[F, Option[domain.SharedCollection]] = Free.inject[Ops, F](GetById(id))
-
-    def getByPublicId(publicId: String): Free[F, Option[domain.SharedCollection]] =
-      Free.inject[Ops, F](GetByPublicId(publicId))
-
-    def getByUser(user: Long): Free[F, List[domain.SharedCollectionWithAggregatedInfo]] =
-      Free.inject[Ops, F](GetByUser(user))
-
-    def getLatestByCategory(category: String, pageNumber: Int, pageSize: Int): Free[F, List[domain.SharedCollection]] =
-      Free.inject[Ops, F](GetLatestByCategory(category, pageNumber, pageSize))
-
-    def getTopByCategory(category: String, pageNumber: Int, pageSize: Int): Free[F, List[domain.SharedCollection]] =
-      Free.inject[Ops, F](GetTopByCategory(category, pageNumber, pageSize))
-
-    def getPackagesByCollection(collection: Long): Free[F, List[domain.SharedCollectionPackage]] =
-      Free.inject[Ops, F](GetPackagesByCollection(collection))
-
-    def update(id: Long, title: String): Free[F, Int] = Free.inject[Ops, F](Update(id, title))
-
-    def updatePackages(collection: Long, packages: List[Package]): Free[F, (List[Package], List[Package])] =
-      Free.inject[Ops, F](UpdatePackages(collection, packages))
-  }
-
-  object Services {
-
-    implicit def services[F[_]](implicit I: Inject[Ops, F]): Services[F] = new Services[F]
-
+    def updatePackages(collection: Long, packages: List[Package]): Free[F, (List[Package], List[Package])]
   }
 
 }

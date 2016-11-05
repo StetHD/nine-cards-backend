@@ -1,17 +1,16 @@
 package cards.nine.services.free.interpreter.googleapi
 
 import cards.nine.domain.account.GoogleIdToken
-import cards.nine.services.free.algebra.GoogleApi._
-import cats.data.Xor
+import cards.nine.services.free.algebra.GoogleApi
 import cards.nine.services.free.domain.{ TokenInfo, WrongTokenInfo }
-import cats.~>
+import cats.data.Xor
 import org.http4s.Http4s._
 import org.http4s.Uri
 import org.http4s.Uri.{ Authority, RegName }
 
 import scalaz.concurrent.Task
 
-class Services(config: Configuration) extends (Ops ~> Task) {
+class Services(config: Configuration) extends GoogleApi.Services.Interpreter[Task] {
 
   import Decoders._
 
@@ -27,9 +26,7 @@ class Services(config: Configuration) extends (Ops ~> Task) {
     client.expect[WrongTokenInfo Xor TokenInfo](getTokenInfoUri)
   }
 
-  def apply[A](fa: Ops[A]): Task[A] = fa match {
-    case GetTokenInfo(tokenId: GoogleIdToken) ⇒ getTokenInfo(tokenId)
-  }
+  def getTokenInfoImpl(tokenId: GoogleIdToken): Task[WrongTokenInfo Xor TokenInfo] = getTokenInfo(tokenId)
 }
 
 object Services {

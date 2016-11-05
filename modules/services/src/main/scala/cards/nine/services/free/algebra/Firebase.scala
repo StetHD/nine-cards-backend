@@ -1,29 +1,17 @@
 package cards.nine.services.free.algebra
 
-import cats.data.Xor
-import cats.free.{ Free, Inject }
 import cards.nine.services.free.domain.Firebase._
+import cats.data.Xor
+import cats.free.Free
+import io.freestyle.free
 
 object Firebase {
 
-  sealed trait Ops[A]
-
-  case class SendUpdatedCollectionNotification(
-    info: UpdatedCollectionNotificationInfo
-  ) extends Ops[FirebaseError Xor NotificationResponse]
-
-  class Services[F[_]](implicit I: Inject[Ops, F]) {
+  @free trait Services[F[_]] {
 
     def sendUpdatedCollectionNotification(
       info: UpdatedCollectionNotificationInfo
-    ): Free[F, FirebaseError Xor NotificationResponse] =
-      Free.inject[Ops, F](SendUpdatedCollectionNotification(info))
-
-  }
-
-  object Services {
-
-    implicit def services[F[_]](implicit I: Inject[Ops, F]): Services[F] = new Services
+    ): Free[F, FirebaseError Xor NotificationResponse]
 
   }
 

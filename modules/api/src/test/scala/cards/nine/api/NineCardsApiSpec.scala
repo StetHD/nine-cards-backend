@@ -7,9 +7,9 @@ import cards.nine.api.TestData.Exceptions._
 import cards.nine.api.TestData._
 import cards.nine.commons.NineCardsService
 import cards.nine.domain.account._
-import cards.nine.processes.NineCardsServices._
 import cards.nine.processes._
 import cards.nine.processes.messages.UserMessages._
+import cards.nine.processes.App.NineCardsApp
 import cats.free.Free
 import cats.syntax.either._
 import cats.syntax.xor._
@@ -41,17 +41,17 @@ trait NineCardsApiSpecification
 
   trait BasicScope extends Scope {
 
-    implicit val userProcesses: UserProcesses[NineCardsServices] = mock[UserProcesses[NineCardsServices]]
+    implicit val userProcesses: UserProcesses[NineCardsApp.T] = mock[UserProcesses[NineCardsApp.T]]
 
-    implicit val googleApiProcesses: GoogleApiProcesses[NineCardsServices] = mock[GoogleApiProcesses[NineCardsServices]]
+    implicit val googleApiProcesses: GoogleApiProcesses[NineCardsApp.T] = mock[GoogleApiProcesses[NineCardsApp.T]]
 
-    implicit val applicationProcesses: ApplicationProcesses[NineCardsServices] = mock[ApplicationProcesses[NineCardsServices]]
+    implicit val applicationProcesses: ApplicationProcesses[NineCardsApp.T] = mock[ApplicationProcesses[NineCardsApp.T]]
 
-    implicit val rankingProcesses: RankingProcesses[NineCardsServices] = mock[RankingProcesses[NineCardsServices]]
+    implicit val rankingProcesses: RankingProcesses[NineCardsApp.T] = mock[RankingProcesses[NineCardsApp.T]]
 
-    implicit val recommendationsProcesses: RecommendationsProcesses[NineCardsServices] = mock[RecommendationsProcesses[NineCardsServices]]
+    implicit val recommendationsProcesses: RecommendationsProcesses[NineCardsApp.T] = mock[RecommendationsProcesses[NineCardsApp.T]]
 
-    implicit val sharedCollectionProcesses: SharedCollectionProcesses[NineCardsServices] = mock[SharedCollectionProcesses[NineCardsServices]]
+    implicit val sharedCollectionProcesses: SharedCollectionProcesses[NineCardsApp.T] = mock[SharedCollectionProcesses[NineCardsApp.T]]
 
     val nineCardsApi = new NineCardsRoutes().nineCardsRoutes
 
@@ -156,7 +156,7 @@ trait NineCardsApiSpecification
       androidId    = AndroidId(mockEq(androidId.value)),
       authToken    = mockEq(failingAuthToken),
       requestUri   = any[String]
-    ) returns Free.pure[NineCardsServices, Option[Long]](Option(userId))
+    ) returns Free.pure(Option(userId))
 
     userProcesses.signUpUser(any[LoginRequest]) returns Free.pure(Messages.loginResponse)
 

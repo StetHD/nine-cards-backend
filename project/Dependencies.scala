@@ -17,6 +17,7 @@ object Dependencies {
   private val akkaTestKit = akka("-testkit") % "test"
   private val cats = "org.typelevel" %% "cats" % Versions.cats
   private val embeddedRedis = "com.orange.redis-embedded" % "embedded-redis" % Versions.embeddedRedis % "test"
+  private val freeStyle = "com.fortysevendeg" %% "freestyle" % Versions.freestyle
   private val flywaydbCore = "org.flywaydb" % "flyway-core" % Versions.flywaydb
   private val hasher = "com.roundeights" %% "hasher" % Versions.hasher
   private val http4sClient = "org.http4s" %% "http4s-blaze-client" % Versions.http4s
@@ -87,6 +88,7 @@ object Dependencies {
     enumeratum(""),
     enumeratum("-circe"),
     flywaydbCore % "test",
+    freeStyle,
     http4s("-blaze-client"),
     http4s("-circe"),
     jodaConvert,

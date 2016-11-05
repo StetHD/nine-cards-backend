@@ -1,7 +1,6 @@
 package cards.nine.processes
 
-import cards.nine.processes.NineCardsServices._
-import cards.nine.processes.utils.DatabaseContext._
+import cards.nine.services.free.algebra._
 import cards.nine.services.free.interpreter.Interpreters
 import cats._
 
@@ -35,15 +34,34 @@ trait IdInstances {
 
 trait TestInterpreters extends IdInstances {
 
-  val idInterpreters = new Interpreters[Id] {
-    override val task2M: (Task ~> Id) = new (Task ~> Id) {
-      override def apply[A](fa: Task[A]): Id[A] = fa.unsafePerformSyncAttempt.fold(
-        error ⇒ idApplicativeError.raiseError(error),
-        value ⇒ idApplicativeError.pure(value)
-      )
-    }
+  val taskToId: Task ~> Id = new (Task ~> Id) {
+    def apply[A](fa: Task[A]): Id[A] = fa.unsafePerformSync
   }
-  val testNineCardsInterpreters = new NineCardsInterpreters[Id](idInterpreters)
 
-  val testInterpreters: NineCardsServices ~> Id = testNineCardsInterpreters.interpreters
+  implicit val analyticsInterpreter: GoogleAnalytics.Services.T ~> Id =
+    Interpreters.analyticsInterpreter.andThen(taskToId)
+
+  implicit val collectionInterpreter: SharedCollection.Services.T ~> Id =
+    Interpreters.collectionInterpreter.andThen(taskToId)
+
+  implicit val countryInterpreter: Country.Services.T ~> Id =
+    Interpreters.countryInterpreter.andThen(taskToId)
+
+  implicit val firebaseInterpreter: Firebase.Services.T ~> Id =
+    Interpreters.firebaseInterpreter.andThen(taskToId)
+
+  implicit val googleApiInterpreter: GoogleApi.Services.T ~> Id =
+    Interpreters.googleApiInterpreter.andThen(taskToId)
+
+  implicit val googlePlayInterpreter: GooglePlay.Services.T ~> Id =
+    Interpreters.googlePlayInterpreter.andThen(taskToId)
+
+  implicit val rankingInterpreter: Ranking.Services.T ~> Id =
+    Interpreters.rankingInterpreter.andThen(taskToId)
+
+  implicit val subscriptionInterpreter: Subscription.Services.T ~> Id =
+    Interpreters.subscriptionInterpreter.andThen(taskToId)
+
+  implicit val userInterpreter: User.Services.T ~> Id =
+    Interpreters.userInterpreter.andThen(taskToId)
 }

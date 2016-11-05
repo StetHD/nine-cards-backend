@@ -5,13 +5,12 @@ import cards.nine.domain.application.{ FullCard, FullCardList, Package, PriceFil
 import cards.nine.domain.market.MarketCredentials
 import cards.nine.googleplay.processes.Wiring.GooglePlayApp
 import cards.nine.googleplay.processes.{ CardsProcesses, Wiring }
-import cards.nine.services.free.algebra.GooglePlay._
+import cards.nine.services.free.algebra.GooglePlay
 import cats.data.Xor
-import cats.~>
 
 import scalaz.concurrent.Task
 
-class Services(implicit googlePlayProcesses: CardsProcesses[GooglePlayApp]) extends (Ops ~> Task) {
+class Services(implicit googlePlayProcesses: CardsProcesses[GooglePlayApp]) extends GooglePlay.Services.Interpreter[Task] {
 
   def resolveOne(packageName: Package, auth: MarketCredentials): Task[String Xor FullCard] = {
     googlePlayProcesses.getCard(packageName, auth)
@@ -73,18 +72,41 @@ class Services(implicit googlePlayProcesses: CardsProcesses[GooglePlayApp]) exte
       auth
     ).foldMap(Wiring.interpreters).map(Converters.toRecommendations)
 
-  def apply[A](fa: Ops[A]): Task[A] = fa match {
-    case ResolveMany(packageNames, auth, basicInfo) ⇒
-      resolveMany(packageNames, auth, basicInfo)
-    case Resolve(packageName, auth) ⇒
-      resolveOne(packageName, auth)
-    case RecommendationsByCategory(category, filter, excludesPackages, limit, auth) ⇒
-      recommendByCategory(category, filter, excludesPackages, limit, auth)
-    case RecommendationsForApps(packagesName, excludesPackages, limitPerApp, limit, auth) ⇒
-      recommendationsForApps(packagesName, excludesPackages, limitPerApp, limit, auth)
-    case SearchApps(query, excludePackages, limit, auth) ⇒
-      searchApps(query, excludePackages, limit, auth)
-  }
+  def recommendByCategoryImpl(
+    category: String,
+    priceFilter: PriceFilter,
+    excludesPackages: List[Package],
+    limit: Int, auth: MarketCredentials
+  ): Task[FullCardList] =
+    recommendByCategory(category, priceFilter, excludesPackages, limit, auth)
+
+  def recommendationsForAppsImpl(
+    packagesName: List[Package],
+    excludesPackages: List[Package],
+    limitPerApp: Int,
+    limit: Int,
+    auth: MarketCredentials
+  ): Task[FullCardList] =
+    recommendationsForApps(packagesName, excludesPackages, limitPerApp, limit, auth)
+
+  def resolveImpl(
+    packageName: Package,
+    auth: MarketCredentials
+  ): Task[String Xor FullCard] = resolveOne(packageName, auth)
+
+  def resolveManyImpl(
+    packageNames: List[Package],
+    auth: MarketCredentials,
+    extendedInfo: Boolean
+  ): Task[FullCardList] = resolveMany(packageNames, auth, extendedInfo)
+
+  def searchAppsImpl(
+    query: String,
+    excludesPackages: List[Package],
+    limit: Int,
+    auth: MarketCredentials
+  ): Task[FullCardList] = searchApps(query, excludesPackages, limit, auth)
+
 }
 
 object Services {

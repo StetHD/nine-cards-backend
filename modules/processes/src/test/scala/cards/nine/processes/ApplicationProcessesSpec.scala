@@ -3,9 +3,11 @@ package cards.nine.processes
 import cards.nine.domain.account.AndroidId
 import cards.nine.domain.application.{ FullCard, FullCardList, Package }
 import cards.nine.domain.market.{ Localization, MarketCredentials, MarketToken }
-import cards.nine.processes.NineCardsServices._
+import cards.nine.processes.App.NineCardsApp
 import cards.nine.services.free.algebra.GooglePlay.Services
+import cats.Id
 import cats.free.Free
+import io.freestyle.syntax._
 import org.specs2.matcher.Matchers
 import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
@@ -20,8 +22,8 @@ trait ApplicationProcessesSpecification
 
   trait BasicScope extends Scope {
 
-    implicit val googlePlayServices: Services[NineCardsServices] = mock[Services[NineCardsServices]]
-    implicit val applicationProcesses = new ApplicationProcesses[NineCardsServices]
+    implicit val googlePlayServices: Services[NineCardsApp.T] = mock[Services[NineCardsApp.T]]
+    val applicationProcesses = new ApplicationProcesses[NineCardsApp.T]
 
   }
 
@@ -78,13 +80,13 @@ class ApplicationProcessesSpec extends ApplicationProcessesSpecification {
       "packages name is passed" in new BasicScope {
         val response = applicationProcesses.getAppsInfo(Nil, marketAuth)
 
-        response.foldMap(testInterpreters) must_== emptyGetAppsInfoResponse
+        response.exec[Id] must_== emptyGetAppsInfoResponse
       }
 
     "return a valid response if a non empty list of packages name is passed" in new SuccessfulScope {
       val response = applicationProcesses.getAppsInfo(packagesName, marketAuth)
 
-      response.foldMap(testInterpreters) must beLike[FullCardList] {
+      response.exec[Id] must beLike[FullCardList] {
         case r ⇒
           r.missing must_== missing
           r.cards must_== apps

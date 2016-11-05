@@ -1,14 +1,16 @@
 package cards.nine.processes
 
 import cards.nine.domain.account._
-import cards.nine.processes.NineCardsServices._
 import cards.nine.processes.messages.InstallationsMessages._
 import cards.nine.processes.messages.UserMessages.{ LoginRequest, LoginResponse }
+import cards.nine.processes.App.NineCardsApp
 import cards.nine.processes.utils.{ DummyNineCardsConfig, HashUtils }
 import cards.nine.services.free.algebra
 import cards.nine.services.free.domain.{ Installation, User }
+import cats.Id
 import cats.free.Free
 import com.roundeights.hasher.Hasher
+import io.freestyle.syntax._
 import org.mockito.Matchers.{ eq ⇒ mockEq }
 import org.specs2.ScalaCheck
 import org.specs2.matcher.Matchers
@@ -25,9 +27,9 @@ trait UserProcessesSpecification
   with TestInterpreters {
 
   trait BasicScope extends Scope {
-    implicit val userServices = mock[algebra.User.Services[NineCardsServices]]
+    implicit val userServices = mock[algebra.User.Services[NineCardsApp.T]]
 
-    val userProcesses = UserProcesses.processes[NineCardsServices]
+    val userProcesses = UserProcesses.processes[NineCardsApp.T]
   }
 
   trait UserAndInstallationSuccessfulScope extends BasicScope {
@@ -131,26 +133,26 @@ class UserProcessesSpec
     "return LoginResponse object when the user exists and installation" in
       new UserAndInstallationSuccessfulScope {
         val signUpUser = userProcesses.signUpUser(loginRequest)
-        signUpUser.foldMap(testInterpreters) shouldEqual loginResponse
+        signUpUser.exec[Id] shouldEqual loginResponse
       }
 
     "return LoginResponse object when the user exists but not installation" in
       new UserSuccessfulAndInstallationFailingScope {
         val signUpUser = userProcesses.signUpUser(loginRequest)
-        signUpUser.foldMap(testInterpreters) shouldEqual loginResponse
+        signUpUser.exec[Id] shouldEqual loginResponse
       }
 
     "return LoginResponse object when there isn't user or installation" in
       new UserAndInstallationFailingScope {
         val signUpUser = userProcesses.signUpUser(loginRequest)
-        signUpUser.foldMap(testInterpreters) shouldEqual loginResponse
+        signUpUser.exec[Id] shouldEqual loginResponse
       }
   }
 
   "updateInstallation" should {
     "return UpdateInstallationResponse object" in new UserAndInstallationSuccessfulScope {
       val signUpInstallation = userProcesses.updateInstallation(updateInstallationRequest)
-      signUpInstallation.foldMap(testInterpreters) shouldEqual updateInstallationResponse
+      signUpInstallation.exec[Id] shouldEqual updateInstallationResponse
     }
   }
 
@@ -164,13 +166,13 @@ class UserProcessesSpec
           requestUri   = dummyUrl
         )
 
-        checkAuthToken.foldMap(testInterpreters) shouldEqual checkAuthTokenResponse
+        checkAuthToken.exec[Id] shouldEqual checkAuthTokenResponse
       }
 
     "return the userId for a valid sessionToken and androidId without considering the authToken " +
       "if the debug Mode is enabled" in new UserAndInstallationSuccessfulScope {
 
-        val debugUserProcesses = UserProcesses.processes[NineCardsServices](
+        val debugUserProcesses = UserProcesses.processes[NineCardsApp.T](
           userServices = userServices,
           config       = dummyConfig(debugMode = true),
           hashUtils    = HashUtils.hashUtils
@@ -183,7 +185,7 @@ class UserProcessesSpec
           requestUri   = dummyUrl
         )
 
-        checkAuthToken.foldMap(testInterpreters) shouldEqual checkAuthTokenResponse
+        checkAuthToken.exec[Id] shouldEqual checkAuthTokenResponse
       }
 
     "return None when a wrong auth token is given" in new UserAndInstallationSuccessfulScope {
@@ -194,7 +196,7 @@ class UserProcessesSpec
         requestUri   = dummyUrl
       )
 
-      checkAuthToken.foldMap(testInterpreters) shouldEqual None
+      checkAuthToken.exec[Id] shouldEqual None
     }
 
     "return None if there is no user with the given sessionToken" in
@@ -206,7 +208,7 @@ class UserProcessesSpec
           requestUri   = dummyUrl
         )
 
-        checkAuthToken.foldMap(testInterpreters) should beNone
+        checkAuthToken.exec[Id] should beNone
       }
 
     "return None if there is no installation with the given androidId that belongs to the user" in
@@ -218,7 +220,7 @@ class UserProcessesSpec
           requestUri   = dummyUrl
         )
 
-        checkAuthToken.foldMap(testInterpreters) should beNone
+        checkAuthToken.exec[Id] should beNone
       }
   }
 }

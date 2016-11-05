@@ -1,13 +1,12 @@
 package cards.nine.services.free.interpreter.subscription
 
-import cards.nine.services.free.algebra.Subscription._
+import cards.nine.services.free.algebra.Subscription
 import cards.nine.services.free.domain.SharedCollectionSubscription
 import cards.nine.services.free.domain.SharedCollectionSubscription.Queries
 import cards.nine.services.persistence.Persistence
-import cats.~>
 import doobie.imports._
 
-class Services(persistence: Persistence[SharedCollectionSubscription]) extends (Ops ~> ConnectionIO) {
+class Services(persistence: Persistence[SharedCollectionSubscription]) extends Subscription.Services.Interpreter[ConnectionIO] {
 
   def add(collectionId: Long, userId: Long, collectionPublicId: String): ConnectionIO[Int] =
     persistence.update(
@@ -39,18 +38,11 @@ class Services(persistence: Persistence[SharedCollectionSubscription]) extends (
       values = (collectionId, userId)
     )
 
-  def apply[A](fa: Ops[A]): ConnectionIO[A] = fa match {
-    case Add(collection, user, collectionPublicId) ⇒
-      add(collection, user, collectionPublicId)
-    case GetByCollection(collection) ⇒
-      getByCollection(collection)
-    case GetByCollectionAndUser(collection, user) ⇒
-      getByCollectionAndUser(collection, user)
-    case GetByUser(user) ⇒
-      getByUser(user)
-    case RemoveByCollectionAndUser(collection, user) ⇒
-      removeByCollectionAndUser(collection, user)
-  }
+  def addImpl(collection: Long, user: Long, collectionPublicId: String): ConnectionIO[Int] = add(collection, user, collectionPublicId)
+  def getByCollectionAndUserImpl(collection: Long, user: Long): ConnectionIO[Option[cards.nine.services.free.domain.SharedCollectionSubscription]] = getByCollectionAndUser(collection, user)
+  def getByCollectionImpl(collection: Long): ConnectionIO[List[cards.nine.services.free.domain.SharedCollectionSubscription]] = getByCollection(collection)
+  def getByUserImpl(user: Long): ConnectionIO[List[cards.nine.services.free.domain.SharedCollectionSubscription]] = getByUser(user)
+  def removeByCollectionAndUserImpl(collection: Long, user: Long): ConnectionIO[Int] = removeByCollectionAndUser(collection, user)
 }
 
 object Services {

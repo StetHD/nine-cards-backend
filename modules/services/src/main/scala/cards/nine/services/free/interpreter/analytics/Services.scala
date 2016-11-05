@@ -3,18 +3,18 @@ package cards.nine.services.free.interpreter.analytics
 import cards.nine.commons.NineCardsErrors._
 import cards.nine.commons.NineCardsService.Result
 import cards.nine.domain.analytics.{ CountryName, RankingParams }
-import cards.nine.services.free.algebra.GoogleAnalytics._
+import cards.nine.services.free.algebra.GoogleAnalytics
 import cards.nine.services.free.domain.Ranking._
 import cats.syntax.either._
-import cats.~>
 import org.http4s.Http4s._
+import org.http4s.Status._
 import org.http4s.Uri.{ Authority, RegName }
 import org.http4s._
 import org.http4s.circe.{ jsonEncoderOf, jsonOf }
 
 import scalaz.concurrent.Task
 
-class Services(config: Configuration) extends (Ops ~> Task) {
+class Services(config: Configuration) extends GoogleAnalytics.Services.Interpreter[Task] {
 
   import Encoders._
   import model.{ RequestBody, ResponseBody }
@@ -51,15 +51,17 @@ class Services(config: Configuration) extends (Ops ~> Task) {
 
   def handleGoogleAnalyticsError(error: RankingError) =
     error.code match {
-      case Status.BadRequest.code ⇒ HttpBadRequest("")
-      case Status.NotFound.code ⇒ HttpNotFound("")
-      case Status.Unauthorized.code ⇒ HttpUnauthorized("")
+      case BadRequest.code ⇒ HttpBadRequest("")
+      case NotFound.code ⇒ HttpNotFound("")
+      case Unauthorized.code ⇒ HttpUnauthorized("")
       case _ ⇒ GoogleAnalyticsServerError("")
     }
 
-  def apply[A](fa: Ops[A]): Task[A] = fa match {
-    case GetRanking(name, params) ⇒ getRanking(name, params)
-  }
+  def getRankingFImpl(
+    name: Option[CountryName],
+    params: RankingParams
+  ): Task[NineCardsError Either GoogleAnalyticsRanking] = getRanking(name, params)
+
 }
 
 object Services {

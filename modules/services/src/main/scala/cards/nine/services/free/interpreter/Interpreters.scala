@@ -3,7 +3,6 @@ package cards.nine.services.free.interpreter
 import cards.nine.commons.NineCardsConfig._
 import cards.nine.commons.TaskInstances
 import cards.nine.googleplay.processes.withTypes.WithRedisClient
-import cats._
 import cards.nine.services.free.algebra._
 import cards.nine.services.free.interpreter.analytics.{ Services ⇒ AnalyticsServices }
 import cards.nine.services.free.interpreter.collection.{ Services ⇒ CollectionServices }
@@ -11,19 +10,26 @@ import cards.nine.services.free.interpreter.country.{ Services ⇒ CountryServic
 import cards.nine.services.free.interpreter.firebase.{ Services ⇒ FirebaseServices }
 import cards.nine.services.free.interpreter.googleapi.{ Services ⇒ GoogleApiServices }
 import cards.nine.services.free.interpreter.googleplay.{ Services ⇒ GooglePlayServices }
-import cards.nine.services.free.interpreter.ranking.{ Services ⇒ RankingServices }
 import cards.nine.services.free.interpreter.ranking.Services._
+import cards.nine.services.free.interpreter.ranking.{ Services ⇒ RankingServices }
 import cards.nine.services.free.interpreter.subscription.{ Services ⇒ SubscriptionServices }
 import cards.nine.services.free.interpreter.user.{ Services ⇒ UserServices }
-import cards.nine.services.persistence.DatabaseTransactor._
+import cards.nine.services.persistence.DatabaseTransactor
+import cats._
 import com.redis.RedisClientPool
 import doobie.imports._
 
 import scalaz.concurrent.Task
 
-abstract class Interpreters[M[_]](implicit A: ApplicativeError[M, Throwable], T: Transactor[M]) {
+trait Interpreters extends TaskInstances {
 
-  val task2M: (Task ~> M)
+  val connectionIO2Task = new (ConnectionIO ~> Task) {
+    def apply[A](fa: ConnectionIO[A]): Task[A] = fa.transact(DatabaseTransactor.transactor)
+  }
+
+  val redis2Task = new (WithRedisClient ~> Task) {
+    def apply[A](fa: WithRedisClient[A]): Task[A] = redisClientPool.withClient(fa)
+  }
 
   val redisClientPool: RedisClientPool = {
     val baseConfig = "ninecards.google.play.redis"
@@ -34,39 +40,29 @@ abstract class Interpreters[M[_]](implicit A: ApplicativeError[M, Throwable], T:
     )
   }
 
-  val toTask = new (WithRedisClient ~> Task) {
+  implicit val analyticsInterpreter: (GoogleAnalytics.Services.T ~> Task) =
+    AnalyticsServices.services
 
-    override def apply[A](fa: WithRedisClient[A]): Task[A] = redisClientPool.withClient(fa)
-  }
+  implicit val collectionInterpreter: (SharedCollection.Services.T ~> Task) =
+    CollectionServices.services.andThen(connectionIO2Task)
 
-  val connectionIO2M = new (ConnectionIO ~> M) {
-    def apply[A](fa: ConnectionIO[A]): M[A] = fa.transact(T)
-  }
+  implicit val countryInterpreter: (Country.Services.T ~> Task) =
+    CountryServices.services.andThen(connectionIO2Task)
 
-  lazy val analyticsInterpreter: (GoogleAnalytics.Ops ~> M) = AnalyticsServices.services.andThen(task2M)
+  implicit val firebaseInterpreter: (Firebase.Services.T ~> Task) = FirebaseServices.services
 
-  val collectionInterpreter: (SharedCollection.Ops ~> M) = CollectionServices.services.andThen(connectionIO2M)
+  implicit val googleApiInterpreter: (GoogleApi.Services.T ~> Task) = GoogleApiServices.services
 
-  val countryInterpreter: (Country.Ops ~> M) = CountryServices.services.andThen(connectionIO2M)
+  implicit val googlePlayInterpreter: (GooglePlay.Services.T ~> Task) = GooglePlayServices.services
 
-  lazy val firebaseInterpreter: (Firebase.Ops ~> M) = FirebaseServices.services.andThen(task2M)
+  implicit val rankingInterpreter: (Ranking.Services.T ~> Task) =
+    RankingServices.services.andThen(redis2Task)
 
-  lazy val googleApiInterpreter: (GoogleApi.Ops ~> M) = GoogleApiServices.services.andThen(task2M)
+  implicit val subscriptionInterpreter: (Subscription.Services.T ~> Task) =
+    SubscriptionServices.services.andThen(connectionIO2Task)
 
-  lazy val googlePlayInterpreter: (GooglePlay.Ops ~> M) = GooglePlayServices.services.andThen(task2M)
-
-  lazy val rankingInterpreter: (Ranking.Ops ~> M) = RankingServices.services.andThen(toTask).andThen(task2M)
-
-  val subscriptionInterpreter: (Subscription.Ops ~> M) = SubscriptionServices.services.andThen(connectionIO2M)
-
-  val userInterpreter: (User.Ops ~> M) = UserServices.services.andThen(connectionIO2M)
+  implicit val userInterpreter: (User.Services.T ~> Task) =
+    UserServices.services.andThen(connectionIO2Task)
 }
 
-object Interpreters extends TaskInstances {
-
-  val taskInterpreters = new Interpreters[Task] {
-    override val task2M: (Task ~> Task) = new (Task ~> Task) {
-      override def apply[A](fa: Task[A]): Task[A] = fa
-    }
-  }
-}
+object Interpreters extends Interpreters

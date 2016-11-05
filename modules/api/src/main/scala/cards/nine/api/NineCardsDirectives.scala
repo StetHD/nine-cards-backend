@@ -10,8 +10,9 @@ import cards.nine.api.utils.TaskDirectives._
 import cards.nine.domain.account._
 import cards.nine.domain.application.PriceFilter
 import cards.nine.domain.market.{ MarketToken, Localization }
-import cards.nine.processes.NineCardsServices._
+import cards.nine.processes.App._
 import cards.nine.processes._
+import io.freestyle.syntax._
 import org.joda.time.DateTime
 import shapeless._
 import spray.http.Uri
@@ -24,8 +25,8 @@ import scalaz.concurrent.Task
 
 class NineCardsDirectives(
   implicit
-  userProcesses: UserProcesses[NineCardsServices],
-  googleApiProcesses: GoogleApiProcesses[NineCardsServices],
+  userProcesses: UserProcesses[NineCardsApp.T],
+  googleApiProcesses: GoogleApiProcesses[NineCardsApp.T],
   ec: ExecutionContext
 )
   extends BasicDirectives
@@ -55,7 +56,7 @@ class NineCardsDirectives(
       case (e, o) if e.value.isEmpty || o.value.isEmpty ⇒
         Task.now(Left(rejectionByCredentialsRejected))
       case _ ⇒
-        googleApiProcesses.checkGoogleTokenId(email, tokenId).foldMap(prodInterpreters) map {
+        googleApiProcesses.checkGoogleTokenId(email, tokenId).exec[Task] map {
           case true ⇒ Right(())
           case _ ⇒ Left(rejectionByCredentialsRejected)
         } handle {
@@ -92,7 +93,7 @@ class NineCardsDirectives(
       androidId    = androidId,
       authToken    = authToken,
       requestUri   = requestUri.toString
-    ).foldMap(prodInterpreters) map {
+    ).exec[Task] map {
       case Some(v) ⇒ Right(v)
       case None ⇒
         Left(rejectionByCredentialsRejected)
@@ -115,8 +116,8 @@ object NineCardsDirectives {
 
   implicit def nineCardsDirectives(
     implicit
-    userProcesses: UserProcesses[NineCardsServices],
-    googleApiProcesses: GoogleApiProcesses[NineCardsServices],
+    userProcesses: UserProcesses[NineCardsApp.T],
+    googleApiProcesses: GoogleApiProcesses[NineCardsApp.T],
     ec: ExecutionContext
   ) = new NineCardsDirectives
 

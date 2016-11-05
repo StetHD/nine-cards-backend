@@ -1,16 +1,18 @@
 package cards.nine.processes
 
+import cats.Id
 import cats.data.Xor
 import cats.free.Free
-import cards.nine.processes.NineCardsServices._
 import cards.nine.processes.TestData.Exceptions._
 import cards.nine.processes.TestData.Messages._
 import cards.nine.processes.TestData.Values._
 import cards.nine.processes.TestData._
 import cards.nine.processes.messages.SharedCollectionMessages._
+import cards.nine.processes.App.NineCardsApp
 import cards.nine.services.free.algebra
 import cards.nine.services.free.algebra.{ Firebase, GooglePlay }
 import cards.nine.services.free.domain._
+import io.freestyle.syntax._
 import org.mockito.Matchers.{ eq ⇒ mockEq }
 import org.specs2.ScalaCheck
 import org.specs2.matcher.{ Matchers, XorMatchers }
@@ -27,23 +29,26 @@ trait SharedCollectionProcessesSpecification
 
   trait BasicScope extends Scope {
 
-    implicit val collectionServices = mock[algebra.SharedCollection.Services[NineCardsServices]]
-    implicit val subscriptionServices = mock[algebra.Subscription.Services[NineCardsServices]]
-    implicit val userServices = mock[algebra.User.Services[NineCardsServices]]
-    implicit val firebaseServices = mock[Firebase.Services[NineCardsServices]]
-    implicit val googlePlayServices = mock[GooglePlay.Services[NineCardsServices]]
+    implicit val collectionServices: algebra.SharedCollection.Services[NineCardsApp.T] =
+      mock[algebra.SharedCollection.Services[NineCardsApp.T]]
+    implicit val subscriptionServices: algebra.Subscription.Services[NineCardsApp.T] =
+      mock[algebra.Subscription.Services[NineCardsApp.T]]
+    implicit val userServices: algebra.User.Services[NineCardsApp.T] =
+      mock[algebra.User.Services[NineCardsApp.T]]
+    implicit val firebaseServices: Firebase.Services[NineCardsApp.T] =
+      mock[Firebase.Services[NineCardsApp.T]]
+    implicit val googlePlayServices: GooglePlay.Services[NineCardsApp.T] =
+      mock[GooglePlay.Services[NineCardsApp.T]]
 
-    implicit val sharedCollectionProcesses = SharedCollectionProcesses.processes[NineCardsServices]
+    implicit val sharedCollectionProcesses = SharedCollectionProcesses.processes[NineCardsApp.T]
 
     def mockGetSubscription(res: Option[SharedCollectionSubscription]) = {
-      subscriptionServices
-        .getByCollectionAndUser(any, any) returns
+      subscriptionServices.getByCollectionAndUser(any, any) returns
         Free.pure(res)
     }
 
     def mockRemoveSubscription(res: Int) = {
-      subscriptionServices
-        .removeByCollectionAndUser(any, any) returns
+      subscriptionServices.removeByCollectionAndUser(any, any) returns
         Free.pure(res)
     }
 
@@ -132,7 +137,7 @@ class SharedCollectionProcessesSpec
           request = createCollectionRequest
         )
 
-        response.foldMap(testInterpreters) must_== createCollectionResponse
+        response.exec[Id] must_== createCollectionResponse
       }
   }
 
@@ -145,7 +150,7 @@ class SharedCollectionProcessesSpec
           marketAuth       = marketAuth
         )
 
-        collectionInfo.foldMap(testInterpreters) must beXorRight(getCollectionByPublicIdentifierResponse)
+        collectionInfo.exec[Id] must beXorRight(getCollectionByPublicIdentifierResponse)
       }
 
     "return a SharedCollectionNotFoundException when the shared collection doesn't exist" in
@@ -156,7 +161,7 @@ class SharedCollectionProcessesSpec
           marketAuth       = marketAuth
         )
 
-        collectionInfo.foldMap(testInterpreters) must beXorLeft(sharedCollectionNotFoundException)
+        collectionInfo.exec[Id] must beXorLeft(sharedCollectionNotFoundException)
       }
   }
 
@@ -171,7 +176,7 @@ class SharedCollectionProcessesSpec
         pageNumber = pageNumber,
         pageSize   = pageSize
       )
-      collectionsInfo.foldMap(testInterpreters) mustEqual response
+      collectionsInfo.exec[Id] mustEqual response
     }
 
   }
@@ -184,7 +189,7 @@ class SharedCollectionProcessesSpec
         userId     = publisherId,
         marketAuth = marketAuth
       )
-      collectionsInfo.foldMap(testInterpreters) mustEqual response
+      collectionsInfo.exec[Id] mustEqual response
     }
 
     "return a list of Shared collections of the subscriber user" in new SharedCollectionSuccessfulScope {
@@ -193,7 +198,7 @@ class SharedCollectionProcessesSpec
         userId     = subscriberId,
         marketAuth = marketAuth
       )
-      collectionsInfo.foldMap(testInterpreters) mustEqual response
+      collectionsInfo.exec[Id] mustEqual response
     }
 
   }
@@ -205,7 +210,7 @@ class SharedCollectionProcessesSpec
       val subscriptions = sharedCollectionProcesses.getSubscriptionsByUser(
         user = subscriberId
       )
-      subscriptions.foldMap(testInterpreters) mustEqual response
+      subscriptions.exec[Id] mustEqual response
     }
 
   }
@@ -221,7 +226,7 @@ class SharedCollectionProcessesSpec
         pageNumber = pageNumber,
         pageSize   = pageSize
       )
-      collectionsInfo.foldMap(testInterpreters) mustEqual response
+      collectionsInfo.exec[Id] mustEqual response
     }
 
   }
@@ -230,21 +235,21 @@ class SharedCollectionProcessesSpec
 
     "return a SharedCollectionNotFoundException when the shared collection does not exist" in new SharedCollectionUnsuccessfulScope {
       val subscriptionInfo = sharedCollectionProcesses.subscribe(publicIdentifier, subscriberId)
-      subscriptionInfo.foldMap(testInterpreters) must beXorLeft(sharedCollectionNotFoundException)
+      subscriptionInfo.exec[Id] must beXorLeft(sharedCollectionNotFoundException)
     }
 
     "return a valid response if the subscription already exists  " in new SharedCollectionSuccessfulScope {
       mockGetSubscription(Option(subscription))
 
       val subscriptionInfo = sharedCollectionProcesses.subscribe(publicIdentifier, subscriberId)
-      subscriptionInfo.foldMap(testInterpreters) must beXorRight(SubscribeResponse())
+      subscriptionInfo.exec[Id] must beXorRight(SubscribeResponse())
     }
 
     "return a valid response if it has created a subscription " in new SharedCollectionSuccessfulScope {
       mockGetSubscription(None)
 
       val subscriptionInfo = sharedCollectionProcesses.subscribe(publicIdentifier, subscriberId)
-      subscriptionInfo.foldMap(testInterpreters) must beXorRight(SubscribeResponse())
+      subscriptionInfo.exec[Id] must beXorRight(SubscribeResponse())
     }
 
   }
@@ -253,21 +258,21 @@ class SharedCollectionProcessesSpec
 
     "return a SharedCollectionNotFoundException when the shared collection does not exist" in new SharedCollectionUnsuccessfulScope {
       val subscriptionInfo = sharedCollectionProcesses.unsubscribe(publicIdentifier, subscriberId)
-      subscriptionInfo.foldMap(testInterpreters) must beXorLeft(sharedCollectionNotFoundException)
+      subscriptionInfo.exec[Id] must beXorLeft(sharedCollectionNotFoundException)
     }
 
     "return a valid response if the subscription existed" in new SharedCollectionSuccessfulScope {
       mockRemoveSubscription(1)
 
       val subscriptionInfo = sharedCollectionProcesses.unsubscribe(publicIdentifier, subscriberId)
-      subscriptionInfo.foldMap(testInterpreters) must beXorRight(UnsubscribeResponse())
+      subscriptionInfo.exec[Id] must beXorRight(UnsubscribeResponse())
     }
 
     "return a valid response if the subscription did not existed " in new SharedCollectionSuccessfulScope {
       mockRemoveSubscription(0)
 
       val subscriptionInfo = sharedCollectionProcesses.unsubscribe(publicIdentifier, subscriberId)
-      subscriptionInfo.foldMap(testInterpreters) must beXorRight(UnsubscribeResponse())
+      subscriptionInfo.exec[Id] must beXorRight(UnsubscribeResponse())
     }
 
   }
@@ -281,7 +286,7 @@ class SharedCollectionProcessesSpec
           packages         = Option(updatePackagesName)
         )
 
-        collectionInfo.foldMap(testInterpreters) must beXorRight[CreateOrUpdateCollectionResponse].which {
+        collectionInfo.exec[Id] must beXorRight[CreateOrUpdateCollectionResponse].which {
           response ⇒
             response.publicIdentifier must_== publicIdentifier
             response.packagesStats.added must_== addedPackagesCount
@@ -297,7 +302,7 @@ class SharedCollectionProcessesSpec
           packages         = None
         )
 
-        collectionInfo.foldMap(testInterpreters) must beXorRight[CreateOrUpdateCollectionResponse].which {
+        collectionInfo.exec[Id] must beXorRight[CreateOrUpdateCollectionResponse].which {
           response ⇒
             response.publicIdentifier must_== publicIdentifier
             response.packagesStats.added must_== 0
@@ -313,7 +318,7 @@ class SharedCollectionProcessesSpec
           packages         = Option(updatePackagesName)
         )
 
-        collectionInfo.foldMap(testInterpreters) must beXorLeft(sharedCollectionNotFoundException)
+        collectionInfo.exec[Id] must beXorLeft(sharedCollectionNotFoundException)
       }
   }
 }

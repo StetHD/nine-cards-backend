@@ -3,9 +3,11 @@ package cards.nine.processes
 import cards.nine.domain.account.AndroidId
 import cards.nine.domain.application.{ FullCard, FullCardList, Package }
 import cards.nine.domain.market.{ MarketCredentials, MarketToken }
-import cards.nine.processes.NineCardsServices.NineCardsServices
+import cards.nine.processes.App.NineCardsApp
 import cards.nine.services.free.algebra.GooglePlay.Services
+import cats.Id
 import cats.free.Free
+import io.freestyle.syntax._
 import org.specs2.matcher.Matchers
 import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
@@ -20,8 +22,8 @@ trait GooglePlayProcessesSpecification
 
   trait BasicScope extends Scope {
 
-    implicit val googlePlayServices: Services[NineCardsServices] = mock[Services[NineCardsServices]]
-    implicit val applicationProcesses = new ApplicationProcesses[NineCardsServices]
+    implicit val googlePlayServices: Services[NineCardsApp.T] = mock[Services[NineCardsApp.T]]
+    implicit val applicationProcesses = new ApplicationProcesses[NineCardsApp.T]
 
     googlePlayServices.resolveMany(Nil, marketAuth, true) returns
       Free.pure(FullCardList(Nil, Nil))
@@ -64,14 +66,14 @@ class GooglePlayProcessesSpec extends GooglePlayProcessesSpecification {
 
   "categorizeApps" should {
     "return empty items and errors lists if an empty list of apps is provided" in new BasicScope {
-      val response = applicationProcesses.getAppsInfo(Nil, marketAuth).foldMap(testInterpreters)
+      val response = applicationProcesses.getAppsInfo(Nil, marketAuth).exec[Id]
 
       response.missing should beEmpty
       response.cards should beEmpty
     }
 
     "return items and errors lists for a non empty list of apps" in new BasicScope {
-      val response = applicationProcesses.getAppsInfo(packageNames, marketAuth).foldMap(testInterpreters)
+      val response = applicationProcesses.getAppsInfo(packageNames, marketAuth).exec[Id]
 
       response.missing shouldEqual missing
       forall(response.cards) { item ⇒

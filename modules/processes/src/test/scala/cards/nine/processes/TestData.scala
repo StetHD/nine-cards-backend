@@ -9,10 +9,10 @@ import cards.nine.domain.account.{ AndroidId, DeviceToken }
 import cards.nine.domain.analytics._
 import cards.nine.domain.application.{ FullCard, FullCardList, Package, Widget }
 import cards.nine.domain.market.{ Localization, MarketCredentials, MarketToken }
-import cards.nine.processes.NineCardsServices.NineCardsServices
 import cards.nine.processes.ProcessesExceptions.SharedCollectionNotFoundException
 import cards.nine.processes.converters.Converters
 import cards.nine.processes.messages.SharedCollectionMessages._
+import cards.nine.processes.App.NineCardsApp
 import cards.nine.services.free.domain.Firebase.{ NotificationIndividualResult, NotificationResponse }
 import cards.nine.services.free.domain.Ranking.GoogleAnalyticsRanking
 import cards.nine.services.free.domain.{ SharedCollection ⇒ SharedCollectionServices, _ }
@@ -374,12 +374,12 @@ object TestData {
           RankedApp(packageName, category, Option(rank))
       }
 
-    val rankingForAppsResponse = NineCardsService.right[NineCardsServices, List[RankedApp]] {
+    val rankingForAppsResponse = NineCardsService.right[NineCardsApp.T, List[RankedApp]] {
       appsWithRanking(countriesAMList, countriesAMCategory) ++
         appsWithRanking(countriesNZList, countriesNZCategory)
     }
 
-    val rankingForAppsEmptyResponse = NineCardsService.right[NineCardsServices, List[RankedApp]] {
+    val rankingForAppsEmptyResponse = NineCardsService.right[NineCardsApp.T, List[RankedApp]] {
       Nil
     }
 
@@ -389,12 +389,12 @@ object TestData {
           RankedWidget(Widget(packageName, "className"), category, Option(rank))
       }
 
-    val rankingForWidgetsResponse = NineCardsService.right[NineCardsServices, List[RankedWidget]] {
+    val rankingForWidgetsResponse = NineCardsService.right[NineCardsApp.T, List[RankedWidget]] {
       widgetsWithRanking(countriesAMList, countriesAMCategory) ++
         widgetsWithRanking(countriesNZList, countriesNZCategory)
     }
 
-    val rankingForWidgetsEmptyResponse = NineCardsService.right[NineCardsServices, List[RankedWidget]] {
+    val rankingForWidgetsEmptyResponse = NineCardsService.right[NineCardsApp.T, List[RankedWidget]] {
       Nil
     }
   }

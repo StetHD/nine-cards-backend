@@ -3,9 +3,11 @@ package cards.nine.processes
 import cats.data.Xor
 import cats.free.Free
 import cards.nine.domain.account._
-import cards.nine.processes.NineCardsServices._
+import cards.nine.processes.App.NineCardsApp
 import cards.nine.services.free.algebra.GoogleApi.Services
 import cards.nine.services.free.domain.{ TokenInfo, WrongTokenInfo }
+import cats.Id
+import io.freestyle.syntax._
 import org.specs2.ScalaCheck
 import org.specs2.matcher.Matchers
 import org.specs2.mock.Mockito
@@ -21,8 +23,8 @@ trait GoogleApiProcessesSpecification
 
   trait BasicScope extends Scope {
 
-    implicit val googleApiServices: Services[NineCardsServices] = mock[Services[NineCardsServices]]
-    implicit val googleApiProcesses = new GoogleApiProcesses[NineCardsServices]
+    implicit val googleApiServices: Services[NineCardsApp.T] = mock[Services[NineCardsApp.T]]
+    val googleApiProcesses = new GoogleApiProcesses[NineCardsApp.T]
 
   }
 
@@ -64,19 +66,19 @@ class GoogleApiProcessesSpec
     "return true if the given tokenId is valid" in new SuccessfulScope {
       val tokenIdValidation = googleApiProcesses.checkGoogleTokenId(email, tokenId)
 
-      tokenIdValidation.foldMap(testInterpreters) should beTrue
+      tokenIdValidation.exec[Id] should beTrue
     }
 
     "return false if the given tokenId is valid but the given email address is different" in new SuccessfulScope {
       val tokenIdValidation = googleApiProcesses.checkGoogleTokenId(wrongEmail, tokenId)
 
-      tokenIdValidation.foldMap(testInterpreters) should beFalse
+      tokenIdValidation.exec[Id] should beFalse
     }
 
     "return false if the given tokenId is not valid" in new UnsuccessfulScope {
       val tokenIdValidation = googleApiProcesses.checkGoogleTokenId(email, tokenId)
 
-      tokenIdValidation.foldMap(testInterpreters) should beFalse
+      tokenIdValidation.exec[Id] should beFalse
     }
   }
 }

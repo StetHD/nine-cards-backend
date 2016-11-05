@@ -2,9 +2,11 @@ package cards.nine.api.utils
 
 import cards.nine.api.NineCardsErrorHandler
 import cards.nine.commons.NineCardsService.Result
-import cards.nine.processes.NineCardsServices._
+import cards.nine.processes.App._
 import cats.data.Xor
 import cats.free.Free
+import cats.{ Monad, RecursiveTailRecM }
+import io.freestyle.syntax._
 import shapeless.Lazy
 import spray.httpx.marshalling.ToResponseMarshaller
 
@@ -53,10 +55,12 @@ object SprayMarshallers {
 
   implicit def freeTaskMarshaller[A](
     implicit
-    taskMarshaller: Lazy[ToResponseMarshaller[Task[A]]]
-  ): ToResponseMarshaller[Free[NineCardsServices, A]] =
-    ToResponseMarshaller[Free[NineCardsServices, A]] {
+    taskMarshaller: Lazy[ToResponseMarshaller[Task[A]]],
+    taskMonad: Monad[Task],
+    taskRecTail: RecursiveTailRecM[Task]
+  ): ToResponseMarshaller[Free[NineCardsApp.T, A]] =
+    ToResponseMarshaller[Free[NineCardsApp.T, A]] {
       (free, ctx) ⇒
-        taskMarshaller.value(free.foldMap(prodInterpreters), ctx)
+        taskMarshaller.value(free.exec[Task], ctx)
     }
 }

@@ -14,8 +14,8 @@ import cards.nine.domain.account.SessionToken
 import cards.nine.domain.analytics._
 import cards.nine.domain.application.{ Category, FullCardList, PriceFilter }
 import cards.nine.commons.NineCardsService.Result
-import cards.nine.processes.NineCardsServices._
 import cards.nine.processes._
+import cards.nine.processes.App._
 import cats.data.Xor
 
 import scala.concurrent.ExecutionContext
@@ -38,12 +38,12 @@ class NineCardsApiActor
 
 class NineCardsRoutes(
   implicit
-  userProcesses: UserProcesses[NineCardsServices],
-  googleApiProcesses: GoogleApiProcesses[NineCardsServices],
-  applicationProcesses: ApplicationProcesses[NineCardsServices],
-  rankingProcesses: RankingProcesses[NineCardsServices],
-  recommendationsProcesses: RecommendationsProcesses[NineCardsServices],
-  sharedCollectionProcesses: SharedCollectionProcesses[NineCardsServices],
+  userProcesses: UserProcesses[NineCardsApp.T],
+  googleApiProcesses: GoogleApiProcesses[NineCardsApp.T],
+  applicationProcesses: ApplicationProcesses[NineCardsApp.T],
+  rankingProcesses: RankingProcesses[NineCardsApp.T],
+  recommendationsProcesses: RecommendationsProcesses[NineCardsApp.T],
+  sharedCollectionProcesses: SharedCollectionProcesses[NineCardsApp.T],
   refFactory: ActorRefFactory,
   executionContext: ExecutionContext
 ) {
@@ -247,7 +247,7 @@ class NineCardsRoutes(
       }
     }
 
-  private type NineCardsServed[A] = cats.free.Free[NineCardsServices, A]
+  private type NineCardsServed[A] = cats.free.Free[NineCardsApp.T, A]
 
   private[this] def updateInstallation(
     request: ApiUpdateInstallationRequest,
