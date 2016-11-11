@@ -11,7 +11,7 @@ import doobie.contrib.postgresql.pgtypes._
 import doobie.imports._
 import org.scalacheck.{Arbitrary, Gen}
 import org.specs2.ScalaCheck
-import org.specs2.matcher.{DisjunctionMatchers, MatchResult}
+import org.specs2.matcher.{ DisjunctionMatchers, MatchResult }
 import org.specs2.mutable.Specification
 import shapeless.syntax.std.product._
 
@@ -162,7 +162,6 @@ trait SharedCollectionPersistenceServicesContext extends DomainDatabaseContext {
     }
   }
 
-  implicit val arbString: Arbitrary[String] = Arbitrary(Gen.alphaStr)
 }
 
 class ServicesSpec
@@ -249,7 +248,7 @@ class ServicesSpec
 
   "getByPublicIdentifier" should {
     "return a SharedCollectionNotFound error if the table is empty" in {
-      prop { (publicIdentifier: PublicIdentifier) ⇒
+      prop { publicIdentifier: PublicIdentifier ⇒
         WithEmptyDatabase {
           val collection = collectionPersistenceServices.getByPublicIdentifier(
             publicIdentifier = publicIdentifier.value

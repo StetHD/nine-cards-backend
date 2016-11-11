@@ -8,6 +8,7 @@ import cards.nine.services.free.interpreter.user.Services.UserData
 import cards.nine.services.persistence.{ DomainDatabaseContext, NineCardsScalacheckGen }
 import cats.Applicative
 import doobie.contrib.postgresql.pgtypes._
+import cards.nine.services.common.ConnectionIOInstances._
 import cats.instances.list._
 import cats.syntax.traverse._
 import doobie.imports.ConnectionIO
