@@ -42,8 +42,8 @@ object CustomSettings {
       }
 
       val parseDatabaseConnectionUrl = {
-        val protocol = "([^:\\/]+:\\/\\/)"
-        val userInfo = "([^:]+)(:([^@]+))?@"
+        val protocol           = "([^:\\/]+:\\/\\/)"
+        val userInfo           = "([^:]+)(:([^@]+))?@"
         val serverInstanceInfo = s"([^\\/:]+)(:\\d+)?(\\/.+)?"
 
         val DatabaseUrl: Regex = s"$protocol$userInfo($serverInstanceInfo)?".r
@@ -52,13 +52,14 @@ object CustomSettings {
           case DatabaseUrl(_, userValue, _, passwordValue, urlValue, _, _, _) ⇒
             (urlValue, userValue, Option(passwordValue).getOrElse(""))
           case _ =>
-            println(s"No valid value for key '$prefix.url'. Expected format: protocol://user[:password]@server/database")
+            println(
+              s"No valid value for key '$prefix.url'. Expected format: protocol://user[:password]@server/database")
             ("", "", "")
         }
       }
 
       val (url, user, password) = parseDatabaseConnectionUrl
-      val urlPrefix = envOrElseConfig(s"$prefix.urlPrefix")
+      val urlPrefix             = envOrElseConfig(s"$prefix.urlPrefix")
 
       DatabaseConfig(
         driver = envOrElseConfig(s"$prefix.driver"),
