@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.api.accounts
 
 import cards.nine.api.NineCardsHeaders.Domain._
@@ -24,33 +25,33 @@ private[accounts] object Converters {
 
   def toLoginRequest(request: ApiLoginRequest, sessionToken: SessionToken): LoginRequest =
     LoginRequest(
-      email        = request.email,
-      androidId    = request.androidId,
+      email = request.email,
+      androidId = request.androidId,
       sessionToken = sessionToken,
-      tokenId      = request.tokenId
+      tokenId = request.tokenId
     )
 
   def toApiLoginResponse(response: LoginResponse): ApiLoginResponse =
     ApiLoginResponse(
-      apiKey       = response.apiKey,
+      apiKey = response.apiKey,
       sessionToken = response.sessionToken
     )
 
   def toUpdateInstallationRequest(
-    request: ApiUpdateInstallationRequest,
-    userContext: UserContext
+      request: ApiUpdateInstallationRequest,
+      userContext: UserContext
   ): UpdateInstallationRequest =
     UpdateInstallationRequest(
-      userId      = userContext.userId.value,
-      androidId   = userContext.androidId,
+      userId = userContext.userId.value,
+      androidId = userContext.androidId,
       deviceToken = request.deviceToken
     )
 
   def toApiUpdateInstallationResponse(
-    response: UpdateInstallationResponse
+      response: UpdateInstallationResponse
   ): ApiUpdateInstallationResponse =
     ApiUpdateInstallationResponse(
-      androidId   = response.androidId,
+      androidId = response.androidId,
       deviceToken = response.deviceToken
     )
 

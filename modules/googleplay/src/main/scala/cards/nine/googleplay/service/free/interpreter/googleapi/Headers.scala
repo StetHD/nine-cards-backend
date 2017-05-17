@@ -13,10 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.googleplay.service.free.interpreter.googleapi
 
-import cards.nine.domain.market.{ MarketCredentials, Localization }
-import org.http4s.{ Header, Headers }
+import cards.nine.domain.market.{Localization, MarketCredentials}
+import org.http4s.{Header, Headers}
 
 /* Note of development: this set of headers were directly copied from the code of the
  * google-play-crawler, but it is not clear what functions they perform. */
@@ -29,18 +30,22 @@ object headers {
   private[this] def authHeaders(auth: MarketCredentials): List[Header] = {
     Header("Authorization", s"GoogleLogin auth=${auth.token.value}") ::
       Header("X-DFE-Device-Id", auth.androidId.value) :: (
-        auth.localization match {
-          case Some(Localization(locale)) ⇒ List(Header("Accept-Language", locale))
-          case None ⇒ List()
-        }
-      )
+      auth.localization match {
+        case Some(Localization(locale)) ⇒ List(Header("Accept-Language", locale))
+        case None                       ⇒ List()
+      }
+    )
   }
 
   private[this] lazy val fixedHeaders: List[Header] = {
     val userAgentValue = {
       val ls = List(
-        "api=3", "versionCode=8016014", "sdk=15",
-        "device=GT-I9300", "hardware=aries", "product=GT-I9300"
+        "api=3",
+        "versionCode=8016014",
+        "sdk=15",
+        "device=GT-I9300",
+        "hardware=aries",
+        "product=GT-I9300"
       ).mkString(",")
       s"Android-Finsky/3.10.14 ($ls)"
     }

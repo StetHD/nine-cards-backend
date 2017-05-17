@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.googleplay.util
 
-import cards.nine.domain.application.{ BasicCard, FullCard }
+import cards.nine.domain.application.{BasicCard, FullCard}
 import cards.nine.domain.ScalaCheck.arbPackage
 import cards.nine.domain.market.MarketCredentials
 import cards.nine.googleplay.domain._
@@ -44,13 +45,16 @@ object ScalaCheck {
 
   // TODO pull this out somewhere else
   // A generator which returns a map of A->B, a list of As that are in the map, and a list of As that are not
-  def genPick[A, B](implicit aa: Arbitrary[A], ab: Arbitrary[B]): Gen[(Map[A, B], List[A], List[A])] = for {
-    pairs ← arbitrary[Map[A, B]]
-    keys = pairs.keySet
-    validPicks ← someOf(keys)
-    anotherList ← listOf(arbitrary[A])
-    invalidPicks = anotherList.filterNot(i ⇒ keys.contains(i))
-  } yield (pairs, validPicks.toList, invalidPicks)
+  def genPick[A, B](
+      implicit aa: Arbitrary[A],
+      ab: Arbitrary[B]): Gen[(Map[A, B], List[A], List[A])] =
+    for {
+      pairs ← arbitrary[Map[A, B]]
+      keys = pairs.keySet
+      validPicks  ← someOf(keys)
+      anotherList ← listOf(arbitrary[A])
+      invalidPicks = anotherList.filterNot(i ⇒ keys.contains(i))
+    } yield (pairs, validPicks.toList, invalidPicks)
 
 }
 
@@ -59,8 +63,11 @@ object ScalaCheck_Aux {
   // A generator of strings that served as non-interpreted parts of an URI (path, query param or value)
   val genUriPathString: Gen[String] = {
     // Unreserved characters, per URI syntax: https://tools.ietf.org/html/rfc2396#section-2.3
-    val unreserved: Gen[Char] = Gen.frequency((9, Gen.alphaNumChar), (1, oneOf('-', '.', '_', '~')))
-    Gen.containerOf[Array, Char](unreserved).map(_.mkString)
+    val unreserved: Gen[Char] =
+      Gen.frequency((9, Gen.alphaNumChar), (1, oneOf('-', '.', '_', '~')))
+    Gen
+      .containerOf[Array, Char](unreserved)
+      .map(_.mkString)
       .filter(path ⇒ !List(".", "..").contains(path))
   }
 
@@ -70,19 +77,20 @@ object ScalaCheck_Aux {
 
   val genFullCard: Gen[FullCard] =
     for {
-      title ← identifier
+      title       ← identifier
       packageName ← arbPackage.arbitrary
-      appDetails ← listOf(identifier)
-    } yield FullCard(
-      packageName = packageName,
-      title       = title,
-      free        = false,
-      icon        = "",
-      stars       = 0.0,
-      categories  = appDetails,
-      screenshots = List(),
-      downloads   = ""
-    )
+      appDetails  ← listOf(identifier)
+    } yield
+      FullCard(
+        packageName = packageName,
+        title = title,
+        free = false,
+        icon = "",
+        stars = 0.0,
+        categories = appDetails,
+        screenshots = List(),
+        downloads = ""
+      )
 
   val genBasicCard: Gen[BasicCard] = genFullCard.map(_.toBasic)
 

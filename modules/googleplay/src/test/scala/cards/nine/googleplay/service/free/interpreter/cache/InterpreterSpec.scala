@@ -13,29 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.googleplay.service.free.interpreter.cache
 
 import cards.nine.commons.redis.TestUtils
-import cards.nine.domain.application.{ FullCard, Package }
+import cards.nine.domain.application.{FullCard, Package}
 import cards.nine.domain.ScalaCheck._
 import cards.nine.googleplay.service.free.algebra.Cache._
-import cards.nine.googleplay.util.{ ScalaCheck ⇒ CustomArbitrary }
-import org.joda.time.{ DateTime, DateTimeZone }
-import org.scalacheck.{ Arbitrary, Gen }
+import cards.nine.googleplay.util.{ScalaCheck ⇒ CustomArbitrary}
+import org.joda.time.{DateTime, DateTimeZone}
+import org.scalacheck.{Arbitrary, Gen}
 import org.specs2.ScalaCheck
 import org.specs2.mutable.Specification
-import org.specs2.specification.{ AfterAll, BeforeAll, BeforeEach }
+import org.specs2.specification.{AfterAll, BeforeAll, BeforeEach}
 import redis.embedded.RedisServer
-import scala.concurrent.{ Await, Future } // FIXME
+import scala.concurrent.{Await, Future} // FIXME
 import scala.concurrent.duration._
-import scredis.{ Client ⇒ ScredisClient, TransactionBuilder }
+import scredis.{Client ⇒ ScredisClient, TransactionBuilder}
 
 class InterpreterSpec
-  extends Specification
-  with ScalaCheck
-  with BeforeAll
-  with BeforeEach
-  with AfterAll {
+    extends Specification
+    with ScalaCheck
+    with BeforeAll
+    with BeforeEach
+    with AfterAll {
 
   import Formats._
   import CustomArbitrary._
@@ -47,7 +48,8 @@ class InterpreterSpec
 
   private[this] object setup {
     lazy val redisServer: RedisServer = new RedisServer()
-    lazy val redisClient: ScredisClient = ScredisClient(host = "localhost", port = redisServer.getPort)
+    lazy val redisClient: ScredisClient =
+      ScredisClient(host = "localhost", port = redisServer.getPort)
 
     def flush = redisClient.flushAll
 
@@ -57,19 +59,21 @@ class InterpreterSpec
 
     def eval[A](op: Ops[A]) = interpreter(op)(redisClient).unsafePerformSync
 
-    def evalWithDelay[A](op: Ops[A], delay: Duration) = interpreter(op)(redisClient).after(delay).unsafePerformSync
+    def evalWithDelay[A](op: Ops[A], delay: Duration) =
+      interpreter(op)(redisClient).after(delay).unsafePerformSync
 
-    def pendingKey(pack: Package): String = s"${pack.value}:Pending"
+    def pendingKey(pack: Package): String  = s"${pack.value}:Pending"
     def resolvedKey(pack: Package): String = s"${pack.value}:Resolved"
 
     def permanentKey(pack: Package): String = s"${pack.value}:Permanent"
-    def allByType(keyType: KeyType) = s"*:${keyType.entryName}*"
-    val allErrors = "*:Error"
+    def allByType(keyType: KeyType)         = s"*:${keyType.entryName}*"
+    val allErrors                           = "*:Error"
     def allByPackage(pack: Package): String = s"${pack.value}:*"
-    def allByPackageAndType(pack: Package, keyType: KeyType): String = s"${pack.value}:${keyType.entryName}*"
+    def allByPackageAndType(pack: Package, keyType: KeyType): String =
+      s"${pack.value}:${keyType.entryName}*"
 
     val date: DateTime = new DateTime(2016, 7, 23, 12, 0, 14, DateTimeZone.UTC)
-    val dateJsonStr = s""" "16072312001400" """.trim
+    val dateJsonStr    = s""" "16072312001400" """.trim
 
   }
 
@@ -123,9 +127,11 @@ class InterpreterSpec
     await(redisClient.lRange[Option[Package]]("pending_packages", 0, -1)).flatten
 
   private def putErrors(ps: List[Package], d: DateTime): Unit = await {
-    redisClient.inTransaction { tb: TransactionBuilder ⇒
-      ps.foreach(p ⇒ tb.rPush[DateTime](formatKey(CacheKey.error(p)), d))
-    }.map(_ ⇒ Unit)
+    redisClient
+      .inTransaction { tb: TransactionBuilder ⇒
+        ps.foreach(p ⇒ tb.rPush[DateTime](formatKey(CacheKey.error(p)), d))
+      }
+      .map(_ ⇒ Unit)
   }
 
   private def putEntries(entries: List[(CacheKey, CacheVal)]): Unit = {
@@ -182,7 +188,9 @@ class InterpreterSpec
     "return an empty list if the cache only contains the packages as Errors" >>
       prop { packages: List[Package] ⇒
         flush
-        packages foreach { p ⇒ putError(p, date) }
+        packages foreach { p ⇒
+          putError(p, date)
+        }
 
         eval(GetValidMany(packages)) must beEmpty
       }
@@ -268,7 +276,8 @@ class InterpreterSpec
       prop { cards: List[FullCard] ⇒
         flush
         eval(PutResolvedMany(cards))
-        cards.map(c ⇒ resolvedKey(c.packageName))
+        cards
+          .map(c ⇒ resolvedKey(c.packageName))
           .filter(existsEntry _) must haveSize(cards.size)
       }
 
@@ -430,7 +439,7 @@ class InterpreterSpec
     implicit val listPendingArb: Arbitrary[ListPendingTestData] = Arbitrary {
       for {
         pendingPackages ← Gen.listOf(arbPackage.arbitrary)
-        limit ← Gen.Choose.chooseInt.choose(0, pendingPackages.length)
+        limit           ← Gen.Choose.chooseInt.choose(0, pendingPackages.length)
       } yield ListPendingTestData(pendingPackages, limit)
     }
 

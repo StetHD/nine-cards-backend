@@ -13,12 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.googleplay.service.free.interpreter.webscrapper
 
 import cats.syntax.either._
 import cards.nine.domain.application.FullCard
 import cards.nine.googleplay.domain._
-import org.http4s.{ Method, Request, Uri }
+import org.http4s.{Method, Request, Uri}
 import org.http4s.Status.ResponseClass.Successful
 import org.http4s.client.Client
 import scalaz.concurrent.Task
@@ -28,8 +29,8 @@ class Http4sGooglePlayWebScraper(serverUrl: String, client: Client) {
 
   private[this] def buildRequest(appRequest: AppRequest): Option[Request] = {
     val packageName: String = appRequest.packageName.value
-    val locale = appRequest.marketAuth.localization.fold("")(l ⇒ s"&hl=${l.value}")
-    val uriString = s"${serverUrl}?id=${packageName}${locale}"
+    val locale              = appRequest.marketAuth.localization.fold("")(l ⇒ s"&hl=${l.value}")
+    val uriString           = s"${serverUrl}?id=${packageName}${locale}"
 
     for /*Option*/ {
       uri ← Uri.fromString(uriString).toOption
@@ -38,21 +39,23 @@ class Http4sGooglePlayWebScraper(serverUrl: String, client: Client) {
   }
 
   private[this] def runRequest[L, R](
-    appRequest: AppRequest,
-    failed: ⇒ L,
-    parserR: ByteVector ⇒ Either[L, R]
+      appRequest: AppRequest,
+      failed: ⇒ L,
+      parserR: ByteVector ⇒ Either[L, R]
   ): Task[Either[L, R]] = {
     lazy val leftFailed = Either.left(failed)
     buildRequest(appRequest) match {
       case Some(request) ⇒
-        client.fetch(request) {
-          case Successful(resp) ⇒
-            resp.as[ByteVector].map(parserR)
-          case _ ⇒
-            Task.now(Either.left(failed))
-        }.handle {
-          case _ ⇒ Either.left(failed)
-        }
+        client
+          .fetch(request) {
+            case Successful(resp) ⇒
+              resp.as[ByteVector].map(parserR)
+            case _ ⇒
+              Task.now(Either.left(failed))
+          }
+          .handle {
+            case _ ⇒ Either.left(failed)
+          }
 
       case None ⇒ Task.now(leftFailed)
     }

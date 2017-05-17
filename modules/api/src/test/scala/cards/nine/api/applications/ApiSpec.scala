@@ -13,13 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.api.applications
 
 import akka.actor.ActorSystem
 import akka.testkit._
-import cards.nine.api.{ AuthHeadersRejectionHandler, NineCardsExceptionHandler }
+import cards.nine.api.{AuthHeadersRejectionHandler, NineCardsExceptionHandler}
 import cards.nine.api.NineCardsHeaders._
-import cards.nine.api.TestData.{ Headers, androidId, authToken, failingAuthToken, sessionToken, userId }
+import cards.nine.api.TestData.{
+  androidId,
+  authToken,
+  failingAuthToken,
+  sessionToken,
+  userId,
+  Headers
+}
 import cards.nine.api.applications.TestData._
 import cards.nine.commons.NineCardsErrors.AuthTokenNotValid
 import cards.nine.commons.NineCardsService
@@ -31,27 +39,27 @@ import cards.nine.processes._
 import cards.nine.processes.account.AccountProcesses
 import cards.nine.processes.applications.ApplicationProcesses
 import cards.nine.processes.rankings.RankingProcesses
-import org.mockito.Matchers.{ eq ⇒ mockEq }
+import org.mockito.Matchers.{eq ⇒ mockEq}
 import org.specs2.matcher.Matchers
 import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
 import spray.http.HttpHeaders.RawHeader
-import spray.http.{ BasicHttpCredentials, HttpRequest, StatusCodes, Uri }
+import spray.http.{BasicHttpCredentials, HttpRequest, StatusCodes, Uri}
 import spray.routing.HttpService
 import spray.testkit.Specs2RouteTest
 
 import scala.concurrent.duration.DurationInt
 
 trait ApplicationsApiSpecification
-  extends Specification
-  with AuthHeadersRejectionHandler
-  with HttpService
-  with JsonFormats
-  with Matchers
-  with Mockito
-  with NineCardsExceptionHandler
-  with Specs2RouteTest {
+    extends Specification
+    with AuthHeadersRejectionHandler
+    with HttpService
+    with JsonFormats
+    with Matchers
+    with Mockito
+    with NineCardsExceptionHandler
+    with Specs2RouteTest {
 
   implicit def default(implicit system: ActorSystem) = RouteTestTimeout(20.second dilated system)
 
@@ -59,11 +67,14 @@ trait ApplicationsApiSpecification
 
   trait BasicScope extends Scope {
 
-    implicit val applicationProcesses: ApplicationProcesses[NineCardsServices] = mock[ApplicationProcesses[NineCardsServices]]
+    implicit val applicationProcesses: ApplicationProcesses[NineCardsServices] =
+      mock[ApplicationProcesses[NineCardsServices]]
 
-    implicit val rankingProcesses: RankingProcesses[NineCardsServices] = mock[RankingProcesses[NineCardsServices]]
+    implicit val rankingProcesses: RankingProcesses[NineCardsServices] =
+      mock[RankingProcesses[NineCardsServices]]
 
-    implicit val accountProcesses: AccountProcesses[NineCardsServices] = mock[AccountProcesses[NineCardsServices]]
+    implicit val accountProcesses: AccountProcesses[NineCardsServices] =
+      mock[AccountProcesses[NineCardsServices]]
 
     implicit val config: NineCardsConfiguration = NineCardsConfig.nineCardsConfiguration
 
@@ -71,9 +82,9 @@ trait ApplicationsApiSpecification
 
     accountProcesses.checkAuthToken(
       sessionToken = SessionToken(mockEq(sessionToken.value)),
-      androidId    = AndroidId(mockEq(androidId.value)),
-      authToken    = mockEq(authToken),
-      requestUri   = any[String]
+      androidId = AndroidId(mockEq(androidId.value)),
+      authToken = mockEq(authToken),
+      requestUri = any[String]
     ) returns NineCardsService.right(userId)
   }
 
@@ -103,9 +114,9 @@ trait ApplicationsApiSpecification
 
     accountProcesses.checkAuthToken(
       sessionToken = SessionToken(mockEq(sessionToken.value)),
-      androidId    = AndroidId(mockEq(androidId.value)),
-      authToken    = mockEq(failingAuthToken),
-      requestUri   = any[String]
+      androidId = AndroidId(mockEq(androidId.value)),
+      authToken = mockEq(failingAuthToken),
+      requestUri = any[String]
     ) returns NineCardsService.left(AuthTokenNotValid("The provided auth token is not valid"))
 
   }
@@ -114,18 +125,19 @@ trait ApplicationsApiSpecification
 
     accountProcesses.checkAuthToken(
       sessionToken = SessionToken(mockEq(sessionToken.value)),
-      androidId    = AndroidId(mockEq(androidId.value)),
-      authToken    = mockEq(failingAuthToken),
-      requestUri   = any[String]
+      androidId = AndroidId(mockEq(androidId.value)),
+      authToken = mockEq(failingAuthToken),
+      requestUri = any[String]
     ) returns NineCardsService.right(userId)
 
-    rankingProcesses.getRankedDeviceApps(any, any) returns NineCardsService.right(getRankedAppsResponse).value
+    rankingProcesses.getRankedDeviceApps(any, any) returns NineCardsService
+      .right(getRankedAppsResponse)
+      .value
   }
 
 }
 
-class ApplicationsApiSpec
-  extends ApplicationsApiSpecification {
+class ApplicationsApiSpec extends ApplicationsApiSpecification {
 
   private[this] def unauthorizedNoHeaders(request: HttpRequest) = {
 
@@ -190,7 +202,7 @@ class ApplicationsApiSpec
   "POST /applications/categorize" should {
 
     val request = Post(
-      uri     = Paths.categorize,
+      uri = Paths.categorize,
       content = apiGetAppsInfoRequest
     ) ~> addHeaders(Headers.googlePlayHeaders)
 
@@ -204,7 +216,7 @@ class ApplicationsApiSpec
   "POST /applications/details" should {
 
     val request = Post(
-      uri     = Paths.details,
+      uri = Paths.details,
       content = apiGetAppsInfoRequest
     ) ~> addHeaders(Headers.googlePlayHeaders)
 
@@ -218,8 +230,8 @@ class ApplicationsApiSpec
   """POST /applications/details?slice=icon, the variant to get only title and icon""" should {
 
     val request = Post(
-      uri     = Uri(
-        path  = Uri.Path(Paths.details),
+      uri = Uri(
+        path = Uri.Path(Paths.details),
         query = Uri.Query("?slice=icon")
       ),
       content = apiGetAppsInfoRequest
@@ -237,7 +249,7 @@ class ApplicationsApiSpec
     val validPackage = "a.valid.package"
 
     def request(packageId: String) = Put(
-      uri     = s"${Paths.details}/$packageId",
+      uri = s"${Paths.details}/$packageId",
       content = setAppInfoRequest
     )
 
@@ -266,7 +278,7 @@ class ApplicationsApiSpec
       applicationProcesses.storeCard(any) returns NineCardsService.right(Unit)
 
       val (user, password) = config.editors.head
-      val credentials = BasicHttpCredentials(user, password)
+      val credentials      = BasicHttpCredentials(user, password)
       request(validPackage) ~> addCredentials(credentials) ~> routes ~> check {
         status.intValue shouldEqual StatusCodes.OK.intValue
       }
@@ -277,7 +289,7 @@ class ApplicationsApiSpec
   "POST /applications/rank" should {
 
     val request = Post(
-      uri     = Paths.rankApps,
+      uri = Paths.rankApps,
       content = apiRankAppsRequest
     )
 
@@ -293,7 +305,7 @@ class ApplicationsApiSpec
   "POST /applications/rank-by-moment" should {
 
     val request = Post(
-      uri     = Paths.rankAppsByMoments,
+      uri = Paths.rankAppsByMoments,
       content = apiRankByMomentsRequest
     )
 
@@ -307,7 +319,7 @@ class ApplicationsApiSpec
   "POST /recommendations" should {
 
     val request = Post(
-      uri     = Paths.recommendationsForApps,
+      uri = Paths.recommendationsForApps,
       content = apiGetRecommendationsForAppsRequest
     ) ~> addHeaders(Headers.googlePlayHeaders)
 
@@ -321,7 +333,7 @@ class ApplicationsApiSpec
   "POST /recommendations/category" should {
 
     val request = Post(
-      uri     = Paths.recommendationsByCategory,
+      uri = Paths.recommendationsByCategory,
       content = apiGetRecommendationsByCategoryRequest
     ) ~> addHeaders(Headers.googlePlayHeaders)
 
@@ -335,7 +347,7 @@ class ApplicationsApiSpec
   "POST /widgets/rank" should {
 
     val request = Post(
-      uri     = Paths.rankWidgets,
+      uri = Paths.rankWidgets,
       content = apiRankByMomentsRequest
     )
 

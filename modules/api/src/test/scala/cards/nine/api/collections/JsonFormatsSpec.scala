@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.api.collections
 
-import org.joda.time.{ DateTime, DateTimeZone }
+import org.joda.time.{DateTime, DateTimeZone}
 import org.specs2.matcher.Matchers
 import org.specs2.mutable.Specification
 import spray.json.DefaultJsonProtocol._

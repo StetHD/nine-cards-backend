@@ -13,13 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.commons.catscalaz
 
-import cats.{ Applicative, Monad }
+import cats.{Applicative, Monad}
 
 import scalaz.\/
 
-class ScalazInstances[F[_]](implicit A: scalaz.Applicative[F], M: scalaz.Monad[F], B: scalaz.BindRec[F]) {
+class ScalazInstances[F[_]](
+    implicit A: scalaz.Applicative[F],
+    M: scalaz.Monad[F],
+    B: scalaz.BindRec[F]) {
 
   val applicativeInstance: Applicative[F] = new Applicative[F] {
 
@@ -40,6 +44,9 @@ class ScalazInstances[F[_]](implicit A: scalaz.Applicative[F], M: scalaz.Monad[F
 }
 
 object ScalazInstances {
-  def apply[F[_]](implicit A: scalaz.Applicative[F], M: scalaz.Monad[F], B: scalaz.BindRec[F]): ScalazInstances[F] =
+  def apply[F[_]](
+      implicit A: scalaz.Applicative[F],
+      M: scalaz.Monad[F],
+      B: scalaz.BindRec[F]): ScalazInstances[F] =
     new ScalazInstances[F]
 }

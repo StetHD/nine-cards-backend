@@ -13,12 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.api.rankings
 
 import cards.nine.api.rankings.messages._
 import cards.nine.domain.application.Package
 import io.circe.generic.semiauto._
-import io.circe.{ Decoder, Encoder, ObjectEncoder }
+import io.circe.{Decoder, Encoder, ObjectEncoder}
 import org.joda.time.DateTime
 
 object Decoders {

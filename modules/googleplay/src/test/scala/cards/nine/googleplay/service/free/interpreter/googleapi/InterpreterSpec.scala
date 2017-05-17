@@ -13,44 +13,45 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.googleplay.service.free.interpreter.googleapi
 
-import java.nio.file.{ Files, Paths }
+import java.nio.file.{Files, Paths}
 
-import cards.nine.commons.config.Domain.{ GooglePlayApiConfiguration, GooglePlayApiPaths }
+import cards.nine.commons.config.Domain.{GooglePlayApiConfiguration, GooglePlayApiPaths}
 import cards.nine.domain.account.AndroidId
-import cards.nine.domain.application.{ FullCard, Package }
-import cards.nine.domain.market.{ MarketCredentials, MarketToken }
+import cards.nine.domain.application.{FullCard, Package}
+import cards.nine.domain.market.{MarketCredentials, MarketToken}
 import cards.nine.googleplay.domain._
 import cards.nine.googleplay.domain.apigoogle._
 import cards.nine.googleplay.service.free.algebra.GoogleApi._
 import cards.nine.googleplay.service.util.MockServer
 import cards.nine.googleplay.util.WithHttp1Client
-import org.mockserver.model.{ Header, HttpRequest, HttpResponse, HttpStatusCode }
-import org.specs2.matcher.{ Matchers, TaskMatchers }
+import org.mockserver.model.{Header, HttpRequest, HttpResponse, HttpStatusCode}
+import org.specs2.matcher.{Matchers, TaskMatchers}
 import org.specs2.mutable.Specification
 
 class InterpreterSpec extends Specification with Matchers with MockServer with WithHttp1Client {
 
   import HttpStatusCode._
   import TaskMatchers._
-  import TestData.{ fisherPrice, searchCosmos }
+  import TestData.{fisherPrice, searchCosmos}
 
   override val mockServerPort = 9995
 
   val auth = MarketCredentials(AndroidId("androidId"), MarketToken("token"), None)
 
   val configuration = GooglePlayApiConfiguration(
-    protocol            = "http",
-    host                = "localhost",
-    port                = mockServerPort,
-    detailsBatchSize    = 5,
+    protocol = "http",
+    host = "localhost",
+    port = mockServerPort,
+    detailsBatchSize = 5,
     maxTotalConnections = 15,
-    paths               = GooglePlayApiPaths(
-      bulkDetails     = "/my/bulkdetails/path",
-      details         = "/my/details/path",
-      list            = "/path/to/list",
-      search          = "/to/searches/path",
+    paths = GooglePlayApiPaths(
+      bulkDetails = "/my/bulkdetails/path",
+      details = "/my/details/path",
+      list = "/path/to/list",
+      search = "/to/searches/path",
       recommendations = "/my/path/to/recommendations"
     )
   )
@@ -102,7 +103,7 @@ class InterpreterSpec extends Specification with Matchers with MockServer with W
     "return 200 OK and the Full Card for a package if Google's API replies as 200 OK" in {
       val httpResponse: HttpResponse = {
         val protobufFile = getClass.getClassLoader.getResource(fisherPrice.packageName)
-        val byteVector = Files.readAllBytes(Paths.get(protobufFile.getFile))
+        val byteVector   = Files.readAllBytes(Paths.get(protobufFile.getFile))
         HttpResponse.response
           .withStatusCode(OK_200.code)
           .withBody(byteVector)
@@ -141,7 +142,7 @@ class InterpreterSpec extends Specification with Matchers with MockServer with W
     "return 200 OK and a list of packages if Google's API replies as 200 OK" in {
       val httpResponse: HttpResponse = {
         val protobufFile = getClass.getClassLoader.getResource(searchCosmos.fileName)
-        val byteVector = Files.readAllBytes(Paths.get(protobufFile.getFile))
+        val byteVector   = Files.readAllBytes(Paths.get(protobufFile.getFile))
         HttpResponse.response
           .withStatusCode(OK_200.code)
           .withBody(byteVector)
@@ -155,4 +156,3 @@ class InterpreterSpec extends Specification with Matchers with MockServer with W
   }
 
 }
-

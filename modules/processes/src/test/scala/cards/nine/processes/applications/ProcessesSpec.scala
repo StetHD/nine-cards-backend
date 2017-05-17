@@ -13,11 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.processes.applications
 
 import cards.nine.commons.NineCardsService
 import cards.nine.commons.NineCardsService._
-import cards.nine.domain.application.{ CardList, FullCard }
+import cards.nine.domain.application.{CardList, FullCard}
 import cards.nine.processes.NineCardsServices._
 import cards.nine.processes.TestInterpreters
 import cards.nine.services.free.algebra.GooglePlay.Services
@@ -27,14 +28,15 @@ import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
 
 trait ApplicationProcessesSpecification
-  extends Specification
-  with Matchers
-  with Mockito
-  with TestInterpreters {
+    extends Specification
+    with Matchers
+    with Mockito
+    with TestInterpreters {
 
   trait BasicScope extends Scope {
 
-    implicit val googlePlayServices: Services[NineCardsServices] = mock[Services[NineCardsServices]]
+    implicit val googlePlayServices: Services[NineCardsServices] =
+      mock[Services[NineCardsServices]]
     implicit val applicationProcesses = new ApplicationProcesses[NineCardsServices]
 
   }
@@ -42,7 +44,7 @@ trait ApplicationProcessesSpecification
 
 class ApplicationProcessesSpec extends ApplicationProcessesSpecification {
 
-  import TestData.{ category, marketAuth, packagesName }
+  import TestData.{category, marketAuth, packagesName}
 
   "getAppsInfo" should {
     import TestData._
@@ -50,8 +52,9 @@ class ApplicationProcessesSpec extends ApplicationProcessesSpecification {
     "return an empty response without calling the Google Play service if an empty list of" +
       "packages name is passed" in new BasicScope {
 
-        applicationProcesses.getAppsInfo(Nil, marketAuth).foldMap(testInterpreters) must beRight(emptyGetAppsInfoResponse)
-      }
+      applicationProcesses.getAppsInfo(Nil, marketAuth).foldMap(testInterpreters) must beRight(
+        emptyGetAppsInfoResponse)
+    }
 
     "return a valid response if a non empty list of packages name is passed" in new BasicScope {
 
@@ -61,9 +64,9 @@ class ApplicationProcessesSpec extends ApplicationProcessesSpecification {
       applicationProcesses
         .getAppsInfo(packagesName, marketAuth)
         .foldMap(testInterpreters) must beRight[CardList[FullCard]].which { response ⇒
-          response.missing must_== missing
-          response.cards must_== apps
-        }
+        response.missing must_== missing
+        response.cards must_== apps
+      }
     }
   }
 
@@ -78,10 +81,9 @@ class ApplicationProcessesSpec extends ApplicationProcessesSpecification {
       applicationProcesses
         .getAppsInfo(Nil, marketAuth)
         .foldMap(testInterpreters) must beRight[CardList[FullCard]].which { response ⇒
-
-          response.missing must beEmpty
-          response.cards must beEmpty
-        }
+        response.missing must beEmpty
+        response.cards must beEmpty
+      }
     }
 
     "return items and errors lists for a non empty list of apps" in new BasicScope {
@@ -92,10 +94,9 @@ class ApplicationProcessesSpec extends ApplicationProcessesSpecification {
       applicationProcesses
         .getAppsInfo(packagesName, marketAuth)
         .foldMap(testInterpreters) must beRight[CardList[FullCard]].which { response ⇒
-
-          response.missing must containTheSameElementsAs(missing)
-          response.cards must containTheSameElementsAs(apps)
-        }
+        response.missing must containTheSameElementsAs(missing)
+        response.cards must containTheSameElementsAs(apps)
+      }
     }
   }
 
@@ -105,20 +106,22 @@ class ApplicationProcessesSpec extends ApplicationProcessesSpecification {
     "return a list of recommendations for the given category" in new BasicScope {
 
       googlePlayServices.recommendByCategory(
-        category         = category,
-        priceFilter      = recommendationFilter,
+        category = category,
+        priceFilter = recommendationFilter,
         excludesPackages = excludePackages,
-        limit            = limit,
-        auth             = marketAuth
+        limit = limit,
+        auth = marketAuth
       ) returns NineCardsService.right(recommendations)
 
-      applicationProcesses.getRecommendationsByCategory(
-        category,
-        recommendationFilter,
-        excludePackages,
-        limit,
-        marketAuth
-      ).foldMap(testInterpreters) must beRight[CardList[FullCard]].which { recommendations ⇒
+      applicationProcesses
+        .getRecommendationsByCategory(
+          category,
+          recommendationFilter,
+          excludePackages,
+          limit,
+          marketAuth
+        )
+        .foldMap(testInterpreters) must beRight[CardList[FullCard]].which { recommendations ⇒
         recommendations.cards must_== recommendedApps
       }
     }
@@ -129,13 +132,15 @@ class ApplicationProcessesSpec extends ApplicationProcessesSpecification {
     import RecommendationsTestData._
     "return an empty list of recommendations if no packages are given" in new BasicScope {
 
-      applicationProcesses.getRecommendationsForApps(
-        Nil,
-        excludePackages,
-        limitPerApp,
-        limit,
-        marketAuth
-      ).foldMap(testInterpreters) must beRight[CardList[FullCard]].which { recommendations ⇒
+      applicationProcesses
+        .getRecommendationsForApps(
+          Nil,
+          excludePackages,
+          limitPerApp,
+          limit,
+          marketAuth
+        )
+        .foldMap(testInterpreters) must beRight[CardList[FullCard]].which { recommendations ⇒
         recommendations.cards must beEmpty
         there was noCallsTo(googlePlayServices)
       }
@@ -144,20 +149,22 @@ class ApplicationProcessesSpec extends ApplicationProcessesSpecification {
     "return a list of recommendations for the given packages" in new BasicScope {
 
       googlePlayServices.recommendationsForApps(
-        packagesName     = packagesName,
+        packagesName = packagesName,
         excludesPackages = excludePackages,
-        limitPerApp      = limitPerApp,
-        limit            = limit,
-        auth             = marketAuth
+        limitPerApp = limitPerApp,
+        limit = limit,
+        auth = marketAuth
       ) returns NineCardsService.right(recommendations)
 
-      applicationProcesses.getRecommendationsForApps(
-        packagesName,
-        excludePackages,
-        limitPerApp,
-        limit,
-        marketAuth
-      ).foldMap(testInterpreters) must beRight[CardList[FullCard]].which { recommendations ⇒
+      applicationProcesses
+        .getRecommendationsForApps(
+          packagesName,
+          excludePackages,
+          limitPerApp,
+          limit,
+          marketAuth
+        )
+        .foldMap(testInterpreters) must beRight[CardList[FullCard]].which { recommendations ⇒
         recommendations.cards must_== recommendedApps
       }
     }

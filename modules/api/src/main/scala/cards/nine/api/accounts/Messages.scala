@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.api.accounts
 
 import cards.nine.domain.account._
@@ -20,14 +21,14 @@ import cards.nine.domain.account._
 object messages {
 
   case class ApiLoginRequest(
-    email: Email,
-    androidId: AndroidId,
-    tokenId: GoogleIdToken
+      email: Email,
+      androidId: AndroidId,
+      tokenId: GoogleIdToken
   )
 
   case class ApiLoginResponse(
-    apiKey: ApiKey,
-    sessionToken: SessionToken
+      apiKey: ApiKey,
+      sessionToken: SessionToken
   )
 
   case class ApiUpdateInstallationRequest(deviceToken: Option[DeviceToken])

@@ -13,21 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.services.persistence
 
 import cards.nine.commons.config.DummyConfig
 import cards.nine.services.free.domain._
-import cards.nine.services.free.interpreter.collection.{ Services ⇒ CollectionServices }
-import cards.nine.services.free.interpreter.country.{ Services ⇒ CountryServices }
-import cards.nine.services.free.interpreter.subscription.{ Services ⇒ SubscriptionServices }
-import cards.nine.services.free.interpreter.user.{ Services ⇒ UserServices }
+import cards.nine.services.free.interpreter.collection.{Services ⇒ CollectionServices}
+import cards.nine.services.free.interpreter.country.{Services ⇒ CountryServices}
+import cards.nine.services.free.interpreter.subscription.{Services ⇒ SubscriptionServices}
+import cards.nine.services.free.interpreter.user.{Services ⇒ UserServices}
 import doobie.contrib.postgresql.pgtypes._
 import doobie.imports._
 import org.specs2.matcher.MatchResult
 import shapeless.HNil
 
 import scalaz.concurrent.Task
-import scalaz.{ Foldable, \/ }
+import scalaz.{\/, Foldable}
 
 trait BasicDatabaseContext extends DummyConfig {
 
@@ -51,7 +52,9 @@ trait BasicDatabaseContext extends DummyConfig {
   def getItems[A: Composite, B: Composite](sql: String, values: A): ConnectionIO[List[B]] =
     Query[A, B](sql).to[List](values)
 
-  def getOptionalItem[A: Composite, B: Composite](sql: String, values: A): ConnectionIO[Option[B]] =
+  def getOptionalItem[A: Composite, B: Composite](
+      sql: String,
+      values: A): ConnectionIO[Option[B]] =
     Query[A, B](sql).option(values)
 
   def runDDLQuery(sql: String): ConnectionIO[Int] = Update0(sql, None).run
@@ -59,15 +62,16 @@ trait BasicDatabaseContext extends DummyConfig {
   implicit class Transacting[A](operation: ConnectionIO[A])(implicit transactor: Transactor[Task]) {
     def transactAndRun: A = operation.transact(transactor).unsafePerformSync
 
-    def transactAndAttempt: \/[Throwable, A] = operation.transact(transactor).unsafePerformSyncAttempt
+    def transactAndAttempt: \/[Throwable, A] =
+      operation.transact(transactor).unsafePerformSyncAttempt
   }
 
   implicit val transactor: Transactor[Task] =
     DriverManagerTransactor[Task](
       driver = config.db.default.driver,
-      url    = config.db.default.url,
-      user   = config.db.default.user,
-      pass   = config.db.default.password
+      url = config.db.default.url,
+      user = config.db.default.user,
+      pass = config.db.default.password
     )
 }
 
@@ -75,19 +79,19 @@ trait PersistenceDatabaseContext extends BasicDatabaseContext {
 
   val allFields = List("id", "name", "active")
 
-  val deleteAllSql = "DELETE FROM persistence"
-  val fetchAllSql = "SELECT id,name,active FROM persistence"
-  val getAllSql = "SELECT name,active,id FROM persistence"
-  val fetchAllActiveSql = "SELECT id,name,active FROM persistence WHERE active=true"
-  val fetchByIdSql = "SELECT id,name,active FROM persistence WHERE id=?"
+  val deleteAllSql          = "DELETE FROM persistence"
+  val fetchAllSql           = "SELECT id,name,active FROM persistence"
+  val getAllSql             = "SELECT name,active,id FROM persistence"
+  val fetchAllActiveSql     = "SELECT id,name,active FROM persistence WHERE active=true"
+  val fetchByIdSql          = "SELECT id,name,active FROM persistence WHERE id=?"
   val fetchByIdAndStatusSql = "SELECT id,name,active FROM persistence WHERE id=? AND active=?"
-  val fetchByStatusSql = "SELECT id,name,active FROM persistence WHERE active=?"
-  val insertSql = "INSERT INTO persistence (name,active) VALUES (?,?)"
-  val updateAllSql = "UPDATE persistence SET active=false"
-  val updateAllActiveSql = "UPDATE persistence SET active=false WHERE active=true"
-  val updateByIdSql = "UPDATE persistence SET name=?,active=? WHERE id=?"
-  val updateByStatusSql = "UPDATE persistence SET active=? WHERE active=?"
-  val dropTableSql = "drop table if exists persistence"
+  val fetchByStatusSql      = "SELECT id,name,active FROM persistence WHERE active=?"
+  val insertSql             = "INSERT INTO persistence (name,active) VALUES (?,?)"
+  val updateAllSql          = "UPDATE persistence SET active=false"
+  val updateAllActiveSql    = "UPDATE persistence SET active=false WHERE active=true"
+  val updateByIdSql         = "UPDATE persistence SET name=?,active=? WHERE id=?"
+  val updateByStatusSql     = "UPDATE persistence SET active=? WHERE active=?"
+  val dropTableSql          = "drop table if exists persistence"
   val createTableSql =
     """
       |create table if not exists persistence(
@@ -105,7 +109,7 @@ trait PersistenceDatabaseContext extends BasicDatabaseContext {
 
 trait DomainDatabaseContext extends BasicDatabaseContext {
 
-  val deviceToken: Option[String] = Option("dddddddd-dddd-bbbb-bbbb-bbbbbbbbbbbb")
+  val deviceToken: Option[String]      = Option("dddddddd-dddd-bbbb-bbbb-bbbbbbbbbbbb")
   val emptyDeviceToken: Option[String] = None
 
   val deleteAllRows: ConnectionIO[Unit] = for {
@@ -122,15 +126,14 @@ trait DomainDatabaseContext extends BasicDatabaseContext {
     }
   }
 
-  implicit val userPersistence = new Persistence[User]
-  implicit val installationPersistence = new Persistence[Installation]
-  implicit val collectionPersistence = new Persistence[SharedCollection]
+  implicit val userPersistence                   = new Persistence[User]
+  implicit val installationPersistence           = new Persistence[Installation]
+  implicit val collectionPersistence             = new Persistence[SharedCollection]
   implicit val collectionSubscriptionPersistence = new Persistence[SharedCollectionSubscription]
-  implicit val countryPersistence = new Persistence[Country]
+  implicit val countryPersistence                = new Persistence[Country]
 
-  val collectionPersistenceServices = CollectionServices.services
-  val countryPersistenceServices = CountryServices.services
+  val collectionPersistenceServices   = CollectionServices.services
+  val countryPersistenceServices      = CountryServices.services
   val subscriptionPersistenceServices = SubscriptionServices.services
-  val userPersistenceServices = UserServices.services
+  val userPersistenceServices         = UserServices.services
 }
-

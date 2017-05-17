@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.services.free.interpreter.analytics
 
 import cards.nine.commons.NineCardsErrors.NineCardsError
@@ -21,11 +22,11 @@ import cards.nine.commons.config.Domain.GoogleAnalyticsConfiguration
 import cards.nine.domain.analytics._
 import cards.nine.services.free.domain.Ranking.GoogleAnalyticsRanking
 import cards.nine.services.utils.MockServerService
-import org.joda.time.{ DateTime, DateTimeZone }
-import org.mockserver.model.HttpRequest.{ request ⇒ mockRequest }
-import org.mockserver.model.HttpResponse.{ response ⇒ mockResponse }
-import org.mockserver.model.{ Header, HttpStatusCode, JsonBody }
-import org.specs2.matcher.{ DisjunctionMatchers, Matchers, XorMatchers }
+import org.joda.time.{DateTime, DateTimeZone}
+import org.mockserver.model.HttpRequest.{request ⇒ mockRequest}
+import org.mockserver.model.HttpResponse.{response ⇒ mockResponse}
+import org.mockserver.model.{Header, HttpStatusCode, JsonBody}
+import org.specs2.matcher.{DisjunctionMatchers, Matchers, XorMatchers}
 import org.specs2.mutable.Specification
 
 trait MockServer extends MockServerService {
@@ -35,28 +36,32 @@ trait MockServer extends MockServerService {
   override val mockServerPort = 9997
 
   /* First case: successful request*/
-  mockServer.when(
-    mockRequest
-      .withMethod("POST")
-      .withPath(paths.batchGet)
-      .withHeader(headers.contentType)
-      .withBody(new JsonBody(requestBody))
-      .withHeader(headers.authorization(auth.valid_token))
-  ).respond(
+  mockServer
+    .when(
+      mockRequest
+        .withMethod("POST")
+        .withPath(paths.batchGet)
+        .withHeader(headers.contentType)
+        .withBody(new JsonBody(requestBody))
+        .withHeader(headers.authorization(auth.valid_token))
+    )
+    .respond(
       mockResponse
         .withStatusCode(HttpStatusCode.OK_200.code)
         .withHeader(jsonHeader)
         .withBody(new JsonBody(rankingsResponse))
     )
 
-  mockServer.when(
-    mockRequest
-      .withMethod("POST")
-      .withPath(paths.batchGet)
-      .withHeader(headers.contentType)
-      .withBody(new JsonBody(requestBody))
-      .withHeader(headers.authorization(auth.invalid_token))
-  ).respond(
+  mockServer
+    .when(
+      mockRequest
+        .withMethod("POST")
+        .withPath(paths.batchGet)
+        .withHeader(headers.contentType)
+        .withBody(new JsonBody(requestBody))
+        .withHeader(headers.authorization(auth.invalid_token))
+    )
+    .respond(
       mockResponse
         .withStatusCode(HttpStatusCode.UNAUTHORIZED_401.code)
         .withHeader(jsonHeader)
@@ -66,20 +71,20 @@ trait MockServer extends MockServerService {
 }
 
 class ServicesSpec
-  extends Specification
-  with MockServer
-  with Matchers
-  with DisjunctionMatchers
-  with XorMatchers {
+    extends Specification
+    with MockServer
+    with Matchers
+    with DisjunctionMatchers
+    with XorMatchers {
 
   import TestData._
 
   val configuration: GoogleAnalyticsConfiguration = GoogleAnalyticsConfiguration(
     protocol = "http",
-    host     = "localhost",
-    port     = Option(mockServerPort),
-    path     = paths.batchGet,
-    viewId   = TestData.viewId
+    host = "localhost",
+    port = Option(mockServerPort),
+    path = paths.batchGet,
+    viewId = TestData.viewId
   )
 
   val services = Services.services(configuration)
@@ -87,19 +92,21 @@ class ServicesSpec
   "getRanking" should {
 
     "respond 200 OK and return the Rankings object if a valid access token is provided" in {
-      val params = RankingParams(dateRange, 5, AnalyticsToken(auth.valid_token))
+      val params   = RankingParams(dateRange, 5, AnalyticsToken(auth.valid_token))
       val response = services.getRanking(countryCode, categories, params)
       response.unsafePerformSyncAttempt should be_\/-[Result[GoogleAnalyticsRanking]].which {
-        content ⇒ content should beRight[GoogleAnalyticsRanking]
+        content ⇒
+          content should beRight[GoogleAnalyticsRanking]
       }
     }
 
     /* Return a 401 error message if the auth token is wrong*/
     "respond 401 Unauthorized if the authToken is not authenticated" in {
-      val params = RankingParams(dateRange, 5, AnalyticsToken(auth.invalid_token))
+      val params   = RankingParams(dateRange, 5, AnalyticsToken(auth.invalid_token))
       val response = services.getRanking(countryCode, categories, params)
       response.unsafePerformSyncAttempt should be_\/-[Result[GoogleAnalyticsRanking]].which {
-        content ⇒ content should beLeft[NineCardsError]
+        content ⇒
+          content should beLeft[NineCardsError]
       }
     }.pendingUntilFixed("Server gives Unexpected Status")
 
@@ -117,7 +124,7 @@ object TestData {
 
   val dateRange: DateRange = DateRange(
     startDate = new DateTime(2010, 1, 1, 0, 0, DateTimeZone.UTC),
-    endDate   = new DateTime(2010, 1, 31, 0, 0, DateTimeZone.UTC)
+    endDate = new DateTime(2010, 1, 31, 0, 0, DateTimeZone.UTC)
   )
 
   val requestBody: String =
@@ -233,14 +240,14 @@ object TestData {
     """.stripMargin
 
   object auth {
-    val valid_token = "granted"
+    val valid_token   = "granted"
     val invalid_token = "denied"
   }
 
   object headers {
     def authorization(token: String) = new Header("Authorization", s"Bearer $token")
-    val contentType = new Header("Content-Type", "application/json")
-    def contentLength(body: String) = new Header("Content-Length", body.length.toString)
+    val contentType                  = new Header("Content-Type", "application/json")
+    def contentLength(body: String)  = new Header("Content-Length", body.length.toString)
   }
 
   object paths {

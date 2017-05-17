@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.services.free.interpreter.subscription
 
 import cards.nine.services.common.PersistenceService
@@ -24,12 +25,13 @@ import cards.nine.services.persistence.Persistence
 import cats.~>
 import doobie.imports._
 
-class Services(persistence: Persistence[SharedCollectionSubscription]) extends (Ops ~> ConnectionIO) {
+class Services(persistence: Persistence[SharedCollectionSubscription])
+    extends (Ops ~> ConnectionIO) {
 
   def add(collectionId: Long, userId: Long, collectionPublicId: String): PersistenceService[Int] =
     PersistenceService {
       persistence.update(
-        sql    = Queries.insert,
+        sql = Queries.insert,
         values = (collectionId, userId, collectionPublicId)
       )
     }
@@ -37,15 +39,17 @@ class Services(persistence: Persistence[SharedCollectionSubscription]) extends (
   def getByCollection(collectionId: Long): PersistenceService[List[SharedCollectionSubscription]] =
     PersistenceService {
       persistence.fetchList(
-        sql    = Queries.getByCollection,
+        sql = Queries.getByCollection,
         values = collectionId
       )
     }
 
-  def getByCollectionAndUser(collectionId: Long, userId: Long): PersistenceService[Option[SharedCollectionSubscription]] =
+  def getByCollectionAndUser(
+      collectionId: Long,
+      userId: Long): PersistenceService[Option[SharedCollectionSubscription]] =
     PersistenceService {
       persistence.fetchOption(
-        sql    = Queries.getByCollectionAndUser,
+        sql = Queries.getByCollectionAndUser,
         values = (collectionId, userId)
       )
     }
@@ -53,7 +57,7 @@ class Services(persistence: Persistence[SharedCollectionSubscription]) extends (
   def getByUser(userId: Long): PersistenceService[List[SharedCollectionSubscription]] =
     PersistenceService {
       persistence.fetchList(
-        sql    = Queries.getByUser,
+        sql = Queries.getByUser,
         values = userId
       )
     }
@@ -61,7 +65,7 @@ class Services(persistence: Persistence[SharedCollectionSubscription]) extends (
   def removeByCollectionAndUser(collectionId: Long, userId: Long): PersistenceService[Int] =
     PersistenceService {
       persistence.update(
-        sql    = Queries.deleteByCollectionAndUser,
+        sql = Queries.deleteByCollectionAndUser,
         values = (collectionId, userId)
       )
     }

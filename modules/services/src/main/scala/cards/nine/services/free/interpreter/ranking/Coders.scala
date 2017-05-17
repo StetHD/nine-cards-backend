@@ -13,13 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.services.free.interpreter.ranking
 
-import cards.nine.commons.redis.{ Format, Readers, Writers }
+import cards.nine.commons.redis.{Format, Readers, Writers}
 import cards.nine.domain.application.Package
 import cards.nine.services.free.domain.Ranking._
-import io.circe.{ Decoder, Encoder }
-import scredis.serialization.{ Reader, Writer }
+import io.circe.{Decoder, Encoder}
+import scredis.serialization.{Reader, Writer}
 
 object Coders {
 
@@ -32,7 +33,8 @@ object Coders {
   implicit val rankingD: Decoder[GoogleAnalyticsRanking] = deriveDecoder[GoogleAnalyticsRanking]
   implicit val rankingE: Encoder[GoogleAnalyticsRanking] = deriveEncoder[GoogleAnalyticsRanking]
 
-  implicit val cacheValReader: Reader[Option[CacheVal]] = Readers.decoder(implicitly[Decoder[CacheVal]])
+  implicit val cacheValReader: Reader[Option[CacheVal]] =
+    Readers.decoder(implicitly[Decoder[CacheVal]])
 
   implicit val cacheValWriter: Writer[CacheVal] = Writers.encoder(implicitly[Encoder[CacheVal]])
 

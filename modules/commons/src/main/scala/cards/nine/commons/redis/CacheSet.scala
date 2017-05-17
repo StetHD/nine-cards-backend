@@ -13,50 +13,56 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.commons.redis
 
 import cards.nine.commons.catscalaz.ScalaFuture2Task
 import scala.concurrent.ExecutionContext
 import scalaz.concurrent.Task
-import scredis.serialization.{ Reader, Writer }
+import scredis.serialization.{Reader, Writer}
 
-class CacheSet[Key, Elem](key: Key)(implicit
-  keyFormat: Format[Key],
-  valWriter: Writer[Elem],
-  valReader: Reader[Option[Elem]],
-  ec: ExecutionContext) {
+class CacheSet[Key, Elem](key: Key)(
+    implicit keyFormat: Format[Key],
+    valWriter: Writer[Elem],
+    valReader: Reader[Option[Elem]],
+    ec: ExecutionContext) {
 
   def insert(elem: Elem): RedisOps[Unit] =
-    client ⇒ ScalaFuture2Task {
-      client.sAdd[Elem](keyFormat(key), elem).map(x ⇒ Unit)
+    client ⇒
+      ScalaFuture2Task {
+        client.sAdd[Elem](keyFormat(key), elem).map(x ⇒ Unit)
     }
 
   def insert(elems: List[Elem]): RedisOps[Unit] =
     client ⇒ {
       if (elems.isEmpty)
         Task(Unit)
-      else ScalaFuture2Task {
-        client.sAdd[Elem](keyFormat(key), elems: _*)
-      }.map(x ⇒ Unit)
+      else
+        ScalaFuture2Task {
+          client.sAdd[Elem](keyFormat(key), elems: _*)
+        }.map(x ⇒ Unit)
     }
 
   def remove(elem: Elem): RedisOps[Unit] =
-    client ⇒ ScalaFuture2Task {
-      client.sRem[Elem](keyFormat(key), elem).map(x ⇒ Unit)
+    client ⇒
+      ScalaFuture2Task {
+        client.sRem[Elem](keyFormat(key), elem).map(x ⇒ Unit)
     }
 
   def remove(elems: List[Elem]): RedisOps[Unit] =
     client ⇒ {
       if (elems.isEmpty)
         Task(Unit)
-      else ScalaFuture2Task {
-        client.sRem[Elem](keyFormat(key), elems: _*).map(x ⇒ Unit)
-      }
+      else
+        ScalaFuture2Task {
+          client.sRem[Elem](keyFormat(key), elems: _*).map(x ⇒ Unit)
+        }
     }
 
   def contains(elem: Elem): RedisOps[Boolean] =
-    client ⇒ ScalaFuture2Task {
-      client.sIsMember(keyFormat(key), elem)
+    client ⇒
+      ScalaFuture2Task {
+        client.sIsMember(keyFormat(key), elem)
     }
 
   def extractMany(num: Int): RedisOps[List[Elem]] = {
@@ -67,8 +73,9 @@ class CacheSet[Key, Elem](key: Key)(implicit
   }
 
   val extractOne: RedisOps[Option[Elem]] =
-    client ⇒ ScalaFuture2Task {
-      client.sPop[Option[Elem]](keyFormat(key)).map(_.flatten)
+    client ⇒
+      ScalaFuture2Task {
+        client.sPop[Option[Elem]](keyFormat(key)).map(_.flatten)
     }
 
 }

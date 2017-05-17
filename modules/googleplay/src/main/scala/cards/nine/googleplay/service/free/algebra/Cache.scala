@@ -13,10 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.googleplay.service.free.algebra
 
-import cats.free.{ Free, Inject }
-import cards.nine.domain.application.{ FullCard, Package }
+import cats.free.{Free, Inject}
+import cards.nine.domain.application.{FullCard, Package}
 
 object Cache {
 
@@ -65,7 +66,8 @@ object Cache {
 
     def addError(pack: Package): Free[F, Unit] = Free.inject[Ops, F](AddError(pack))
 
-    def addErrorMany(packages: List[Package]): Free[F, Unit] = Free.inject[Ops, F](AddErrorMany(packages))
+    def addErrorMany(packages: List[Package]): Free[F, Unit] =
+      Free.inject[Ops, F](AddErrorMany(packages))
 
     def listPending(limit: Int): Free[F, List[Package]] = Free.inject[Ops, F](ListPending(limit))
 

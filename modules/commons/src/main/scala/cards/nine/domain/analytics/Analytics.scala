@@ -13,10 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.domain
 
-import cards.nine.domain.application.{ Package, Widget }
-import enumeratum.{ Enum, EnumEntry }
+import cards.nine.domain.application.{Package, Widget}
+import enumeratum.{Enum, EnumEntry}
 import org.joda.time.DateTime
 
 package analytics {

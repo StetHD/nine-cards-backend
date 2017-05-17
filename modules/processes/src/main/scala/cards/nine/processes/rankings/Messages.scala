@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.processes.rankings
 
 import cards.nine.domain.analytics._
@@ -26,17 +27,17 @@ object messages {
   object Reload {
 
     case class Request(
-      dateRange: DateRange,
-      rankingLength: Int,
-      serviceAccount: ServiceAccount,
-      pageParams: Page
+        dateRange: DateRange,
+        rankingLength: Int,
+        serviceAccount: ServiceAccount,
+        pageParams: Page
     )
 
     case class Response()
 
     case class SummaryResponse(
-      countriesWithoutRanking: List[CountryIsoCode],
-      countriesWithRanking: List[UpdateRankingSummary]
+        countriesWithoutRanking: List[CountryIsoCode],
+        countriesWithRanking: List[UpdateRankingSummary]
     )
 
   }

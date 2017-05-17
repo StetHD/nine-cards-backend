@@ -13,29 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.api.accounts
 
 import cards.nine.api.NineCardsHeaders.Domain._
-import cards.nine.domain.account.{ AndroidId, SessionToken }
+import cards.nine.domain.account.{AndroidId, SessionToken}
 import cards.nine.processes.account.messages._
-import org.scalacheck.{ Arbitrary, Gen }
+import org.scalacheck.{Arbitrary, Gen}
 import org.scalacheck.Shapeless._
 import org.specs2.ScalaCheck
 import org.specs2.mutable.Specification
 
-class ConvertersSpec
-  extends Specification
-  with ScalaCheck {
+class ConvertersSpec extends Specification with ScalaCheck {
 
   import messages._
 
   val uuidGenerator: Gen[String] = Gen.uuid.map(_.toString)
-  implicit val abSessionToken: Arbitrary[SessionToken] = Arbitrary(uuidGenerator.map(SessionToken.apply))
+  implicit val abSessionToken: Arbitrary[SessionToken] = Arbitrary(
+    uuidGenerator.map(SessionToken.apply))
 
   "toLoginRequest" should {
     "convert an ApiLoginRequest to a LoginRequest object" in {
       prop { (apiRequest: ApiLoginRequest, sessionToken: SessionToken) ⇒
-
         val request = Converters.toLoginRequest(apiRequest, sessionToken)
 
         request.androidId must_== apiRequest.androidId
@@ -49,7 +48,6 @@ class ConvertersSpec
   "toApiLoginResponse" should {
     "convert a LoginResponse to an ApiLoginResponse object" in {
       prop { response: LoginResponse ⇒
-
         val apiLoginResponse = Converters.toApiLoginResponse(response)
 
         apiLoginResponse.sessionToken must_== response.sessionToken
@@ -60,7 +58,6 @@ class ConvertersSpec
   "toUpdateInstallationRequest" should {
     "convert an ApiUpdateInstallationRequest to a UpdateInstallationRequest object" in {
       prop { (apiRequest: ApiUpdateInstallationRequest, userId: UserId, androidId: AndroidId) ⇒
-
         val userContext = UserContext(userId, androidId)
 
         val request = Converters.toUpdateInstallationRequest(apiRequest, userContext)
@@ -75,7 +72,6 @@ class ConvertersSpec
   "toApiUpdateInstallationResponse" should {
     "convert an UpdateInstallationResponse to an ApiUpdateInstallationResponse object" in {
       prop { (response: UpdateInstallationResponse) ⇒
-
         val apiResponse = Converters.toApiUpdateInstallationResponse(response)
 
         apiResponse.androidId must_== response.androidId

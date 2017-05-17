@@ -13,9 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.processes.account
 
-import cards.nine.commons.NineCardsErrors.{ AuthTokenNotValid, InstallationNotFound, UserNotFound, WrongEmailAccount }
+import cards.nine.commons.NineCardsErrors.{
+  AuthTokenNotValid,
+  InstallationNotFound,
+  UserNotFound,
+  WrongEmailAccount
+}
 import cards.nine.commons.NineCardsService
 import cards.nine.commons.NineCardsService.NineCardsService
 import cards.nine.commons.config.Domain.NineCardsConfiguration
@@ -26,11 +32,10 @@ import cards.nine.services.free.algebra.GoogleApi
 import cards.nine.services.free.domain._
 
 class AccountProcesses[F[_]](
-  implicit
-  googleAPIServices: algebra.GoogleApi.Services[F],
-  userServices: algebra.User.Services[F],
-  config: NineCardsConfiguration,
-  hashUtils: HashUtils
+    implicit googleAPIServices: algebra.GoogleApi.Services[F],
+    userServices: algebra.User.Services[F],
+    config: NineCardsConfiguration,
+    hashUtils: HashUtils
 ) {
 
   import messages._
@@ -51,12 +56,16 @@ class AccountProcesses[F[_]](
 
       for {
         user ← userServices.add(request.email, apiKey, request.sessionToken)
-        installation ← userServices.addInstallation(user.id, deviceToken = None, androidId = request.androidId)
+        installation ← userServices.addInstallation(
+          user.id,
+          deviceToken = None,
+          androidId = request.androidId)
       } yield (user, installation)
     }
 
     def signUpInstallation(androidId: AndroidId, user: User) =
-      userServices.getInstallationByUserAndAndroidId(user.id, androidId)
+      userServices
+        .getInstallationByUserAndAndroidId(user.id, androidId)
         .recoverWith {
           case _: InstallationNotFound ⇒ userServices.addInstallation(user.id, None, androidId)
         }
@@ -73,22 +82,25 @@ class AccountProcesses[F[_]](
       .map(toLoginResponse)
   }
 
-  def updateInstallation(request: UpdateInstallationRequest): NineCardsService[F, UpdateInstallationResponse] =
-    userServices.updateInstallation(
-      user        = request.userId,
-      androidId   = request.androidId,
-      deviceToken = request.deviceToken
-    ).map(toUpdateInstallationResponse)
+  def updateInstallation(
+      request: UpdateInstallationRequest): NineCardsService[F, UpdateInstallationResponse] =
+    userServices
+      .updateInstallation(
+        user = request.userId,
+        androidId = request.androidId,
+        deviceToken = request.deviceToken
+      )
+      .map(toUpdateInstallationResponse)
 
   def checkAuthToken(
-    sessionToken: SessionToken,
-    androidId: AndroidId,
-    authToken: String,
-    requestUri: String
+      sessionToken: SessionToken,
+      androidId: AndroidId,
+      authToken: String,
+      requestUri: String
   ): NineCardsService[F, Long] = {
 
     def validateAuthToken(user: User) = {
-      val debugMode = config.debugMode.getOrElse(false)
+      val debugMode         = config.debugMode.getOrElse(false)
       val expectedAuthToken = hashUtils.hashValue(requestUri, user.apiKey.value, None)
 
       if (debugMode || expectedAuthToken.equals(authToken))
@@ -98,8 +110,8 @@ class AccountProcesses[F[_]](
     }
 
     for {
-      user ← userServices.getBySessionToken(sessionToken)
-      _ ← validateAuthToken(user)
+      user         ← userServices.getBySessionToken(sessionToken)
+      _            ← validateAuthToken(user)
       installation ← userServices.getInstallationByUserAndAndroidId(user.id, androidId)
     } yield user.id
   }
@@ -109,11 +121,10 @@ class AccountProcesses[F[_]](
 object AccountProcesses {
 
   implicit def processes[F[_]](
-    implicit
-    googleAPIServices: GoogleApi.Services[F],
-    userServices: algebra.User.Services[F],
-    config: NineCardsConfiguration,
-    hashUtils: HashUtils
+      implicit googleAPIServices: GoogleApi.Services[F],
+      userServices: algebra.User.Services[F],
+      config: NineCardsConfiguration,
+      hashUtils: HashUtils
   ) = new AccountProcesses
 
 }

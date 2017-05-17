@@ -13,21 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.commons.redis
 
 import cats.syntax.either._
-import io.circe.{ Decoder, Encoder }
+import io.circe.{Decoder, Encoder}
 import io.circe.parser._
 import io.circe.generic.semiauto._
-import org.scalacheck.{ Arbitrary, Gen }
+import org.scalacheck.{Arbitrary, Gen}
 import org.specs2.ScalaCheck
 import org.specs2.matcher.MatchResult
 import org.specs2.mutable.Specification
-import org.specs2.specification.{ BeforeAfterAll, BeforeEach }
+import org.specs2.specification.{BeforeAfterAll, BeforeEach}
 import redis.embedded.RedisServer
 import scredis.Client
-import scredis.serialization.{ Reader, Writer }
-import scala.concurrent.{ Await, Future } // FIXME
+import scredis.serialization.{Reader, Writer}
+import scala.concurrent.{Await, Future} // FIXME
 import scala.concurrent.duration.Duration
 
 trait RedisTestDomain {
@@ -40,14 +41,17 @@ trait RedisTestDomain {
 
   def generateFixedLengthString(size: Int) = Gen.listOfN(16, Gen.alphaNumChar) map (_.mkString)
 
-  implicit val arbTestCacheKey: Arbitrary[TestCacheKey] = Arbitrary(generateFixedLengthString(16) map TestCacheKey)
-  implicit val arbTestCacheVal: Arbitrary[TestCacheVal] = Arbitrary(generateFixedLengthString(16) map TestCacheVal)
+  implicit val arbTestCacheKey: Arbitrary[TestCacheKey] = Arbitrary(
+    generateFixedLengthString(16) map TestCacheKey)
+  implicit val arbTestCacheVal: Arbitrary[TestCacheVal] = Arbitrary(
+    generateFixedLengthString(16) map TestCacheVal)
   implicit val genTestCacheEntry: Gen[(TestCacheKey, TestCacheVal)] =
     for {
-      key ← arbTestCacheKey.arbitrary
+      key   ← arbTestCacheKey.arbitrary
       value ← arbTestCacheVal.arbitrary
     } yield (key, value)
-  implicit val arbTestCacheEntryBatch: Arbitrary[TestCacheEntryBatch] = Arbitrary(Gen.listOfN(20, genTestCacheEntry) map TestCacheEntryBatch)
+  implicit val arbTestCacheEntryBatch: Arbitrary[TestCacheEntryBatch] = Arbitrary(
+    Gen.listOfN(20, genTestCacheEntry) map TestCacheEntryBatch)
 
   implicit val cacheKeyDecoder: Decoder[TestCacheKey] = deriveDecoder[TestCacheKey]
   implicit val cacheKeyEncoder: Encoder[TestCacheKey] = deriveEncoder[TestCacheKey]
@@ -69,8 +73,8 @@ trait RedisScope extends RedisTestDomain {
   import scala.concurrent.ExecutionContext.Implicits.global
 
   lazy val redisServer: RedisServer = new RedisServer()
-  lazy val redisClient: Client = Client(host = "localhost", port = redisServer.getPort)
-  lazy val wrapper = new CacheWrapper[TestCacheKey, TestCacheVal]()
+  lazy val redisClient: Client      = Client(host = "localhost", port = redisServer.getPort)
+  lazy val wrapper                  = new CacheWrapper[TestCacheKey, TestCacheVal]()
 
   def await[A](fut: Future[A]): A = Await.result(fut, Duration.Inf)
 
@@ -98,11 +102,11 @@ trait RedisScope extends RedisTestDomain {
 }
 
 class CacheWrapperSpec
-  extends Specification
-  with ScalaCheck
-  with BeforeAfterAll
-  with BeforeEach
-  with RedisScope {
+    extends Specification
+    with ScalaCheck
+    with BeforeAfterAll
+    with BeforeEach
+    with RedisScope {
 
   override def afterAll(): Unit = redisServer.stop()
 
@@ -113,8 +117,8 @@ class CacheWrapperSpec
   object WithCachedData {
 
     def apply[K, V, B](key: K, value: V)(check: ⇒ MatchResult[B])(
-      implicit
-      fk: Format[K], wv: Writer[V]
+        implicit fk: Format[K],
+        wv: Writer[V]
     ) = {
       redisClient.flushAll
       redisClient.set[V](fk(key), value)
@@ -122,8 +126,8 @@ class CacheWrapperSpec
     }
 
     def apply[K, V, B](data: List[(K, V)])(check: ⇒ MatchResult[B])(
-      implicit
-      fk: Format[K], wv: Writer[V]
+        implicit fk: Format[K],
+        wv: Writer[V]
     ) = {
       def pair(p: (K, V)): (String, V) = (fk(p._1), p._2)
       redisClient.flushAll
@@ -137,7 +141,6 @@ class CacheWrapperSpec
   "delete" should {
     "do nothing if there is no entry for the given key" in {
       prop { (key: TestCacheKey, value: TestCacheVal) ⇒
-
         WithCachedData(key, value) {
           wrapper.delete(TestCacheKey(key.key.reverse))
 
@@ -149,7 +152,6 @@ class CacheWrapperSpec
     }
     "delete an entry if it exists for the given key" in {
       prop { (key: TestCacheKey, value: TestCacheVal) ⇒
-
         WithCachedData(key, value) {
           run(wrapper.delete(key))
 
@@ -177,18 +179,18 @@ class CacheWrapperSpec
     }
     "delete those keys that have an entry in cache" in {
       prop { batch: TestCacheEntryBatch ⇒
-        val (existing, nonExisting) = batch.entries.splitAt(batch.entries.size / 2)
-        val (deleted, permanent) = existing.splitAt(batch.entries.size / 2)
-        val (deletedKeys, _) = deleted.unzip
+        val (existing, nonExisting)          = batch.entries.splitAt(batch.entries.size / 2)
+        val (deleted, permanent)             = existing.splitAt(batch.entries.size / 2)
+        val (deletedKeys, _)                 = deleted.unzip
         val (permanentKeys, permanentValues) = permanent.unzip
-        val (nonExistingKeys, _) = nonExisting.unzip
-        val allKeys = deletedKeys ++ permanentKeys ++ nonExistingKeys
+        val (nonExistingKeys, _)             = nonExisting.unzip
+        val allKeys                          = deletedKeys ++ permanentKeys ++ nonExistingKeys
 
         WithCachedData(existing) {
 
           run(wrapper.delete(deletedKeys))
 
-          val deletedValues = findEntries(deletedKeys)
+          val deletedValues  = findEntries(deletedKeys)
           val existingValues = findEntries(allKeys)
 
           existingValues must containTheSameElementsAs(permanentValues)
@@ -221,9 +223,9 @@ class CacheWrapperSpec
     }
     "return a list of values for those keys that have an entry in cache" in {
       prop { batch: TestCacheEntryBatch ⇒
-        val (found, notFound) = batch.entries.splitAt(batch.entries.size / 2)
-        val (keys, _) = batch.entries.unzip
-        val (_, foundValues) = found.unzip
+        val (found, notFound)   = batch.entries.splitAt(batch.entries.size / 2)
+        val (keys, _)           = batch.entries.unzip
+        val (_, foundValues)    = found.unzip
         val (_, notFoundValues) = notFound.unzip
 
         WithCachedData(found) {
@@ -243,7 +245,6 @@ class CacheWrapperSpec
     }
     "update an existing entry if the given key exists in cache" in {
       prop { (key: TestCacheKey, value: TestCacheVal, newValue: TestCacheVal) ⇒
-
         WithCachedData(key, value) {
           run(wrapper.put((key, newValue)))
           findEntry(key) must beSome[TestCacheVal](newValue)
@@ -270,8 +271,8 @@ class CacheWrapperSpec
     }
     "create or update an existing entry depending on the existence of keys in cache" in {
       prop { batch: TestCacheEntryBatch ⇒
-        val (existing, nonExisting) = batch.entries.splitAt(batch.entries.size / 2)
-        val (existingKeys, existingValues) = existing.unzip
+        val (existing, nonExisting)              = batch.entries.splitAt(batch.entries.size / 2)
+        val (existingKeys, existingValues)       = existing.unzip
         val (nonExistingKeys, nonExistingValues) = nonExisting.unzip
 
         WithCachedData(existing) {
@@ -281,7 +282,7 @@ class CacheWrapperSpec
           run(wrapper.mput(nonExisting ++ existingKeys.zip(newExistingValues)))
 
           val insertedValues = findEntries(nonExistingKeys)
-          val updatedValues = findEntries(existingKeys)
+          val updatedValues  = findEntries(existingKeys)
 
           insertedValues must containTheSameElementsAs(nonExistingValues)
           updatedValues must containTheSameElementsAs(newExistingValues)

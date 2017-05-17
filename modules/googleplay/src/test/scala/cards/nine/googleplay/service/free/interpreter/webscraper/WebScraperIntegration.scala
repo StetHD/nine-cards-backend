@@ -13,11 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.googleplay.service.free.interpreter.webscrapper
 
 import cards.nine.domain.account.AndroidId
 import cards.nine.domain.application.FullCard
-import cards.nine.domain.market.{ MarketCredentials, MarketToken }
+import cards.nine.domain.market.{MarketCredentials, MarketToken}
 import cards.nine.googleplay.config.TestConfig._
 import cards.nine.googleplay.domain._
 import cards.nine.googleplay.service.free.interpreter.TestData._
@@ -40,7 +41,7 @@ class InterpretersIntegration extends Specification with WithHttp1Client {
     val auth = MarketCredentials(AndroidId(""), MarketToken(""), Some(localization))
 
     "result in an FullCard for packages that exist" in {
-      val appRequest = AppRequest(fisherPrice.packageObj, auth)
+      val appRequest                                = AppRequest(fisherPrice.packageObj, auth)
       val response: Task[InfoError Either FullCard] = webClient.getCard(appRequest)
       val relevantDetails = response map { fullCard ⇒
         fullCard map { c: FullCard ⇒
@@ -53,7 +54,7 @@ class InterpretersIntegration extends Specification with WithHttp1Client {
 
     "result in an error state for packages that do not exist" in {
       val appRequest = AppRequest(nonexisting.packageObj, auth)
-      val response = webClient.getCard(appRequest)
+      val response   = webClient.getCard(appRequest)
       response must returnValue(Left(nonexisting.infoError))
     }
 

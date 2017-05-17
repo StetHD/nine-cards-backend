@@ -13,14 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.commons.redis
 
 import akka.actor.ActorSystem
 import cards.nine.commons.catscalaz.TaskInstances
 import cards.nine.commons.config.Domain.RedisConfiguration
-import cats.{ Applicative, ~> }
+import cats.{~>, Applicative}
 import scalaz.concurrent.Task
-import scredis.{ Client ⇒ ScredisClient }
+import scredis.{Client ⇒ ScredisClient}
 
 object RedisOps {
 
@@ -54,12 +55,11 @@ object RedisOpsToTask {
 
   def apply(config: RedisConfiguration)(implicit actorSystem: ActorSystem): RedisOpsToTask = {
     val client: ScredisClient = ScredisClient(
-      host        = config.host,
-      port        = config.port,
+      host = config.host,
+      port = config.port,
       passwordOpt = config.secret
     )
     new RedisOpsToTask(client)
   }
 
 }
-

@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.services.free.interpreter.firebase
 
 import cards.nine.domain.account.DeviceToken
@@ -20,8 +21,8 @@ import cards.nine.domain.application.Package
 import cards.nine.services.free.domain.Firebase._
 import io.circe.generic.encoding.DerivedObjectEncoder
 import io.circe.generic.semiauto._
-import io.circe.{ Decoder, Encoder }
-import org.http4s.{ EntityDecoder, EntityEncoder }
+import io.circe.{Decoder, Encoder}
+import org.http4s.{EntityDecoder, EntityEncoder}
 import org.http4s.circe._
 
 object Decoders {
@@ -44,16 +45,20 @@ object Encoders {
 
   implicit val deviceTokenE: Encoder[DeviceToken] = Encoder.encodeString.contramap(_.value)
 
-  implicit val updateCollectionNotificationPayloadEncoder: Encoder[UpdateCollectionNotificationPayload] =
+  implicit val updateCollectionNotificationPayloadEncoder: Encoder[
+    UpdateCollectionNotificationPayload] =
     deriveEncoder[UpdateCollectionNotificationPayload]
 
-  implicit def sendNotificationPayloadEncoder[T: DerivedObjectEncoder]: Encoder[SendNotificationPayload[T]] =
+  implicit def sendNotificationPayloadEncoder[T: DerivedObjectEncoder]: Encoder[
+    SendNotificationPayload[T]] =
     deriveEncoder[SendNotificationPayload[T]]
 
-  implicit def sendNotificationRequestEncoder[T: DerivedObjectEncoder]: Encoder[SendNotificationRequest[T]] =
+  implicit def sendNotificationRequestEncoder[T: DerivedObjectEncoder]: Encoder[
+    SendNotificationRequest[T]] =
     deriveEncoder[SendNotificationRequest[T]]
 
-  implicit val sendNotificationRequestEntityEncoder: EntityEncoder[SendNotificationRequest[UpdateCollectionNotificationPayload]] =
+  implicit val sendNotificationRequestEntityEncoder: EntityEncoder[
+    SendNotificationRequest[UpdateCollectionNotificationPayload]] =
     jsonEncoderOf(sendNotificationRequestEncoder[UpdateCollectionNotificationPayload])
 
 }

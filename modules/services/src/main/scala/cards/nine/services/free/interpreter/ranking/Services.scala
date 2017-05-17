@@ -13,13 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.services.free.interpreter.ranking
 
 import cards.nine.commons.NineCardsErrors.RankingNotFound
 import cards.nine.commons.NineCardsService.Result
 import cards.nine.commons.redis._
 import cards.nine.domain.analytics._
-import cards.nine.domain.application.{ Moment, Widget }
+import cards.nine.domain.application.{Moment, Widget}
 import cards.nine.services.free.algebra.Ranking._
 import cards.nine.services.free.domain.Ranking._
 import cats.instances.list._
@@ -40,7 +41,7 @@ class Services(implicit ec: ExecutionContext) extends (Ops ~> RedisOps) {
 
   private[this] def getForScope(scope: GeoScope): RedisOps[Option[GoogleAnalyticsRanking]] = {
     def generateCacheKey(scope: GeoScope) = scope match {
-      case WorldScope ⇒ CacheKey.worldScope
+      case WorldScope         ⇒ CacheKey.worldScope
       case CountryScope(code) ⇒ CacheKey.countryScope(code.value)
     }
     wrap.get(generateCacheKey(scope)).map(_.flatMap(_.ranking))
@@ -50,7 +51,9 @@ class Services(implicit ec: ExecutionContext) extends (Ops ~> RedisOps) {
     def getRankingByScope(scope: GeoScope): RedisOps[GoogleAnalyticsRanking] =
       getForScope(scope).map(_.getOrElse(GoogleAnalyticsRanking(Map.empty)))
 
-    def fillRanking(country: GoogleAnalyticsRanking, world: GoogleAnalyticsRanking): GoogleAnalyticsRanking =
+    def fillRanking(
+        country: GoogleAnalyticsRanking,
+        world: GoogleAnalyticsRanking): GoogleAnalyticsRanking =
       GoogleAnalyticsRanking(country.categories.combine(world.categories).mapValues(_.distinct))
 
     scope match {
@@ -58,7 +61,7 @@ class Services(implicit ec: ExecutionContext) extends (Ops ~> RedisOps) {
         getRankingByScope(scope)
       case CountryScope(_) ⇒
         val country = getRankingByScope(scope)
-        val world = getRankingByScope(WorldScope)
+        val world   = getRankingByScope(WorldScope)
         (country |@| world) map fillRanking
     }
   }
@@ -73,7 +76,6 @@ class Services(implicit ec: ExecutionContext) extends (Ops ~> RedisOps) {
       getForScope(scope).map(fromValue)
 
     case GetRankingForApps(scope, apps) ⇒
-
       def getForApps(rankings: GoogleAnalyticsRanking): Result[List[RankedApp]] = {
         val rankingsByCategory = rankings.categories.filterKeys(c ⇒ !Moment.isMoment(c))
         val packagesByCategory = apps.toList.groupBy(_.category).mapValues(_.map(_.packageName))
@@ -109,8 +111,7 @@ class Services(implicit ec: ExecutionContext) extends (Ops ~> RedisOps) {
     case GetRankingForWidgets(scope, apps, moments) ⇒
       def getForWidgets(rankings: GoogleAnalyticsRanking): Result[List[RankedWidget]] = {
         val rankingsByMoment =
-          rankings
-            .categories
+          rankings.categories
             .filterKeys(moment ⇒ moments.contains(moment))
             .mapValues(packages ⇒ packages flatMap (p ⇒ Widget(p.value)))
 
@@ -134,7 +135,7 @@ class Services(implicit ec: ExecutionContext) extends (Ops ~> RedisOps) {
         case CountryScope(code) ⇒
           (CacheKey.countryScope(code.value), Option(code))
       }
-      val value = CacheVal(Option(ranking))
+      val value   = CacheVal(Option(ranking))
       val summary = UpdateRankingSummary(countryCode, ranking.categories.values.size)
 
       wrap.put((key, value)).map(_ ⇒ Either.right(summary))

@@ -13,13 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.services.free.algebra
 
 import cards.nine.commons.NineCardsService
 import cards.nine.commons.NineCardsService._
 import cards.nine.domain.pagination.Page
 import cards.nine.services.free.domain
-import cats.free.{ :<:, Free }
+import cats.free.{:<:, Free}
 
 object Country {
 

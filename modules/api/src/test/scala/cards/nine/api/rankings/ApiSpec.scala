@@ -13,11 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.api.rankings
 
 import akka.actor.ActorSystem
 import akka.testkit._
-import cards.nine.api.{ AuthHeadersRejectionHandler, NineCardsExceptionHandler }
+import cards.nine.api.{AuthHeadersRejectionHandler, NineCardsExceptionHandler}
 import cards.nine.api.rankings.TestData._
 import cards.nine.commons.NineCardsService
 import cards.nine.commons.config.Domain.NineCardsConfiguration
@@ -31,20 +32,20 @@ import org.specs2.matcher.Matchers
 import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
-import spray.http.{ HttpRequest, StatusCodes }
+import spray.http.{HttpRequest, StatusCodes}
 import spray.routing.HttpService
 import spray.testkit.Specs2RouteTest
 
 import scala.concurrent.duration.DurationInt
 
 trait RankingsApiSpecification
-  extends Specification
-  with AuthHeadersRejectionHandler
-  with HttpService
-  with Matchers
-  with Mockito
-  with NineCardsExceptionHandler
-  with Specs2RouteTest {
+    extends Specification
+    with AuthHeadersRejectionHandler
+    with HttpService
+    with Matchers
+    with Mockito
+    with NineCardsExceptionHandler
+    with Specs2RouteTest {
 
   implicit def default(implicit system: ActorSystem) = RouteTestTimeout(20.second dilated system)
 
@@ -52,9 +53,11 @@ trait RankingsApiSpecification
 
   trait BasicScope extends Scope {
 
-    implicit val accountProcesses: AccountProcesses[NineCardsServices] = mock[AccountProcesses[NineCardsServices]]
+    implicit val accountProcesses: AccountProcesses[NineCardsServices] =
+      mock[AccountProcesses[NineCardsServices]]
 
-    implicit val rankingProcesses: RankingProcesses[NineCardsServices] = mock[RankingProcesses[NineCardsServices]]
+    implicit val rankingProcesses: RankingProcesses[NineCardsServices] =
+      mock[RankingProcesses[NineCardsServices]]
 
     implicit val config: NineCardsConfiguration = NineCardsConfig.nineCardsConfiguration
 
@@ -136,7 +139,8 @@ class RankingsApiSpec extends RankingsApiSpecification {
   }
 
   val rankingPaths: List[String] = {
-    val countries = List("countries/es", "countries/ES", "countries/gb", "countries/us", "countries/it")
+    val countries =
+      List("countries/es", "countries/ES", "countries/gb", "countries/us", "countries/it")
     "world" :: countries
   }
 

@@ -13,19 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.services.free.algebra
 
 import cards.nine.commons.NineCardsService
 import cards.nine.commons.NineCardsService._
 import cards.nine.domain.oauth._
-import cats.free.{ :<: }
+import cats.free.{:<:}
 
 object GoogleOAuth {
 
   sealed trait Ops[A]
 
-  case class FetchAccessToken(credentials: ServiceAccount)
-    extends Ops[Result[AccessToken]]
+  case class FetchAccessToken(credentials: ServiceAccount) extends Ops[Result[AccessToken]]
 
   class Services[F[_]](implicit I: Ops :<: F) {
 

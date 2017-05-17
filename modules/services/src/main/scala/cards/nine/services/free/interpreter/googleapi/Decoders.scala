@@ -13,10 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.services.free.interpreter.googleapi
 
 import cards.nine.services.common.EitherDecoder
-import cards.nine.services.free.domain.{ TokenInfo, WrongTokenInfo }
+import cards.nine.services.free.domain.{TokenInfo, WrongTokenInfo}
 import io.circe.Decoder
 import io.circe.generic.auto._
 import org.http4s.EntityDecoder

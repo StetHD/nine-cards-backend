@@ -13,11 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.googleplay.service.util
 
 import org.mockserver.configuration.ConfigurationProperties
 import org.mockserver.integration.ClientAndServer._
-import org.specs2.specification.{ BeforeAfterEach, BeforeAfterAll }
+import org.specs2.specification.{BeforeAfterAll, BeforeAfterEach}
 
 trait MockServer extends BeforeAfterAll with BeforeAfterEach {
 
@@ -29,8 +30,8 @@ trait MockServer extends BeforeAfterAll with BeforeAfterEach {
   }
 
   override def beforeAll = {}
-  override def afterAll = mockServer.stop
+  override def afterAll  = mockServer.stop
 
   override def before = mockServer.reset()
-  override def after = {}
+  override def after  = {}
 }

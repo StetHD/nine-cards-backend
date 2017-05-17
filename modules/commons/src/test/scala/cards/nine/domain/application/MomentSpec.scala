@@ -13,15 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.domain.application
 
 import cards.nine.domain.ScalaCheck._
 import org.specs2.ScalaCheck
 import org.specs2.mutable.Specification
 
-class MomentSpec
-  extends Specification
-  with ScalaCheck {
+class MomentSpec extends Specification with ScalaCheck {
 
   "isMoment" should {
     "return true if a moment name is passed" in {

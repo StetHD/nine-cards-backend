@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.services.free.domain
 
 import cards.nine.domain.analytics._
@@ -38,7 +39,7 @@ object Ranking {
     def worldScope: CacheKey = CacheKey(WorldScope, AppsRankingByCategory)
 
     def countryScope(code: String): CacheKey = CacheKey(
-      scope      = CountryScope(CountryIsoCode(code.toLowerCase)),
+      scope = CountryScope(CountryIsoCode(code.toLowerCase)),
       reportType = AppsRankingByCategory
     )
 

@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.app
 
-import akka.actor.{ ActorSystem, Props }
+import akka.actor.{ActorSystem, Props}
 import akka.event.Logging
 import akka.io.IO
 import akka.pattern.ask
@@ -43,12 +44,12 @@ object Boot extends App {
 
   val rankingActor = system.actorOf(
     props = Props(new RankingActor[NineCardsServices](interpreter, log)),
-    name  = "ninecards-server-ranking"
+    name = "ninecards-server-ranking"
   )
 
   val appResolverActor = system.actorOf(
     props = Props(new AppResolverActor[NineCardsServices](interpreter, log)),
-    name  = "ninecards-server-apps-resolver"
+    name = "ninecards-server-apps-resolver"
   )
 
   val apiActor = system.actorOf(Props[NineCardsApiActor], "ninecards-server")
@@ -70,9 +71,9 @@ object Boot extends App {
     )
 
   IO(Http) ? Http.Bind(
-    listener  = apiActor,
+    listener = apiActor,
     interface = nineCardsConfiguration.http.host,
-    port      = nineCardsConfiguration.http.port
+    port = nineCardsConfiguration.http.port
   )
 
   log.info("Application started!")

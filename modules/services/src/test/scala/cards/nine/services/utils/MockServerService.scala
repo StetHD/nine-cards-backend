@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.services.utils
 
 import org.mockserver.configuration.ConfigurationProperties
@@ -22,7 +23,7 @@ import org.specs2.specification.AfterAll
 
 trait MockServerService extends AfterAll {
 
-  val jsonHeader = new Header("Content-Type", "application/json; charset=utf-8")
+  val jsonHeader     = new Header("Content-Type", "application/json; charset=utf-8")
   val mockServerPort = 9999
 
   lazy val mockServer = {

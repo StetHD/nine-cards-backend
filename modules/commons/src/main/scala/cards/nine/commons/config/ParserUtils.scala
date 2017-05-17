@@ -13,20 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.commons.config
 
-import cats.data.{ Validated, ValidatedNel }
+import cats.data.{Validated, ValidatedNel}
 import cats.implicits._
 
 object ParserUtils {
 
   object uriregex {
-    val schemeR = """[^:/]+"""
-    val userR = """[^:]+"""
+    val schemeR   = """[^:/]+"""
+    val userR     = """[^:]+"""
     val passwordR = "[^@]+"
-    val hostR = """[^/:]+"""
-    val portR = """\d+"""
-    val pathR = """/.*"""
+    val hostR     = """[^/:]+"""
+    val portR     = """\d+"""
+    val pathR     = """/.*"""
   }
 
   object database {
@@ -43,16 +44,19 @@ object ParserUtils {
     def parseConnectionString(raw: String): ValidatedNel[ConfigError, PersistenceConnectionInfo] =
       raw match {
         case DatabaseUrl(u, p, ur) ⇒
-
-          val user = Option(u).toValidNel[ConfigError](MissingConfigValue("PostgreSQL user missing"))
-          val password: ValidatedNel[ConfigError, String] = Validated.valid(Option(p).getOrElse(""))
-          val url = Option(ur).toValidNel[ConfigError](MissingConfigValue("PostgreSQL URL missing"))
+          val user =
+            Option(u).toValidNel[ConfigError](MissingConfigValue("PostgreSQL user missing"))
+          val password: ValidatedNel[ConfigError, String] =
+            Validated.valid(Option(p).getOrElse(""))
+          val url =
+            Option(ur).toValidNel[ConfigError](MissingConfigValue("PostgreSQL URL missing"))
 
           (user |@| password |@| url) map (PersistenceConnectionInfo.apply _)
 
         case _ ⇒
           Validated.invalidNel(
-            UnexpectedConnectionURL("Unexpected database connection URL: protocol://user[:password]@server/database")
+            UnexpectedConnectionURL(
+              "Unexpected database connection URL: protocol://user[:password]@server/database")
           )
       }
   }
@@ -72,9 +76,8 @@ object ParserUtils {
     def parseConnectionString(raw: String): ValidatedNel[ConfigError, CacheConnectionInfo] =
       raw match {
         case CacheUrl(s, h, p) ⇒
-
           val secret: ValidatedNel[ConfigError, Option[String]] = Validated.valid(Option(s))
-          val host = Option(h).toValidNel[ConfigError](MissingConfigValue("Cache host missing"))
+          val host                                              = Option(h).toValidNel[ConfigError](MissingConfigValue("Cache host missing"))
           val port: ValidatedNel[ConfigError, Int] =
             Option(p)
               .toValidNel[ConfigError](MissingConfigValue("Cache port missing"))
@@ -84,7 +87,8 @@ object ParserUtils {
 
         case _ ⇒
           Validated.invalidNel(
-            UnexpectedConnectionURL("Unexpected cache connection URL: protocol://[[user:]secret@]server:port[/database]")
+            UnexpectedConnectionURL(
+              "Unexpected cache connection URL: protocol://[[user:]secret@]server:port[/database]")
           )
       }
   }

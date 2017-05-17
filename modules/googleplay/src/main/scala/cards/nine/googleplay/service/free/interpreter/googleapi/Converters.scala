@@ -13,10 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.googleplay.service.free.interpreter.googleapi
 
-import cards.nine.domain.application.{ CardList, FullCard, Package, BasicCard }
-import cards.nine.googleplay.proto.GooglePlay.{ ListResponse, DocV2, SearchResponse }
+import cards.nine.domain.application.{BasicCard, CardList, FullCard, Package}
+import cards.nine.googleplay.proto.GooglePlay.{DocV2, ListResponse, SearchResponse}
 import scala.collection.JavaConversions._
 
 object Converters {
@@ -40,7 +41,7 @@ object Converters {
 
   sealed abstract class ImageType(val index: Int)
   case object Screenshot extends ImageType(1)
-  case object Icon extends ImageType(4)
+  case object Icon       extends ImageType(4)
 
   class WrapperDocV2(docV2: DocV2) {
 
@@ -55,34 +56,34 @@ object Converters {
     lazy val title: String = docV2.getTitle
 
     lazy val categories: List[String] = docV2.getDetails.getAppDetails.getAppCategoryList.toList
-    lazy val numDownloads: String = docV2.getDetails.getAppDetails.getNumDownloads
-    lazy val icon: String = imageUrls(Icon).headOption.getOrElse("")
-    lazy val isFree: Boolean = docV2.getOfferList.exists(_.getMicros == 0)
-    lazy val starRating: Double = docV2.getAggregateRating.getStarRating
+    lazy val numDownloads: String     = docV2.getDetails.getAppDetails.getNumDownloads
+    lazy val icon: String             = imageUrls(Icon).headOption.getOrElse("")
+    lazy val isFree: Boolean          = docV2.getOfferList.exists(_.getMicros == 0)
+    lazy val starRating: Double       = docV2.getAggregateRating.getStarRating
 
     def toFullCard(): FullCard = FullCard(
       packageName = Package(docid),
-      title       = title,
-      free        = isFree,
-      icon        = icon,
-      stars       = starRating,
-      downloads   = numDownloads,
+      title = title,
+      free = isFree,
+      icon = icon,
+      stars = starRating,
+      downloads = numDownloads,
       screenshots = imageUrls(Screenshot),
-      categories  = categories
+      categories = categories
     )
 
     def toBasicCard(): BasicCard = BasicCard(
       packageName = Package(docid),
-      title       = title,
-      free        = isFree,
-      icon        = icon,
-      stars       = starRating,
-      downloads   = numDownloads
+      title = title,
+      free = isFree,
+      icon = icon,
+      stars = starRating,
+      downloads = numDownloads
     )
 
   }
 
-  def toFullCard(docV2: DocV2): FullCard = new WrapperDocV2(docV2).toFullCard
+  def toFullCard(docV2: DocV2): FullCard   = new WrapperDocV2(docV2).toFullCard
   def toBasicCard(docV2: DocV2): BasicCard = new WrapperDocV2(docV2).toBasicCard
 
   def toFullCardList(docs: List[DocV2]): CardList[FullCard] = {
@@ -96,4 +97,3 @@ object Converters {
   }
 
 }
-

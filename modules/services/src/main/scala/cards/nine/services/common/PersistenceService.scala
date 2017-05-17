@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.services.common
 
 import cards.nine.commons.catscalaz.ScalazInstances
@@ -24,7 +25,8 @@ import doobie.imports._
 object PersistenceService {
   type PersistenceService[A] = ConnectionIO[NineCardsError Either A]
 
-  def apply[A](connectionIO: ConnectionIO[A]): PersistenceService[A] = connectionIO map Either.right
+  def apply[A](connectionIO: ConnectionIO[A]): PersistenceService[A] =
+    connectionIO map Either.right
   def apply[A](value: A): PersistenceService[A] =
     ScalazInstances[ConnectionIO].monadInstance.pure(value) map Either.right
 

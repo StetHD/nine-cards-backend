@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.googleplay.service.free.interpreter.webscrapper
 
-import cards.nine.domain.application.{ FullCard, Package }
+import cards.nine.domain.application.{FullCard, Package}
 import org.ccil.cowan.tagsoup.jaxp.SAXFactoryImpl
 import org.xml.sax.InputSource
 import scala.xml.Node
@@ -24,7 +25,7 @@ import scodec.bits.ByteVector
 
 object GooglePlayPageParser {
 
-  private val parser = new SAXFactoryImpl().newSAXParser()
+  private val parser  = new SAXFactoryImpl().newSAXParser()
   private val adapter = new NoBindingFactoryAdapter
 
   private def decodeNode(byteVector: ByteVector): Node =
@@ -77,11 +78,11 @@ object GooglePlayPageParser {
         if n.isProperty(kind)
         url ← n.getAttribute("src") match {
           case ImageUrlRegex(uri) ⇒ Seq(uri)
-          case _ ⇒ Seq()
+          case _                  ⇒ Seq()
         }
       } yield s"http://$url"
 
-    def getIcon(): Seq[String] = getImages("image")
+    def getIcon(): Seq[String]        = getImages("image")
     def getScreenshots(): Seq[String] = getImages("screenshot")
 
     val CategoryHrefRegex = "/store/apps/category/(\\w+)".r
@@ -92,7 +93,7 @@ object GooglePlayPageParser {
         if n.isClass("document-subtitle category")
         cat ← n.getAttribute("href") match {
           case CategoryHrefRegex(cat) ⇒ Seq(cat)
-          case _ ⇒ Seq()
+          case _                      ⇒ Seq()
         }
       } yield cat
 
@@ -104,23 +105,25 @@ object GooglePlayPageParser {
       } yield price == "0"
 
     def parseCardAux(): Seq[FullCard] =
-      for { /*Seq*/
-        docId ← getDocId()
-        title ← getTitle()
-        free ← isFree()
-        icon ← getIcon()
-        stars ← getStars()
+      for {
+        /*Seq*/
+        docId     ← getDocId()
+        title     ← getTitle()
+        free      ← isFree()
+        icon      ← getIcon()
+        stars     ← getStars()
         downloads ← getDownloads()
-      } yield FullCard(
-        packageName = Package(docId),
-        title       = title,
-        free        = free,
-        icon        = icon,
-        stars       = stars,
-        downloads   = downloads,
-        screenshots = getScreenshots().toList,
-        categories  = getCategories().toList
-      )
+      } yield
+        FullCard(
+          packageName = Package(docId),
+          title = title,
+          free = free,
+          icon = icon,
+          stars = stars,
+          downloads = downloads,
+          screenshots = getScreenshots().toList,
+          categories = getCategories().toList
+        )
 
     def parseCard(): Option[FullCard] = parseCardAux.headOption
 
@@ -133,4 +136,3 @@ object GooglePlayPageParser {
     new NodeWrapper(document).parseCard()
 
 }
-

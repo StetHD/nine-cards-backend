@@ -13,11 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.services.free.interpreter.googleapi
 
-import cards.nine.commons.NineCardsErrors.{ NineCardsError, WrongGoogleAuthToken }
+import cards.nine.commons.NineCardsErrors.{NineCardsError, WrongGoogleAuthToken}
 import cards.nine.commons.NineCardsService.Result
-import cards.nine.commons.config.Domain.{ GoogleApiConfiguration, GoogleApiTokenInfo }
+import cards.nine.commons.config.Domain.{GoogleApiConfiguration, GoogleApiTokenInfo}
 import cards.nine.domain.account.GoogleIdToken
 import cards.nine.services.free.domain.TokenInfo
 import cards.nine.services.utils.MockServerService
@@ -79,20 +80,21 @@ trait MockGoogleApiServer extends MockServerService {
 
   override val mockServerPort = 9999
 
-  val getTokenInfoPath = "/oauth2/v3/tokeninfo"
+  val getTokenInfoPath     = "/oauth2/v3/tokeninfo"
   val tokenIdParameterName = "id_token"
 
-  val validTokenId = "validTokenId"
-  val otherTokenId = "otherTokenId"
-  val wrongTokenId = "wrongTokenId"
+  val validTokenId   = "validTokenId"
+  val otherTokenId   = "otherTokenId"
+  val wrongTokenId   = "wrongTokenId"
   val failingTokenId = "failingTokenId"
 
-  mockServer.when(
-    request
-      .withMethod("GET")
-      .withPath(getTokenInfoPath)
-      .withQueryStringParameter(tokenIdParameterName, validTokenId)
-  )
+  mockServer
+    .when(
+      request
+        .withMethod("GET")
+        .withPath(getTokenInfoPath)
+        .withQueryStringParameter(tokenIdParameterName, validTokenId)
+    )
     .respond(
       response
         .withStatusCode(OK_200.code)
@@ -100,12 +102,13 @@ trait MockGoogleApiServer extends MockServerService {
         .withBody(getTokenInfoValidResponse)
     )
 
-  mockServer.when(
-    request
-      .withMethod("GET")
-      .withPath(getTokenInfoPath)
-      .withQueryStringParameter(tokenIdParameterName, otherTokenId)
-  )
+  mockServer
+    .when(
+      request
+        .withMethod("GET")
+        .withPath(getTokenInfoPath)
+        .withQueryStringParameter(tokenIdParameterName, otherTokenId)
+    )
     .respond(
       response
         .withStatusCode(OK_200.code)
@@ -113,12 +116,13 @@ trait MockGoogleApiServer extends MockServerService {
         .withBody(getTokenInfoValidResponseWithoutHd)
     )
 
-  mockServer.when(
-    request
-      .withMethod("GET")
-      .withPath(getTokenInfoPath)
-      .withQueryStringParameter(tokenIdParameterName, wrongTokenId)
-  )
+  mockServer
+    .when(
+      request
+        .withMethod("GET")
+        .withPath(getTokenInfoPath)
+        .withQueryStringParameter(tokenIdParameterName, wrongTokenId)
+    )
     .respond(
       response
         .withStatusCode(OK_200.code)
@@ -126,12 +130,13 @@ trait MockGoogleApiServer extends MockServerService {
         .withBody(getTokenInfoWrongResponse)
     )
 
-  mockServer.when(
-    request
-      .withMethod("GET")
-      .withPath(getTokenInfoPath)
-      .withQueryStringParameter(tokenIdParameterName, failingTokenId)
-  )
+  mockServer
+    .when(
+      request
+        .withMethod("GET")
+        .withPath(getTokenInfoPath)
+        .withQueryStringParameter(tokenIdParameterName, failingTokenId)
+    )
     .respond(
       response
         .withStatusCode(INTERNAL_SERVER_ERROR_500.code)
@@ -139,16 +144,16 @@ trait MockGoogleApiServer extends MockServerService {
 }
 
 class GoogleApiServicesSpec
-  extends Specification
-  with DisjunctionMatchers
-  with MockGoogleApiServer {
+    extends Specification
+    with DisjunctionMatchers
+    with MockGoogleApiServer {
 
   val config = GoogleApiConfiguration(
-    protocol  = "http",
-    host      = "localhost",
-    port      = Option(mockServerPort),
+    protocol = "http",
+    host = "localhost",
+    port = Option(mockServerPort),
     tokenInfo = GoogleApiTokenInfo(
-      path                  = getTokenInfoPath,
+      path = getTokenInfoPath,
       tokenIdQueryParameter = tokenIdParameterName
     )
   )
@@ -159,26 +164,23 @@ class GoogleApiServicesSpec
     "return the TokenInfo object when a valid token id is provided" in {
       val response = googleApiServices.getTokenInfo(GoogleIdToken(validTokenId))
 
-      response.unsafePerformSyncAttempt should be_\/-[Result[TokenInfo]].which {
-        content ⇒
-          content must beRight[TokenInfo]
+      response.unsafePerformSyncAttempt should be_\/-[Result[TokenInfo]].which { content ⇒
+        content must beRight[TokenInfo]
       }
     }
     "return the TokenInfo object when a valid token id is provided and the hd field isn't" +
       "included into the response" in {
-        val response = googleApiServices.getTokenInfo(GoogleIdToken(otherTokenId))
+      val response = googleApiServices.getTokenInfo(GoogleIdToken(otherTokenId))
 
-        response.unsafePerformSyncAttempt should be_\/-[Result[TokenInfo]].which {
-          content ⇒
-            content must beRight[TokenInfo]
-        }
+      response.unsafePerformSyncAttempt should be_\/-[Result[TokenInfo]].which { content ⇒
+        content must beRight[TokenInfo]
       }
+    }
     "return a WrongGoogleAuthToken error when a wrong token id is provided" in {
       val result = googleApiServices.getTokenInfo(GoogleIdToken(wrongTokenId))
 
-      result.unsafePerformSyncAttempt should be_\/-[Result[TokenInfo]].which {
-        content ⇒
-          content must beLeft[NineCardsError](WrongGoogleAuthToken("Invalid Value"))
+      result.unsafePerformSyncAttempt should be_\/-[Result[TokenInfo]].which { content ⇒
+        content must beLeft[NineCardsError](WrongGoogleAuthToken("Invalid Value"))
       }
     }
     "return an exception when something fails during the call to the Google API" in {

@@ -13,11 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.api.rankings
 
 import cards.nine.commons.NineCardsService.Result
-import cards.nine.domain.analytics.{ AnalyticsToken, DateRange, RankingParams }
-import cards.nine.processes.rankings.{ messages ⇒ Proc }
+import cards.nine.domain.analytics.{AnalyticsToken, DateRange, RankingParams}
+import cards.nine.processes.rankings.{messages ⇒ Proc}
 import cats.syntax.either._
 
 object Converters {
@@ -28,7 +29,7 @@ object Converters {
     response map (r ⇒ Ranking(r.ranking.categories))
 
   def toRankingParams(token: String, request: Reload.Request): RankingParams = {
-    val length = request.rankingLength
+    val length    = request.rankingLength
     val dateRange = DateRange(request.startDate, request.endDate)
     RankingParams(dateRange, length, AnalyticsToken(token))
   }

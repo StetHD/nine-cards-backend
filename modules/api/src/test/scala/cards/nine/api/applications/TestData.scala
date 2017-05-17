@@ -13,10 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.api.applications
 
-import cards.nine.domain.analytics.{ RankedAppsByCategory, RankedWidgetsByMoment }
-import cards.nine.domain.application.{ CardList, FullCard, Package }
+import cards.nine.domain.analytics.{RankedAppsByCategory, RankedWidgetsByMoment}
+import cards.nine.domain.application.{CardList, FullCard, Package}
 import org.joda.time.DateTime
 
 private[applications] object TestData {
@@ -53,12 +54,12 @@ private[applications] object TestData {
   val moments = List("HOME", "NIGHT")
 
   val setAppInfoRequest = ApiSetAppInfoRequest(
-    title       = "App Example",
-    free        = false,
-    icon        = "",
-    stars       = 0.0,
-    downloads   = "",
-    categories  = Nil,
+    title = "App Example",
+    free = false,
+    icon = "",
+    stars = 0.0,
+    downloads = "",
+    categories = Nil,
     screenshots = Nil
   )
 
@@ -66,26 +67,26 @@ private[applications] object TestData {
 
   val apiGetRecommendationsByCategoryRequest = ApiGetRecommendationsByCategoryRequest(
     excludePackages = excludePackages,
-    limit           = limit
+    limit = limit
   )
 
   val apiGetRecommendationsForAppsRequest = ApiGetRecommendationsForAppsRequest(
-    packages        = packagesName,
+    packages = packagesName,
     excludePackages = excludePackages,
-    limit           = limit,
-    limitPerApp     = limitPerApp
+    limit = limit,
+    limitPerApp = limitPerApp
   )
 
   val apiRankAppsRequest = ApiRankAppsRequest(
     location = location,
-    items    = deviceApps
+    items = deviceApps
   )
 
   val apiRankByMomentsRequest = ApiRankByMomentsRequest(
     location = location,
-    items    = packagesName,
-    moments  = moments,
-    limit    = limit
+    items = packagesName,
+    moments = moments,
+    limit = limit
   )
 
   val getRankedAppsResponse = List.empty[RankedAppsByCategory]

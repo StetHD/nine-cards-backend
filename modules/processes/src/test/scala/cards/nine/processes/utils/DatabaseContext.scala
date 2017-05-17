@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.processes.utils
 
 import cards.nine.commons.config.DummyConfig
@@ -21,7 +22,7 @@ import cats.Id
 import doobie.imports.Transactor
 import doobie.util.capture.Capture
 
-import scalaz.{ Catchable, Monad, \/ }
+import scalaz.{\/, Catchable, Monad}
 
 trait CatsIdInstances {
 

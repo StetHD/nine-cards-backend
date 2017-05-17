@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.googleplay.service.free.interpreter.googleapi
 
 import cards.nine.googleplay.proto.GooglePlay.ResponseWrapper
@@ -32,7 +33,7 @@ class ProtoParsingSpec extends Specification {
       resource != null aka s"Test protobuf response file [$packageName] must exist" must beTrue
 
       val responseFile = new File(resource.getFile)
-      val fis = new FileInputStream(responseFile)
+      val fis          = new FileInputStream(responseFile)
 
       val docid = ResponseWrapper.parseFrom(fis).getPayload.getDetailsResponse.getDocV2.getDocid
 

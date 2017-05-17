@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.googleplay.service.free.interpreter.cache
 
-import cards.nine.domain.application.{ FullCard, Package }
+import cards.nine.domain.application.{FullCard, Package}
 import cards.nine.googleplay.service.free.algebra.Cache._
 import cats.~>
 
@@ -35,16 +36,16 @@ trait InterpreterServer[F[_]] {
 case class MockInterpreter[F[_]](server: InterpreterServer[F]) extends (Ops ~> F) {
 
   override def apply[A](ops: Ops[A]) = ops match {
-    case GetValid(pack) ⇒ server.getValid(pack)
-    case GetValidMany(packages) ⇒ server.getValidMany(packages)
-    case PutResolved(card) ⇒ server.putResolved(card)
-    case PutResolvedMany(packages) ⇒ server.putResolvedMany(packages)
-    case PutPermanent(card) ⇒ server.putPermanent(card)
-    case SetToPending(pack) ⇒ server.setToPending(pack)
+    case GetValid(pack)             ⇒ server.getValid(pack)
+    case GetValidMany(packages)     ⇒ server.getValidMany(packages)
+    case PutResolved(card)          ⇒ server.putResolved(card)
+    case PutResolvedMany(packages)  ⇒ server.putResolvedMany(packages)
+    case PutPermanent(card)         ⇒ server.putPermanent(card)
+    case SetToPending(pack)         ⇒ server.setToPending(pack)
     case SetToPendingMany(packages) ⇒ server.setToPendingMany(packages)
-    case AddError(pack) ⇒ server.addError(pack)
-    case AddErrorMany(packages) ⇒ server.addErrorMany(packages)
-    case ListPending(num) ⇒ server.listPending(num)
+    case AddError(pack)             ⇒ server.addError(pack)
+    case AddErrorMany(packages)     ⇒ server.addErrorMany(packages)
+    case ListPending(num)           ⇒ server.listPending(num)
   }
 
 }

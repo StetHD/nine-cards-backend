@@ -13,17 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.domain
 
 import cards.nine.domain.account.Email
 import cards.nine.domain.analytics.DateRange
-import cards.nine.domain.application.{ Category, Moment, Package, PriceFilter }
+import cards.nine.domain.application.{Category, Moment, Package, PriceFilter}
 import cards.nine.domain.oauth.ServiceAccount
 import com.fortysevendeg.scalacheck.datetime.instances.joda._
 import com.fortysevendeg.scalacheck.datetime.GenDateTime.genDateTimeWithinRange
-import enumeratum.{ Enum, EnumEntry }
-import org.joda.time.{ DateTime, Period }
-import org.scalacheck.{ Arbitrary, Gen }
+import enumeratum.{Enum, EnumEntry}
+import org.joda.time.{DateTime, Period}
+import org.scalacheck.{Arbitrary, Gen}
 import sys.process._
 
 object ScalaCheck {
@@ -66,9 +67,9 @@ object ScalaCheck {
   def fixedLengthNumericString(size: Int) = Gen.listOfN(size, Gen.numChar).map(_.mkString)
 
   val emailGenerator: Gen[Email] = for {
-    mailbox ← nonEmptyString(50)
+    mailbox        ← nonEmptyString(50)
     topLevelDomain ← nonEmptyString(45)
-    domain ← fixedLengthString(3)
+    domain         ← fixedLengthString(3)
   } yield Email(s"$mailbox@$topLevelDomain.$domain")
 
   implicit val abEmail: Arbitrary[Email] = Arbitrary(emailGenerator)
@@ -100,24 +101,24 @@ object ScalaCheck {
     val clientIdGen: Gen[String] = Gen.listOfN(22, Gen.numChar).map(_.mkString)
 
     for {
-      clientId ← clientIdGen
-      clientEmail ← emailGenerator.map(_.value)
-      privateKey ← privateKeyGen
+      clientId     ← clientIdGen
+      clientEmail  ← emailGenerator.map(_.value)
+      privateKey   ← privateKeyGen
       privateKeyId ← privateKeyIdGen
-      tokenUri ← Gen.alphaStr
-      scopes ← Gen.listOf(Gen.alphaStr)
-    } yield ServiceAccount(
-      clientId     = clientId,
-      clientEmail  = clientEmail,
-      privateKey   = privateKey,
-      privateKeyId = privateKeyId,
-      tokenUri     = tokenUri,
-      scopes       = scopes
-    )
+      tokenUri     ← Gen.alphaStr
+      scopes       ← Gen.listOf(Gen.alphaStr)
+    } yield
+      ServiceAccount(
+        clientId = clientId,
+        clientEmail = clientEmail,
+        privateKey = privateKey,
+        privateKeyId = privateKeyId,
+        tokenUri = tokenUri,
+        scopes = scopes
+      )
 
   }
 
   implicit val arbServiceAccount: Arbitrary[ServiceAccount] = Arbitrary(genServiceAccount)
 
 }
-

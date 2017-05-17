@@ -13,11 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.processes.account
 
 import cards.nine.commons.NineCardsErrors._
 import cards.nine.domain.account._
-import cards.nine.services.free.domain.{ Installation, TokenInfo, User }
+import cards.nine.services.free.domain.{Installation, TokenInfo, User}
 import com.roundeights.hasher.Hasher
 
 private[account] trait AccountTestData {
@@ -28,7 +29,8 @@ private[account] trait AccountTestData {
 
   val wrongEmail = Email("wrong.email@test.com")
 
-  val tokenId = GoogleIdToken("JJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK")
+  val tokenId = GoogleIdToken(
+    "JJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK")
 
   val tokenInfo = TokenInfo("true", email.value)
 
@@ -58,15 +60,22 @@ private[account] trait AccountTestData {
 
   val installationId = 1l
 
-  val loginRequest = LoginRequest(email, AndroidId(androidId), SessionToken(sessionToken), GoogleIdToken(googleTokenId))
+  val loginRequest = LoginRequest(
+    email,
+    AndroidId(androidId),
+    SessionToken(sessionToken),
+    GoogleIdToken(googleTokenId))
 
   val loginResponse = LoginResponse(ApiKey(apiKey), SessionToken(sessionToken))
 
-  val updateInstallationRequest = UpdateInstallationRequest(userId, AndroidId(androidId), Option(DeviceToken(deviceToken)))
+  val updateInstallationRequest =
+    UpdateInstallationRequest(userId, AndroidId(androidId), Option(DeviceToken(deviceToken)))
 
-  val updateInstallationResponse = UpdateInstallationResponse(AndroidId(androidId), Option(DeviceToken(deviceToken)))
+  val updateInstallationResponse =
+    UpdateInstallationResponse(AndroidId(androidId), Option(DeviceToken(deviceToken)))
 
-  val installation = Installation(installationId, userId, Option(DeviceToken(deviceToken)), AndroidId(androidId))
+  val installation =
+    Installation(installationId, userId, Option(DeviceToken(deviceToken)), AndroidId(androidId))
 
   val installationNotFoundError = InstallationNotFound("The installation doesn't exist")
 
@@ -76,8 +85,7 @@ private[account] trait AccountTestData {
 
   val validAuthToken = Hasher(dummyUrl).hmac(apiKey).sha512.hex
 
-  val wrongAuthToken = Hasher(dummyUrl).hmac(wrongApiKey).sha512.hex
+  val wrongAuthToken         = Hasher(dummyUrl).hmac(wrongApiKey).sha512.hex
   val authTokenNotValidError = AuthTokenNotValid("The provided auth token is not valid")
 
 }
-

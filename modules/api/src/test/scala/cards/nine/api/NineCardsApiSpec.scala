@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.api
 
 import akka.actor.ActorSystem
@@ -28,29 +29,32 @@ import org.specs2.matcher.Matchers
 import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
 import scala.concurrent.duration.DurationInt
-import spray.http.StatusCodes.{ OK, NotFound }
+import spray.http.StatusCodes.{NotFound, OK}
 import spray.routing.HttpService
 import spray.testkit.Specs2RouteTest
 
 class NineCardsApiSpec
-  extends Specification
-  with AuthHeadersRejectionHandler
-  with HttpService
-  with JsonFormats
-  with Matchers
-  with Mockito
-  with NineCardsExceptionHandler
-  with Specs2RouteTest {
+    extends Specification
+    with AuthHeadersRejectionHandler
+    with HttpService
+    with JsonFormats
+    with Matchers
+    with Mockito
+    with NineCardsExceptionHandler
+    with Specs2RouteTest {
 
   implicit def default(implicit system: ActorSystem) = RouteTestTimeout(20.second dilated system)
 
   implicit def actorRefFactory = system
 
-  implicit val accountProcesses: AccountProcesses[NineCardsServices] = mock[AccountProcesses[NineCardsServices]]
+  implicit val accountProcesses: AccountProcesses[NineCardsServices] =
+    mock[AccountProcesses[NineCardsServices]]
 
-  implicit val applicationProcesses: ApplicationProcesses[NineCardsServices] = mock[ApplicationProcesses[NineCardsServices]]
+  implicit val applicationProcesses: ApplicationProcesses[NineCardsServices] =
+    mock[ApplicationProcesses[NineCardsServices]]
 
-  implicit val rankingProcesses: RankingProcesses[NineCardsServices] = mock[RankingProcesses[NineCardsServices]]
+  implicit val rankingProcesses: RankingProcesses[NineCardsServices] =
+    mock[RankingProcesses[NineCardsServices]]
 
   implicit val config: NineCardsConfiguration = NineCardsConfig.nineCardsConfiguration
 

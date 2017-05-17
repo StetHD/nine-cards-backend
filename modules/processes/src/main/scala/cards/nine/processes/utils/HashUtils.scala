@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.processes.utils
 
 import cards.nine.commons.config.Domain.NineCardsConfiguration
@@ -40,22 +41,22 @@ object EncryptionAlgorithm {
 class HashUtils(implicit config: NineCardsConfiguration) {
 
   lazy val nineCardsSalt: Option[String] = config.salt
-  lazy val nineCardsSecretKey: String = config.secretKey
+  lazy val nineCardsSecretKey: String    = config.secretKey
 
   def hashValue(
-    text: String,
-    secretKey: String = nineCardsSecretKey,
-    salt: Option[String] = nineCardsSalt,
-    algorithm: Algorithm = HMacSha512
+      text: String,
+      secretKey: String = nineCardsSecretKey,
+      salt: Option[String] = nineCardsSalt,
+      algorithm: Algorithm = HMacSha512
   ) = {
 
     val hasher = salt.fold(Hasher(text))(Hasher(text).salt(_))
 
     val digest = algorithm match {
-      case Md5 ⇒ hasher.md5
-      case Sha256 ⇒ hasher.sha256
-      case Sha512 ⇒ hasher.sha512
-      case HMacMd5 ⇒ hasher.hmac(secretKey).md5
+      case Md5        ⇒ hasher.md5
+      case Sha256     ⇒ hasher.sha256
+      case Sha512     ⇒ hasher.sha512
+      case HMacMd5    ⇒ hasher.hmac(secretKey).md5
       case HMacSha256 ⇒ hasher.hmac(secretKey).sha256
       case HMacSha512 ⇒ hasher.hmac(secretKey).sha512
     }

@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.processes.account
 
 import cards.nine.commons.NineCardsErrors._
@@ -24,8 +25,8 @@ import cards.nine.processes.account.messages._
 import cards.nine.processes.NineCardsServices._
 import cards.nine.processes.TestInterpreters
 import cards.nine.processes.utils.HashUtils
-import cards.nine.services.free.algebra.{ GoogleApi, User }
-import org.mockito.Matchers.{ eq ⇒ mockEq }
+import cards.nine.services.free.algebra.{GoogleApi, User}
+import org.mockito.Matchers.{eq ⇒ mockEq}
 import org.specs2.ScalaCheck
 import org.specs2.matcher.Matchers
 import org.specs2.mock.Mockito
@@ -33,12 +34,12 @@ import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
 
 trait AccountProcessesSpecification
-  extends Specification
-  with Matchers
-  with Mockito
-  with AccountTestData
-  with DummyConfig
-  with TestInterpreters {
+    extends Specification
+    with Matchers
+    with Mockito
+    with AccountTestData
+    with DummyConfig
+    with TestInterpreters {
 
   trait BasicScope extends Scope {
 
@@ -56,7 +57,10 @@ trait AccountProcessesSpecification
     userServices.getInstallationByUserAndAndroidId(mockEq(userId), AndroidId(mockEq(androidId))) returns
       NineCardsService.right(installation)
 
-    userServices.updateInstallation(mockEq(userId), mockEq(Option(DeviceToken(deviceToken))), AndroidId(mockEq(androidId))) returns
+    userServices.updateInstallation(
+      mockEq(userId),
+      mockEq(Option(DeviceToken(deviceToken))),
+      AndroidId(mockEq(androidId))) returns
       NineCardsService.right(installation)
 
     userServices.getBySessionToken(SessionToken(mockEq(sessionToken))) returns
@@ -97,9 +101,7 @@ trait AccountProcessesSpecification
 
 }
 
-class AccountProcessesSpec
-  extends AccountProcessesSpecification
-  with ScalaCheck {
+class AccountProcessesSpec extends AccountProcessesSpecification with ScalaCheck {
 
   "signUpUser" should {
     "return LoginResponse object when the user exists and installation" in
@@ -128,49 +130,50 @@ class AccountProcessesSpec
     "return UpdateInstallationResponse object" in new UserAndInstallationSuccessfulScope {
       val signUpInstallation = accountProcesses.updateInstallation(updateInstallationRequest)
 
-      signUpInstallation.foldMap(testInterpreters) must beRight[UpdateInstallationResponse](updateInstallationResponse)
+      signUpInstallation.foldMap(testInterpreters) must beRight[UpdateInstallationResponse](
+        updateInstallationResponse)
     }
   }
 
   "checkAuthToken" should {
     "return the userId if there is a user with the given sessionToken and androidId and the " +
       "auth token is valid" in new UserAndInstallationSuccessfulScope {
-        val checkAuthToken = accountProcesses.checkAuthToken(
-          sessionToken = SessionToken(sessionToken),
-          androidId    = AndroidId(androidId),
-          authToken    = validAuthToken,
-          requestUri   = dummyUrl
-        )
+      val checkAuthToken = accountProcesses.checkAuthToken(
+        sessionToken = SessionToken(sessionToken),
+        androidId = AndroidId(androidId),
+        authToken = validAuthToken,
+        requestUri = dummyUrl
+      )
 
-        checkAuthToken.foldMap(testInterpreters) must beRight[Long](checkAuthTokenResponse)
-      }
+      checkAuthToken.foldMap(testInterpreters) must beRight[Long](checkAuthTokenResponse)
+    }
 
     "return the userId for a valid sessionToken and androidId without considering the authToken " +
       "if the debug Mode is enabled" in new UserAndInstallationSuccessfulScope {
 
-        val debugAccountProcesses = AccountProcesses.processes[NineCardsServices](
-          googleAPIServices = googleApiServices,
-          userServices      = userServices,
-          config            = debugConfig,
-          hashUtils         = HashUtils.hashUtils
-        )
+      val debugAccountProcesses = AccountProcesses.processes[NineCardsServices](
+        googleAPIServices = googleApiServices,
+        userServices = userServices,
+        config = debugConfig,
+        hashUtils = HashUtils.hashUtils
+      )
 
-        val checkAuthToken = debugAccountProcesses.checkAuthToken(
-          sessionToken = SessionToken(sessionToken),
-          androidId    = AndroidId(androidId),
-          authToken    = "",
-          requestUri   = dummyUrl
-        )
+      val checkAuthToken = debugAccountProcesses.checkAuthToken(
+        sessionToken = SessionToken(sessionToken),
+        androidId = AndroidId(androidId),
+        authToken = "",
+        requestUri = dummyUrl
+      )
 
-        checkAuthToken.foldMap(testInterpreters) must beRight[Long](checkAuthTokenResponse)
-      }
+      checkAuthToken.foldMap(testInterpreters) must beRight[Long](checkAuthTokenResponse)
+    }
 
     "return None when a wrong auth token is given" in new UserAndInstallationSuccessfulScope {
       val checkAuthToken = accountProcesses.checkAuthToken(
         sessionToken = SessionToken(sessionToken),
-        androidId    = AndroidId(androidId),
-        authToken    = wrongAuthToken,
-        requestUri   = dummyUrl
+        androidId = AndroidId(androidId),
+        authToken = wrongAuthToken,
+        requestUri = dummyUrl
       )
 
       checkAuthToken.foldMap(testInterpreters) must beLeft[NineCardsError](authTokenNotValidError)
@@ -180,9 +183,9 @@ class AccountProcessesSpec
       new UserAndInstallationFailingScope {
         val checkAuthToken = accountProcesses.checkAuthToken(
           sessionToken = SessionToken(sessionToken),
-          androidId    = AndroidId(androidId),
-          authToken    = validAuthToken,
-          requestUri   = dummyUrl
+          androidId = AndroidId(androidId),
+          authToken = validAuthToken,
+          requestUri = dummyUrl
         )
 
         checkAuthToken.foldMap(testInterpreters) must beLeft[NineCardsError](userNotFoundError)
@@ -192,19 +195,21 @@ class AccountProcessesSpec
       new UserSuccessfulAndInstallationFailingScope {
         val checkAuthToken = accountProcesses.checkAuthToken(
           sessionToken = SessionToken(sessionToken),
-          androidId    = AndroidId(androidId),
-          authToken    = validAuthToken,
-          requestUri   = dummyUrl
+          androidId = AndroidId(androidId),
+          authToken = validAuthToken,
+          requestUri = dummyUrl
         )
 
-        checkAuthToken.foldMap(testInterpreters) must beLeft[NineCardsError](installationNotFoundError)
+        checkAuthToken.foldMap(testInterpreters) must beLeft[NineCardsError](
+          installationNotFoundError)
       }
   }
 
   "checkGoogleTokenId" should {
     "return true if the given tokenId is valid" in new BasicScope {
 
-      googleApiServices.getTokenInfo(GoogleIdToken(any[String])) returns NineCardsService.right(tokenInfo)
+      googleApiServices.getTokenInfo(GoogleIdToken(any[String])) returns NineCardsService.right(
+        tokenInfo)
 
       accountProcesses
         .checkGoogleTokenId(email, tokenId)
@@ -213,7 +218,8 @@ class AccountProcessesSpec
 
     "return false if the given tokenId is valid but the given email address is different" in new BasicScope {
 
-      googleApiServices.getTokenInfo(GoogleIdToken(any[String])) returns NineCardsService.right(tokenInfo)
+      googleApiServices.getTokenInfo(GoogleIdToken(any[String])) returns NineCardsService.right(
+        tokenInfo)
 
       accountProcesses
         .checkGoogleTokenId(wrongEmail, tokenId)
@@ -222,7 +228,8 @@ class AccountProcessesSpec
 
     "return a WrongGoogleAuthToken error if the given tokenId is not valid" in new BasicScope {
 
-      googleApiServices.getTokenInfo(GoogleIdToken(any[String])) returns NineCardsService.left(wrongAuthTokenError)
+      googleApiServices.getTokenInfo(GoogleIdToken(any[String])) returns NineCardsService.left(
+        wrongAuthTokenError)
 
       accountProcesses
         .checkGoogleTokenId(email, tokenId)
@@ -230,4 +237,3 @@ class AccountProcessesSpec
     }
   }
 }
-

@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.processes.account
 
-import cards.nine.services.free.domain.{ Installation, User }
+import cards.nine.services.free.domain.{Installation, User}
 
 private[account] object Converters {
 
@@ -24,14 +25,14 @@ private[account] object Converters {
   def toLoginResponse(info: (User, Installation)): LoginResponse = {
     val (user, _) = info
     LoginResponse(
-      apiKey       = user.apiKey,
+      apiKey = user.apiKey,
       sessionToken = user.sessionToken
     )
   }
 
   def toUpdateInstallationResponse(installation: Installation): UpdateInstallationResponse =
     UpdateInstallationResponse(
-      androidId   = installation.androidId,
+      androidId = installation.androidId,
       deviceToken = installation.deviceToken
     )
 

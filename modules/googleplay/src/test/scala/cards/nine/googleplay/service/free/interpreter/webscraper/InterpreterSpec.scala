@@ -13,17 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.googleplay.service.free.interpreter.webscrapper
 
-import cards.nine.domain.application.{ FullCard, Package }
+import cards.nine.domain.application.{FullCard, Package}
 import cards.nine.googleplay.domain.webscrapper._
 import cards.nine.googleplay.service.free.algebra.WebScraper._
 import cards.nine.googleplay.service.util.MockServer
 import cards.nine.googleplay.util.WithHttp1Client
-import java.nio.file.{ Files, Paths }
+import java.nio.file.{Files, Paths}
 
-import cards.nine.commons.config.Domain.{ GooglePlayWebConfiguration, GooglePlayWebPaths }
-import org.mockserver.model.{ HttpRequest, HttpResponse }
+import cards.nine.commons.config.Domain.{GooglePlayWebConfiguration, GooglePlayWebPaths}
+import org.mockserver.model.{HttpRequest, HttpResponse}
 import org.mockserver.model.HttpStatusCode._
 import org.specs2.matcher.Matchers
 import org.specs2.mutable.Specification
@@ -36,10 +37,10 @@ class InterpreterSpec extends Specification with Matchers with MockServer with W
 
   implicit val configuration = GooglePlayWebConfiguration(
     maxTotalConnections = 3,
-    protocol            = "http",
-    host                = "localhost",
-    port                = mockServerPort,
-    paths               = GooglePlayWebPaths(detailsPath)
+    protocol = "http",
+    host = "localhost",
+    port = mockServerPort,
+    paths = GooglePlayWebPaths(detailsPath)
   )
 
   override def afterAll = {
@@ -129,42 +130,44 @@ class InterpreterSpec extends Specification with Matchers with MockServer with W
 object TestData {
 
   val detailsPath = "/store/apps/details"
-  val thePackage = Package("any.package.name")
+  val thePackage  = Package("any.package.name")
 
   object fisherPrice {
     val packageName = "air.fisherprice.com.shapesAndColors"
-    val packageObj = Package(packageName)
+    val packageObj  = Package(packageName)
 
     val card = FullCard(
       packageName = packageObj,
-      title       = "Shapes & Colors Music Show",
-      free        = true,
-      icon        = "http://lh4.ggpht.com/Pb8iLNmi9vHOwB-39TKe-kn4b_uU-E6rn7zSiFz6jC0RlaEQeNCcBh2MueyslcQ3mj2H",
-      stars       = 4.069400310516357,
-      downloads   = "1.000.000 - 5.000.000",
+      title = "Shapes & Colors Music Show",
+      free = true,
+      icon =
+        "http://lh4.ggpht.com/Pb8iLNmi9vHOwB-39TKe-kn4b_uU-E6rn7zSiFz6jC0RlaEQeNCcBh2MueyslcQ3mj2H",
+      stars = 4.069400310516357,
+      downloads = "1.000.000 - 5.000.000",
       screenshots = List(
         "http://lh4.ggpht.com/fi-LxRsm8E5-940Zc5exQQyb4WWt1Q9D4oQFfEMP9oX0sWgV2MmIVAKwjtMN7ns5k7M",
         "http://lh3.ggpht.com/3ojygv7ZArhODcEq_JTaYx8ap4WwrgU6qYzspYyuEH24byhtqsgSaS0W9YN6A8ySSXA",
         "http://lh4.ggpht.com/974sdpZY4MiXIDn4Yyutylbh7cecJ7nKhHUz3LA3fAR3HdPwyM3yFUOdmcSlCwWjJiYc"
       ),
-      categories  = List("EDUCATION", "FAMILY_EDUCATION")
+      categories = List("EDUCATION", "FAMILY_EDUCATION")
     )
 
     val protobufFile = getClass.getClassLoader.getResource(fisherPrice.packageName)
-    val htmlFile = getClass.getClassLoader.getResource(packageName + ".html")
+    val htmlFile     = getClass.getClassLoader.getResource(packageName + ".html")
   }
 
   object skymap {
     val packageName = "com.google.android.stardroid"
-    val packageObj = Package(packageName)
+    val packageObj  = Package(packageName)
 
     val card = FullCard(
       packageName = packageObj,
-      title       = "Sky Map",
-      free        = true,
-      icon        = "http://lh4.ggpht.com/4VGiZutofCjs_wEC3BOuFPXysyF-ClYDTa40F3qK-GhKcISkWFFpRiBFmD8HPDTrElQ",
-      stars       = 4.491560935974121,
-      downloads   = "50.000.000 - 100.000.000",
+      title = "Sky Map",
+      free = true,
+      icon =
+        "http://lh4.ggpht.com/4VGiZutofCjs_wEC3BOuFPXysyF-ClYDTa40F3qK-GhKcISkWFFpRiBFmD8HPDTrElQ",
+      stars = 4.491560935974121,
+      downloads = "50.000.000 - 100.000.000",
       screenshots = List(
         "http://lh4.ggpht.com/Ag5QSMMtWqxi3UTFW7y239mT0khsMvBNPVqkdwuadr6Ar2vMV9vZFyzoHvGNOTNYWA0",
         "http://lh6.ggpht.com/veDf0tA3YTKBbavlTbITigF04iZ3lEKcNrZKwZJktCL8fn-cGLCW9Ifk-g8ICduZgw",
@@ -175,7 +178,7 @@ object TestData {
         "http://lh3.googleusercontent.com/E01joGlVkodgK91jqwi6oXlH9ChsE8Z93nihL8g5N1kXOYyE-CFRhZ8gyTJRxGM6rFEI",
         "http://lh3.googleusercontent.com/S0mWOIoo9OnxNlP7_sgQuhp4m-tq-sA-4zxgJ7uQPmPpiI3rmZIqqkMU0ml-DWGidUA"
       ),
-      categories  = List("BOOKS_AND_REFERENCE")
+      categories = List("BOOKS_AND_REFERENCE")
     )
 
     val htmlFile = getClass.getClassLoader.getResource(packageName + ".html")

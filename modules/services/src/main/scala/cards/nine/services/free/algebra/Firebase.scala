@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.services.free.algebra
 
 import cards.nine.commons.NineCardsService
@@ -25,13 +26,13 @@ object Firebase {
   sealed trait Ops[A]
 
   case class SendUpdatedCollectionNotification(
-    info: UpdatedCollectionNotificationInfo
+      info: UpdatedCollectionNotificationInfo
   ) extends Ops[Result[SendNotificationResponse]]
 
   class Services[F[_]](implicit I: Ops :<: F) {
 
     def sendUpdatedCollectionNotification(
-      info: UpdatedCollectionNotificationInfo
+        info: UpdatedCollectionNotificationInfo
     ): NineCardsService[F, SendNotificationResponse] =
       NineCardsService(SendUpdatedCollectionNotification(info))
 

@@ -13,13 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.processes.rankings
 
 import cards.nine.commons.NineCardsErrors.CountryNotFound
 import cards.nine.commons.NineCardsService
 import cards.nine.commons.NineCardsService._
 import cards.nine.domain.analytics._
-import cards.nine.domain.application.{ Category, Moment, Package }
+import cards.nine.domain.application.{Category, Moment, Package}
 import cards.nine.services.free.algebra
 import cards.nine.services.free.algebra.GoogleAnalytics
 import cards.nine.services.free.domain.Ranking.GoogleAnalyticsRanking
@@ -29,11 +30,10 @@ import cats.syntax.semigroup._
 import cats.syntax.traverse._
 
 class RankingProcesses[F[_]](
-  implicit
-  analytics: GoogleAnalytics.Services[F],
-  countryPersistence: algebra.Country.Services[F],
-  oauthServices: algebra.GoogleOAuth.Services[F],
-  rankingServices: algebra.Ranking.Services[F]
+    implicit analytics: GoogleAnalytics.Services[F],
+    countryPersistence: algebra.Country.Services[F],
+    oauthServices: algebra.GoogleOAuth.Services[F],
+    rankingServices: algebra.Ranking.Services[F]
 ) {
   private[this] val allCategories = Category.valuesName ++ Moment.valuesName ++ Moment.widgetValuesName
 
@@ -47,7 +47,8 @@ class RankingProcesses[F[_]](
     import request._
 
     def generateRankings(
-      countries: List[CountryIsoCode], params: RankingParams
+        countries: List[CountryIsoCode],
+        params: RankingParams
     ): NineCardsService[F, List[UpdateRankingSummary]] = {
 
       def generateRanking(countryCode: CountryIsoCode) = {
@@ -67,37 +68,41 @@ class RankingProcesses[F[_]](
     for {
       accessToken ← oauthServices.fetchAcessToken(serviceAccount)
       params = RankingParams(dateRange, rankingLength, AnalyticsToken(accessToken.value))
-      countries ← countryPersistence.getCountries(pageParams)
+      countries            ← countryPersistence.getCountries(pageParams)
       countriesWithRanking ← analytics.getCountriesWithRanking(params)
-      countriesCode = countries.map(c ⇒ CountryIsoCode(c.isoCode2))
+      countriesCode     = countries.map(c ⇒ CountryIsoCode(c.isoCode2))
       selectedCountries = countriesCode.intersect(countriesWithRanking.countries)
       updateRankingsSummary ← generateRankings(selectedCountries, params)
-    } yield Reload.SummaryResponse(
-      countriesWithoutRanking = countriesCode diff selectedCountries,
-      countriesWithRanking    = updateRankingsSummary
-    )
+    } yield
+      Reload.SummaryResponse(
+        countriesWithoutRanking = countriesCode diff selectedCountries,
+        countriesWithRanking = updateRankingsSummary
+      )
   }.value
 
-  def reloadRankingByScope(scope: GeoScope, params: RankingParams): Free[F, Result[Reload.Response]] = {
+  def reloadRankingByScope(
+      scope: GeoScope,
+      params: RankingParams): Free[F, Result[Reload.Response]] = {
 
     def generateRanking(scope: GeoScope, countries: List[CountryIsoCode]) = scope match {
       case WorldScope ⇒ analytics.getRanking(None, allCategories, params)
       case CountryScope(code) if hasRankingInfo(code, countries) ⇒
         analytics.getRanking(Option(code), allCategories, params)
       case _ ⇒
-        NineCardsService.left[F, GoogleAnalyticsRanking](CountryNotFound("The country doesn't have ranking info"))
+        NineCardsService.left[F, GoogleAnalyticsRanking](
+          CountryNotFound("The country doesn't have ranking info"))
     }
 
     for {
       countriesWithRanking ← analytics.getCountriesWithRanking(params)
-      ranking ← generateRanking(scope, countriesWithRanking.countries)
-      _ ← rankingServices.updateRanking(scope, ranking)
+      ranking              ← generateRanking(scope, countriesWithRanking.countries)
+      _                    ← rankingServices.updateRanking(scope, ranking)
     } yield Reload.Response()
   }.value
 
   def getRankedDeviceApps(
-    location: Option[String],
-    deviceApps: Map[String, List[Package]]
+      location: Option[String],
+      deviceApps: Map[String, List[Package]]
   ): Free[F, Result[List[RankedAppsByCategory]]] = {
 
     def unifyDeviceApps(deviceApps: Map[String, List[Package]]) = {
@@ -118,7 +123,8 @@ class RankingProcesses[F[_]](
       }.toSet
 
       for {
-        geoScope ← location.fold(NineCardsService.right[F, GeoScope](WorldScope))(geoScopeFromLocation)
+        geoScope ← location.fold(NineCardsService.right[F, GeoScope](WorldScope))(
+          geoScopeFromLocation)
         rankedApps ← rankingServices.getRankingForApps(geoScope, unrankedApps)
         rankedAppsByCategory = rankedApps.groupBy(_.category)
         unrankedDeviceApps = unifiedDeviceApps map {
@@ -128,53 +134,62 @@ class RankingProcesses[F[_]](
               .map(RankedApp(_, category, None))
             (category, appWithoutRanking)
         }
-      } yield (rankedAppsByCategory combine unrankedDeviceApps)
-        .map(toRankedAppsByCategory(limit = None))
-        .toList
-        .sortBy(r ⇒ Category.sortedValues.indexOf(r.category))
+      } yield
+        (rankedAppsByCategory combine unrankedDeviceApps)
+          .map(toRankedAppsByCategory(limit = None))
+          .toList
+          .sortBy(r ⇒ Category.sortedValues.indexOf(r.category))
     }.value
   }
 
   def getRankedAppsByMoment(
-    location: Option[String],
-    deviceApps: List[Package],
-    moments: List[String],
-    limit: Int
+      location: Option[String],
+      deviceApps: List[Package],
+      moments: List[String],
+      limit: Int
   ): Free[F, Result[List[RankedAppsByCategory]]] = {
     if (deviceApps.isEmpty)
       NineCardsService.right(List.empty[RankedAppsByCategory]).value
     else {
       for {
-        geoScope ← location.fold(NineCardsService.right[F, GeoScope](WorldScope))(geoScopeFromLocation)
+        geoScope ← location.fold(NineCardsService.right[F, GeoScope](WorldScope))(
+          geoScopeFromLocation)
         rankedApps ← rankingServices.getRankingForAppsWithinMoments(geoScope, deviceApps, moments)
-      } yield rankedApps
-        .groupBy(_.category)
-        .map(toRankedAppsByCategory(limit = Option(limit)))
-        .toList
+      } yield
+        rankedApps
+          .groupBy(_.category)
+          .map(toRankedAppsByCategory(limit = Option(limit)))
+          .toList
     }.value
   }
 
   def getRankedWidgets(
-    location: Option[String],
-    apps: List[Package],
-    moments: List[String],
-    limit: Int
+      location: Option[String],
+      apps: List[Package],
+      moments: List[String],
+      limit: Int
   ): Free[F, Result[List[RankedWidgetsByMoment]]] = {
     if (apps.isEmpty)
       NineCardsService.right(List.empty[RankedWidgetsByMoment]).value
     else {
       for {
-        geoScope ← location.fold(NineCardsService.right[F, GeoScope](WorldScope))(geoScopeFromLocation)
-        rankedWidgets ← rankingServices.getRankingForWidgets(geoScope, apps, moments map toWidgetMoment)
-      } yield rankedWidgets
-        .groupBy(_.moment)
-        .map(toRankedWidgetsByMoment(limit))
-        .toList
+        geoScope ← location.fold(NineCardsService.right[F, GeoScope](WorldScope))(
+          geoScopeFromLocation)
+        rankedWidgets ← rankingServices.getRankingForWidgets(
+          geoScope,
+          apps,
+          moments map toWidgetMoment)
+      } yield
+        rankedWidgets
+          .groupBy(_.moment)
+          .map(toRankedWidgetsByMoment(limit))
+          .toList
     }.value
   }
 
   private[this] def geoScopeFromLocation(isoCode: String): NineCardsService[F, GeoScope] =
-    countryPersistence.getCountryByIsoCode2(isoCode.toUpperCase)
+    countryPersistence
+      .getCountryByIsoCode2(isoCode.toUpperCase)
       .map { country ⇒
         val scope: GeoScope = CountryScope(CountryIsoCode(country.isoCode2))
         scope
@@ -188,11 +203,10 @@ class RankingProcesses[F[_]](
 object RankingProcesses {
 
   implicit def processes[F[_]](
-    implicit
-    analytics: GoogleAnalytics.Services[F],
-    countryPersistence: algebra.Country.Services[F],
-    oauthServices: algebra.GoogleOAuth.Services[F],
-    rankingServices: algebra.Ranking.Services[F]
+      implicit analytics: GoogleAnalytics.Services[F],
+      countryPersistence: algebra.Country.Services[F],
+      oauthServices: algebra.GoogleOAuth.Services[F],
+      rankingServices: algebra.Ranking.Services[F]
   ) = new RankingProcesses
 
 }

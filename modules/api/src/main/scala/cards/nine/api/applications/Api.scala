@@ -13,14 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.api.applications
 
 import cards.nine.api.NineCardsDirectives._
 import cards.nine.api.utils.SprayMarshallers._
 import cards.nine.api.utils.SprayMatchers._
-import cards.nine.commons.NineCardsService.{ NineCardsService, Result }
+import cards.nine.commons.NineCardsService.{NineCardsService, Result}
 import cards.nine.commons.config.Domain.NineCardsConfiguration
-import cards.nine.domain.application.{ BasicCard, Category, Package, PriceFilter }
+import cards.nine.domain.application.{BasicCard, Category, Package, PriceFilter}
 import cards.nine.domain.market.MarketCredentials
 import cards.nine.processes._
 import cards.nine.processes.account.AccountProcesses
@@ -32,12 +33,11 @@ import scala.concurrent.ExecutionContext
 import spray.routing._
 
 class ApplicationsApi(
-  implicit
-  config: NineCardsConfiguration,
-  accountProcesses: AccountProcesses[NineCardsServices],
-  applicationProcesses: ApplicationProcesses[NineCardsServices],
-  rankingProcesses: RankingProcesses[NineCardsServices],
-  executionContext: ExecutionContext
+    implicit config: NineCardsConfiguration,
+    accountProcesses: AccountProcesses[NineCardsServices],
+    applicationProcesses: ApplicationProcesses[NineCardsServices],
+    rankingProcesses: RankingProcesses[NineCardsServices],
+    executionContext: ExecutionContext
 ) {
 
   import Converters._
@@ -141,7 +141,8 @@ class ApplicationsApi(
             post {
               entity(as[ApiGetRecommendationsByCategoryRequest]) { request ⇒
                 nineCardsDirectives.marketAuthHeaders { marketAuth ⇒
-                  complete(getRecommendationsByCategory(request, category, priceFilter, marketAuth))
+                  complete(
+                    getRecommendationsByCategory(request, category, priceFilter, marketAuth))
                 }
               }
             }
@@ -161,40 +162,40 @@ class ApplicationsApi(
     }
 
   private[this] def getAppsDetails(
-    request: ApiAppsInfoRequest,
-    marketAuth: MarketCredentials
+      request: ApiAppsInfoRequest,
+      marketAuth: MarketCredentials
   ): NineCardsService[NineCardsServices, ApiAppsInfoResponse[ApiDetailsApp]] =
     applicationProcesses
       .getAppsInfo(request.items, marketAuth)
       .map(toApiAppsInfoResponse(toApiDetailsApp))
 
   private[this] def getAppsIconName(
-    request: ApiAppsInfoRequest,
-    marketAuth: MarketCredentials
+      request: ApiAppsInfoRequest,
+      marketAuth: MarketCredentials
   ): NineCardsService[NineCardsServices, ApiAppsInfoResponse[ApiIconApp]] =
     applicationProcesses
       .getAppsBasicInfo(request.items, marketAuth)
       .map(toApiAppsInfoResponse[BasicCard, ApiIconApp](toApiIconApp))
 
   private[this] def categorizeApps(
-    request: ApiAppsInfoRequest,
-    marketAuth: MarketCredentials
+      request: ApiAppsInfoRequest,
+      marketAuth: MarketCredentials
   ): NineCardsService[NineCardsServices, ApiCategorizedApps] =
     applicationProcesses
       .getAppsInfo(request.items, marketAuth)
       .map(toApiCategorizedApps)
 
   private[this] def setAppInfo(
-    packageId: Package,
-    apiDetails: ApiSetAppInfoRequest
+      packageId: Package,
+      apiDetails: ApiSetAppInfoRequest
   ): NineCardsService[NineCardsServices, ApiSetAppInfoResponse] =
     applicationProcesses
       .storeCard(toFullCard(packageId, apiDetails))
       .map(toApiSetAppInfoResponse)
 
   private[this] def searchApps(
-    request: ApiSearchAppsRequest,
-    marketAuth: MarketCredentials
+      request: ApiSearchAppsRequest,
+      marketAuth: MarketCredentials
   ): NineCardsService[NineCardsServices, ApiSearchAppsResponse] =
     applicationProcesses
       .searchApps(
@@ -206,22 +207,24 @@ class ApplicationsApi(
       .map(toApiSearchAppsResponse)
 
   private[this] def rankApps(
-    request: ApiRankAppsRequest
+      request: ApiRankAppsRequest
   ): Free[NineCardsServices, Result[ApiRankAppsResponse]] =
-    rankingProcesses.getRankedDeviceApps(request.location, request.items)
+    rankingProcesses
+      .getRankedDeviceApps(request.location, request.items)
       .map(toApiRankAppsResponse)
 
   private[this] def rankAppsByMoments(
-    request: ApiRankByMomentsRequest
+      request: ApiRankByMomentsRequest
   ): Free[NineCardsServices, Result[ApiRankAppsResponse]] =
-    rankingProcesses.getRankedAppsByMoment(request.location, request.items, request.moments, request.limit)
+    rankingProcesses
+      .getRankedAppsByMoment(request.location, request.items, request.moments, request.limit)
       .map(toApiRankAppsResponse)
 
   private[this] def getRecommendationsByCategory(
-    request: ApiGetRecommendationsByCategoryRequest,
-    category: Category,
-    priceFilter: PriceFilter,
-    marketAuth: MarketCredentials
+      request: ApiGetRecommendationsByCategoryRequest,
+      category: Category,
+      priceFilter: PriceFilter,
+      marketAuth: MarketCredentials
   ): NineCardsService[NineCardsServices, ApiGetRecommendationsResponse] =
     applicationProcesses
       .getRecommendationsByCategory(
@@ -234,8 +237,8 @@ class ApplicationsApi(
       .map(toApiGetRecommendationsResponse)
 
   private[this] def getRecommendationsForApps(
-    request: ApiGetRecommendationsForAppsRequest,
-    marketAuth: MarketCredentials
+      request: ApiGetRecommendationsForAppsRequest,
+      marketAuth: MarketCredentials
   ): NineCardsService[NineCardsServices, ApiGetRecommendationsResponse] =
     applicationProcesses
       .getRecommendationsForApps(
@@ -248,9 +251,10 @@ class ApplicationsApi(
       .map(toApiGetRecommendationsResponse)
 
   private[this] def rankWidgets(
-    request: ApiRankByMomentsRequest
+      request: ApiRankByMomentsRequest
   ): Free[NineCardsServices, Result[ApiRankWidgetsResponse]] =
-    rankingProcesses.getRankedWidgets(request.location, request.items, request.moments, request.limit)
+    rankingProcesses
+      .getRankedWidgets(request.location, request.items, request.moments, request.limit)
       .map(toApiRankWidgetsResponse)
 
 }

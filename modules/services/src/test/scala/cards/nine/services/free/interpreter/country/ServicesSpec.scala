@@ -13,21 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.services.free.interpreter.country
 
-import cards.nine.commons.NineCardsErrors.{ CountryNotFound, NineCardsError }
+import cards.nine.commons.NineCardsErrors.{CountryNotFound, NineCardsError}
 import cards.nine.services.free.domain.Country
 import cards.nine.services.free.domain.Country.Queries
 import cards.nine.services.persistence.NineCardsGenEntities.WrongIsoCode2
-import cards.nine.services.persistence.{ DomainDatabaseContext, NineCardsScalacheckGen }
+import cards.nine.services.persistence.{DomainDatabaseContext, NineCardsScalacheckGen}
 import org.specs2.ScalaCheck
 import org.specs2.mutable.Specification
 
 class ServicesSpec
-  extends Specification
-  with ScalaCheck
-  with DomainDatabaseContext
-  with NineCardsScalacheckGen {
+    extends Specification
+    with ScalaCheck
+    with DomainDatabaseContext
+    with NineCardsScalacheckGen {
 
   sequential
 
@@ -35,7 +36,7 @@ class ServicesSpec
     "return a CountryNotFound error if a non-existing ISO code is provided" in {
       prop { isoCode: WrongIsoCode2 ⇒
         val country = countryPersistenceServices.getCountryByIsoCode2(isoCode.value).transactAndRun
-        val error = CountryNotFound(s"Country with ISO code2 ${isoCode.value} doesn't exist")
+        val error   = CountryNotFound(s"Country with ISO code2 ${isoCode.value} doesn't exist")
 
         country must beLeft[NineCardsError](error)
       }
@@ -43,7 +44,6 @@ class ServicesSpec
 
     "return a country if a valid ISO code is provided" in {
       prop { index: Int ⇒
-
         val (searchedCountry, country) = {
           for {
             countries ← getItems[Country](Queries.getAllSql)

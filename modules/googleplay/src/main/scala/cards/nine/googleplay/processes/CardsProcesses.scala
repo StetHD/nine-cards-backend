@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.googleplay.processes
 
 import cats.free.Free
@@ -21,50 +22,59 @@ import cats.instances.list._
 import cats.syntax.monadCombine._
 import cats.syntax.traverse._
 import cats.syntax.either._
-import cards.nine.domain.application.{ BasicCard, CardList, FullCard, Package }
+import cards.nine.domain.application.{BasicCard, CardList, FullCard, Package}
 import cards.nine.domain.market.MarketCredentials
 import cards.nine.googleplay.domain._
-import cards.nine.googleplay.domain.apigoogle.{ ResolvePackagesResult, Failure ⇒ ApiFailure, PackageNotFound ⇒ ApiNotFound }
+import cards.nine.googleplay.domain.apigoogle.{
+  ResolvePackagesResult,
+  Failure ⇒ ApiFailure,
+  PackageNotFound ⇒ ApiNotFound
+}
 import cards.nine.googleplay.domain.webscrapper._
-import cards.nine.googleplay.service.free.algebra.{ Cache, GoogleApi, WebScraper }
+import cards.nine.googleplay.service.free.algebra.{Cache, GoogleApi, WebScraper}
 
 class CardsProcesses[F[_]](
-  googleApi: GoogleApi.Services[F],
-  cacheService: Cache.Service[F],
-  webScrapper: WebScraper.Service[F]
+    googleApi: GoogleApi.Services[F],
+    cacheService: Cache.Service[F],
+    webScrapper: WebScraper.Service[F]
 ) {
 
   def getBasicCards(
-    packages: List[Package],
-    auth: MarketCredentials
+      packages: List[Package],
+      auth: MarketCredentials
   ): Free[F, ResolveMany.Response[BasicCard]] =
     for {
       cached ← cacheService.getValidMany(packages)
       uncached = packages diff (cached map (_.packageName))
       response ← getPackagesInfoInGooglePlay(uncached, auth)
-    } yield ResolveMany.Response(response.notFound, response.pending, cached.map(_.toBasic) ++ response.apps)
+    } yield
+      ResolveMany.Response(
+        response.notFound,
+        response.pending,
+        cached.map(_.toBasic) ++ response.apps)
 
   def getCard(pack: Package, auth: MarketCredentials): Free[F, getcard.Response] =
     resolveNewPackage(pack, auth)
 
   def getCards(
-    packages: List[Package],
-    auth: MarketCredentials
+      packages: List[Package],
+      auth: MarketCredentials
   ): Free[F, ResolveMany.Response[FullCard]] =
     for {
       result ← resolvePackageList(packages, auth)
-    } yield ResolveMany.Response(
-      notFound = result.notFoundPackages,
-      pending  = result.pendingPackages,
-      apps     = result.resolvedPackages ++ result.cachedPackages
-    )
+    } yield
+      ResolveMany.Response(
+        notFound = result.notFoundPackages,
+        pending = result.pendingPackages,
+        apps = result.resolvedPackages ++ result.cachedPackages
+      )
 
   def storeCard(card: FullCard): Free[F, Unit] =
     cacheService.putPermanent(card)
 
   def recommendationsByCategory(
-    request: RecommendByCategoryRequest,
-    auth: MarketCredentials
+      request: RecommendByCategoryRequest,
+      auth: MarketCredentials
   ): Free[F, InfoError Either CardList[FullCard]] =
     googleApi.recommendationsByCategory(request, auth) flatMap {
       case Left(error) ⇒ Free.pure(Either.left(error))
@@ -72,28 +82,33 @@ class CardsProcesses[F[_]](
         val packages = recommendations.diff(request.excludedApps).take(request.maxTotal)
         for {
           result ← resolvePackageList(packages, auth)
-        } yield Either.right(CardList(
-          missing = result.notFoundPackages,
-          pending = result.pendingPackages,
-          cards   = result.cachedPackages ++ result.resolvedPackages
-        ))
+        } yield
+          Either.right(
+            CardList(
+              missing = result.notFoundPackages,
+              pending = result.pendingPackages,
+              cards = result.cachedPackages ++ result.resolvedPackages
+            ))
     }
 
   def recommendationsByApps(
-    request: RecommendByAppsRequest,
-    auth: MarketCredentials
+      request: RecommendByAppsRequest,
+      auth: MarketCredentials
   ): Free[F, CardList[FullCard]] =
     for {
       recommendations ← googleApi.recommendationsByApps(request, auth)
       packages = recommendations.diff(request.excludedApps).take(request.maxTotal)
       result ← resolvePackageList(packages, auth)
-    } yield CardList(
-      missing = result.notFoundPackages,
-      pending = result.pendingPackages,
-      cards   = result.cachedPackages ++ result.resolvedPackages
-    )
+    } yield
+      CardList(
+        missing = result.notFoundPackages,
+        pending = result.pendingPackages,
+        cards = result.cachedPackages ++ result.resolvedPackages
+      )
 
-  def searchApps(request: SearchAppsRequest, auth: MarketCredentials): Free[F, CardList[BasicCard]] =
+  def searchApps(
+      request: SearchAppsRequest,
+      auth: MarketCredentials): Free[F, CardList[BasicCard]] =
     googleApi.searchApps(request, auth) flatMap {
       case Left(_) ⇒ Free.pure(CardList(Nil, Nil, Nil))
       case Right(packs) ⇒
@@ -101,7 +116,7 @@ class CardsProcesses[F[_]](
           CardList(
             missing = r.notFound,
             pending = r.pending,
-            cards   = r.apps
+            cards = r.apps
           )
         }
     }
@@ -119,9 +134,9 @@ class CardsProcesses[F[_]](
     import ResolvePending._
 
     def splitStatus(status: List[(Package, PackageStatus)]): Response = {
-      val solved = status collect { case (pack, Resolved) ⇒ pack }
-      val unknown = status collect { case (pack, Unknown) ⇒ pack }
-      val pending = status collect { case (pack, Pending) ⇒ pack }
+      val solved  = status collect { case (pack, Resolved) ⇒ pack }
+      val unknown = status collect { case (pack, Unknown)  ⇒ pack }
+      val pending = status collect { case (pack, Pending)  ⇒ pack }
       Response(solved, unknown, pending)
     }
 
@@ -135,23 +150,24 @@ class CardsProcesses[F[_]](
   }
 
   def resolvePackageList(
-    packages: List[Package],
-    auth: MarketCredentials
+      packages: List[Package],
+      auth: MarketCredentials
   ): Free[F, ResolvePackagesResult] = {
 
     def splitResults(
-      packages: List[Package],
-      results: List[ApiFailure Either FullCard]
+        packages: List[Package],
+        results: List[ApiFailure Either FullCard]
     ): (List[FullCard], List[Package], List[Package]) = {
 
       def classifyFailure(pack: Package, failure: ApiFailure): Either[Package, Package] =
         failure match {
           case ApiNotFound(_) ⇒ Right(pack)
-          case _ ⇒ Left(pack)
+          case _              ⇒ Left(pack)
         }
 
       val (labelFailures, cards): (List[(Package, ApiFailure)], List[FullCard]) =
-        packages.zip(results)
+        packages
+          .zip(results)
           .map({ case (pack, eith) ⇒ eith.leftMap(apif ⇒ (pack, apif)) })
           .separate
 
@@ -221,10 +237,8 @@ class CardsProcesses[F[_]](
 object CardsProcesses {
 
   implicit def processes[F[_]](
-    implicit
-    apiS: GoogleApi.Services[F],
-    cacheS: Cache.Service[F],
-    webS: WebScraper.Service[F]
+      implicit apiS: GoogleApi.Services[F],
+      cacheS: Cache.Service[F],
+      webS: WebScraper.Service[F]
   ): CardsProcesses[F] = new CardsProcesses(apiS, cacheS, webS)
 }
-

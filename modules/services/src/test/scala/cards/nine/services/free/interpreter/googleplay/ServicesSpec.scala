@@ -13,34 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.services.free.interpreter.googleplay
 
 import akka.actor.ActorSystem
-import cards.nine.commons.NineCardsErrors.{ NineCardsError, PackageNotResolved }
+import cards.nine.commons.NineCardsErrors.{NineCardsError, PackageNotResolved}
 import cards.nine.commons.NineCardsService.Result
 import cards.nine.commons.catscalaz.TaskInstances.taskMonad
 import cards.nine.commons.config.NineCardsConfig.nineCardsConfiguration
 import cards.nine.domain.account.AndroidId
-import cards.nine.domain.application.{ CardList, Category, FullCard, Package, PriceFilter }
-import cards.nine.domain.market.{ Localization, MarketCredentials, MarketToken }
+import cards.nine.domain.application.{CardList, Category, FullCard, Package, PriceFilter}
+import cards.nine.domain.market.{Localization, MarketCredentials, MarketToken}
 import cards.nine.googleplay.domain._
 import cards.nine.googleplay.processes.GooglePlayApp.GooglePlayApp
 import cards.nine.googleplay.processes.getcard.UnknownPackage
-import cards.nine.googleplay.processes.{ CardsProcesses, ResolveMany, Wiring }
-import cats.{ ~> }
+import cards.nine.googleplay.processes.{CardsProcesses, ResolveMany, Wiring}
+import cats.{~>}
 import cats.free.Free
-import org.specs2.matcher.{ DisjunctionMatchers, Matcher, Matchers }
+import org.specs2.matcher.{DisjunctionMatchers, Matcher, Matchers}
 import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
-import scalaz.{ \/ }
+import scalaz.{\/}
 import scalaz.concurrent.Task
 
-class ServicesSpec
-  extends Specification
-  with Matchers
-  with Mockito
-  with DisjunctionMatchers {
+class ServicesSpec extends Specification with Matchers with Mockito with DisjunctionMatchers {
 
   import TestData._
 
@@ -51,32 +48,34 @@ class ServicesSpec
   implicit val actorSystem: ActorSystem = ActorSystem("cards-nine-services-googleplay-tests")
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  private[this] implicit val interpreters: GooglePlayApp ~> Task = new Wiring(nineCardsConfiguration)
+  private[this] implicit val interpreters: GooglePlayApp ~> Task = new Wiring(
+    nineCardsConfiguration)
   private[this] def run[A](fa: Free[GooglePlayApp, A]): Throwable \/ A =
     fa.foldMap(interpreters).unsafePerformSyncAttempt
 
   trait BasicScope extends Scope {
     implicit val googlePlayProcesses = mock[CardsProcesses[GooglePlayApp]]
-    val services = Services.services[GooglePlayApp]
+    val services                     = Services.services[GooglePlayApp]
   }
 
   object TestData {
 
     def fullCardFor(packageName: String) = FullCard(
       packageName = Package(packageName),
-      title       = s"Title of $packageName",
-      free        = false,
-      icon        = s"Icon of $packageName",
-      stars       = 5.0,
-      downloads   = s"Downloads of $packageName",
-      categories  = List(s"Category 1 of $packageName", s"Category 2 of $packageName"),
+      title = s"Title of $packageName",
+      free = false,
+      icon = s"Icon of $packageName",
+      stars = 5.0,
+      downloads = s"Downloads of $packageName",
+      categories = List(s"Category 1 of $packageName", s"Category 2 of $packageName"),
       screenshots = List(s"Screenshot 1 of $packageName", s"Screenshot 2 of $packageName")
     )
 
-    val packagesName = List("com.package.one", "com.package.two", "com.package.three", "com.package.four")
+    val packagesName =
+      List("com.package.one", "com.package.two", "com.package.three", "com.package.four")
     val onePackageName = packagesName.head
 
-    val packages = packagesName map Package
+    val packages   = packagesName map Package
     val onePackage = Package(onePackageName)
 
     val (validPackagesName, wrongPackagesName) = packagesName.partition(_.length <= 15)
@@ -95,9 +94,9 @@ class ServicesSpec
     val priceFilter = PriceFilter.FREE
 
     object AuthData {
-      val androidId = "12345"
+      val androidId    = "12345"
       val localization = "en_GB"
-      val token = "m52_9876"
+      val token        = "m52_9876"
 
       val marketAuth = MarketCredentials(
         AndroidId(androidId),
@@ -110,24 +109,24 @@ class ServicesSpec
     object Requests {
       val recommendByAppsRequest = RecommendByAppsRequest(
         searchByApps = packages,
-        numPerApp    = numPerApp,
+        numPerApp = numPerApp,
         excludedApps = wrongPackages,
-        maxTotal     = limit
+        maxTotal = limit
       )
 
       val recommendByCategoryRequest = RecommendByCategoryRequest(
-        category     = Category.SHOPPING,
-        priceFilter  = PriceFilter.FREE,
+        category = Category.SHOPPING,
+        priceFilter = PriceFilter.FREE,
         excludedApps = wrongPackages,
-        maxTotal     = limit
+        maxTotal = limit
       )
     }
 
     object GooglePlayResponses {
-      val fullCard = fullCardFor(onePackageName)
+      val fullCard            = fullCardFor(onePackageName)
       val unknwonPackageError = UnknownPackage(onePackage)
 
-      val fullCards = validPackagesName map fullCardFor
+      val fullCards            = validPackagesName map fullCardFor
       val unknownPackageErrors = wrongPackages map UnknownPackage
 
       val recommendationsInfoError = InfoError("Something went wrong!")
@@ -135,7 +134,7 @@ class ServicesSpec
       val fullCardList = CardList[FullCard](
         missing = wrongPackages,
         pending = Nil,
-        cards   = fullCards
+        cards = fullCards
       )
 
       val resolveManyResponse = ResolveMany.Response(wrongPackages, Nil, fullCards)
@@ -150,8 +149,8 @@ class ServicesSpec
         Free.pure(Right(GooglePlayResponses.fullCard))
 
       val response = services.resolveOne(onePackage, AuthData.marketAuth)
-      run(response) must be_\/-[Result[FullCard]].which {
-        content ⇒ content must beRight[FullCard](GooglePlayResponses.fullCard)
+      run(response) must be_\/-[Result[FullCard]].which { content ⇒
+        content must beRight[FullCard](GooglePlayResponses.fullCard)
       }
     }
 
@@ -162,8 +161,8 @@ class ServicesSpec
 
       val response = services.resolveOne(onePackage, AuthData.marketAuth)
 
-      run(response) must be_\/-[Result[FullCard]].which {
-        content ⇒ content must beLeft(PackageNotResolved(onePackageName))
+      run(response) must be_\/-[Result[FullCard]].which { content ⇒
+        content must beLeft(PackageNotResolved(onePackageName))
       }
     }
   }
@@ -194,11 +193,11 @@ class ServicesSpec
       ) returns Free.pure(Right(GooglePlayResponses.fullCardList))
 
       val response = services.recommendByCategory(
-        category         = category,
-        filter           = priceFilter,
+        category = category,
+        filter = priceFilter,
         excludedPackages = wrongPackages,
-        limit            = limit,
-        auth             = AuthData.marketAuth
+        limit = limit,
+        auth = AuthData.marketAuth
       )
 
       run(response) must be_\/-[Result[CardList[FullCard]]].which { response ⇒
@@ -216,11 +215,11 @@ class ServicesSpec
       ) returns Free.pure(Left(GooglePlayResponses.recommendationsInfoError))
 
       val response = services.recommendByCategory(
-        category         = category,
-        filter           = priceFilter,
+        category = category,
+        filter = priceFilter,
         excludedPackages = wrongPackages,
-        limit            = limit,
-        auth             = AuthData.marketAuth
+        limit = limit,
+        auth = AuthData.marketAuth
       )
 
       run(response) must be_\/-[Result[CardList[FullCard]]].which { response ⇒
@@ -237,11 +236,11 @@ class ServicesSpec
       ) returns Free.pure(GooglePlayResponses.fullCardList)
 
       val response = services.recommendationsForApps(
-        packageNames     = packages,
+        packageNames = packages,
         excludedPackages = wrongPackages,
-        limitByApp       = numPerApp,
-        limit            = limit,
-        auth             = AuthData.marketAuth
+        limitByApp = numPerApp,
+        limit = limit,
+        auth = AuthData.marketAuth
       )
 
       run(response) must be_\/-[Result[CardList[FullCard]]].which { response ⇒

@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.api.collections
 
 import cards.nine.api.collections.messages._
@@ -82,41 +83,41 @@ private[collections] object TestData {
 
     val sharedCollection = SharedCollection(
       publicIdentifier = publicIdentifier,
-      publishedOn      = now,
-      author           = author,
-      name             = name,
-      views            = views,
-      category         = category,
-      icon             = icon,
-      community        = community,
-      owned            = owned,
-      packages         = packagesName
+      publishedOn = now,
+      author = author,
+      name = name,
+      views = views,
+      category = category,
+      icon = icon,
+      community = community,
+      owned = owned,
+      packages = packagesName
     )
 
     def sharedCollectionInfo[A] = SharedCollectionWithAppsInfo[A](
       collection = sharedCollection,
-      appsInfo   = List.empty[A]
+      appsInfo = List.empty[A]
     )
 
     val apiCreateCollectionRequest = ApiCreateCollectionRequest(
-      author        = author,
-      name          = name,
+      author = author,
+      name = name,
       installations = Option(installations),
-      views         = Option(views),
-      category      = category,
-      icon          = icon,
-      community     = community,
-      packages      = packagesName
+      views = Option(views),
+      category = category,
+      icon = icon,
+      community = community,
+      packages = packagesName
     )
 
     val apiUpdateCollectionRequest = ApiUpdateCollectionRequest(
       collectionInfo = Option(collectionInfo),
-      packages       = Option(packagesName)
+      packages = Option(packagesName)
     )
 
     val createOrUpdateCollectionResponse = CreateOrUpdateCollectionResponse(
       publicIdentifier = publicIdentifier,
-      packagesStats    = packagesStats
+      packagesStats = packagesStats
     )
 
     val increaseViewsCountByOneResponse = IncreaseViewsCountByOneResponse(

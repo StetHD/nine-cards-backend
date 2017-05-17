@@ -13,13 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.services.free.interpreter.analytics
 
 import cards.nine.commons.NineCardsErrors._
 import cards.nine.commons.NineCardsService.Result
 import cards.nine.commons.catscalaz.TaskInstances._
 import cards.nine.commons.config.Domain.GoogleAnalyticsConfiguration
-import cards.nine.domain.analytics.{ CountryIsoCode, RankingParams }
+import cards.nine.domain.analytics.{CountryIsoCode, RankingParams}
 import cards.nine.services.free.algebra.GoogleAnalytics._
 import cards.nine.services.free.domain.Ranking._
 import cards.nine.services.free.interpreter.analytics.HttpMessagesFactory._
@@ -28,23 +29,23 @@ import cats.syntax.either._
 import cats.syntax.traverse._
 import cats.~>
 import org.http4s.Http4s._
-import org.http4s.Uri.{ Authority, RegName }
+import org.http4s.Uri.{Authority, RegName}
 import org.http4s._
-import org.http4s.circe.{ jsonEncoderOf, jsonOf }
+import org.http4s.circe.{jsonEncoderOf, jsonOf}
 
 import scalaz.concurrent.Task
 
 class Services(config: GoogleAnalyticsConfiguration) extends (Ops ~> Task) {
 
   import Encoders._
-  import model.{ RequestBody, ResponseBody }
+  import model.{RequestBody, ResponseBody}
 
   private[this] val client = org.http4s.client.blaze.PooledHttp1Client()
 
   private[this] val uri: Uri = Uri(
-    scheme    = Option(config.protocol.ci),
+    scheme = Option(config.protocol.ci),
     authority = Option(Authority(host = RegName(config.host), port = config.port)),
-    path      = config.path
+    path = config.path
   )
 
   implicit private[this] val requestBodyEntity: EntityEncoder[RequestBody] =
@@ -59,25 +60,31 @@ class Services(config: GoogleAnalyticsConfiguration) extends (Ops ~> Task) {
   }
 
   def getRanking(
-    code: Option[CountryIsoCode],
-    categories: List[String],
-    params: RankingParams
+      code: Option[CountryIsoCode],
+      categories: List[String],
+      params: RankingParams
   ): Task[Result[GoogleAnalyticsRanking]] = {
 
     RankingsByCountryReport
-      .buildRequestsForCountry(code, categories, params.dateRange, params.rankingLength, config.viewId)
+      .buildRequestsForCountry(
+        code,
+        categories,
+        params.dateRange,
+        params.rankingLength,
+        config.viewId)
       .toList
       .traverse(doRequest(params, RankingsByCountryReport.parseResponse))
       .map(responses ⇒ responses.sequenceU.map(r ⇒ GoogleAnalyticsRanking(r.flatten.toMap)))
   }
 
-  private[this] def doRequest[A](params: RankingParams, parser: ResponseBody ⇒ A)(requestBody: RequestBody) = {
+  private[this] def doRequest[A](params: RankingParams, parser: ResponseBody ⇒ A)(
+      requestBody: RequestBody) = {
     def handleGoogleAnalyticsError(error: RankingError) =
       error.code match {
-        case Status.BadRequest.code ⇒ HttpBadRequest(error.message)
-        case Status.NotFound.code ⇒ HttpNotFound(error.message)
+        case Status.BadRequest.code   ⇒ HttpBadRequest(error.message)
+        case Status.NotFound.code     ⇒ HttpNotFound(error.message)
         case Status.Unauthorized.code ⇒ HttpUnauthorized(error.message)
-        case _ ⇒ GoogleAnalyticsServerError(error.message)
+        case _                        ⇒ GoogleAnalyticsServerError(error.message)
       }
 
     val httpRequest: Task[Request] =
@@ -96,7 +103,7 @@ class Services(config: GoogleAnalyticsConfiguration) extends (Ops ~> Task) {
   }
 
   def apply[A](fa: Ops[A]): Task[A] = fa match {
-    case GetCountriesWithRanking(params) ⇒ getCountriesWithRanking(params)
+    case GetCountriesWithRanking(params)      ⇒ getCountriesWithRanking(params)
     case GetRanking(code, categories, params) ⇒ getRanking(code, categories, params)
   }
 }

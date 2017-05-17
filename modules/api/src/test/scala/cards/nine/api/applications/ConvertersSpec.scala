@@ -13,23 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.api.applications
 
-import cards.nine.domain.application.{ BasicCard, CardList, FullCard }
+import cards.nine.domain.application.{BasicCard, CardList, FullCard}
 import org.scalacheck.Shapeless._
 import org.specs2.ScalaCheck
 import org.specs2.mutable.Specification
 
-class ConvertersSpec
-  extends Specification
-  with ScalaCheck {
+class ConvertersSpec extends Specification with ScalaCheck {
 
   import Converters._
 
   "toApiCategorizeAppsResponse" should {
     "convert an GetAppsInfoResponse to an ApiCategorizeAppsResponse object" in {
       prop { (response: CardList[FullCard]) ⇒
-
         val apiResponse = toApiAppsInfoResponse(toApiCategorizedApp)(response)
 
         apiResponse.errors must containTheSameElementsAs(response.missing)
@@ -46,7 +44,6 @@ class ConvertersSpec
   "toApiDetailAppsResponse" should {
     "convert an GetAppsInfoResponse to an ApiDetailAppsResponse object" in {
       prop { (response: CardList[FullCard]) ⇒
-
         val apiResponse = toApiAppsInfoResponse(toApiDetailsApp)(response)
 
         apiResponse.errors must_== response.missing

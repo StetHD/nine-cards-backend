@@ -13,10 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.services.free.algebra
 
 import cards.nine.commons.NineCardsService
-import cards.nine.commons.NineCardsService.{ NineCardsService, Result }
+import cards.nine.commons.NineCardsService.{NineCardsService, Result}
 import cards.nine.domain.account.GoogleIdToken
 import cards.nine.services.free.domain.TokenInfo
 import cats.free.:<:

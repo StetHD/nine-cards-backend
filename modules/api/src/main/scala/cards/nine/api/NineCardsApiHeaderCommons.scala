@@ -13,10 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.api
 
 import spray.http.StatusCodes.Unauthorized
-import spray.routing.{ Directives, MissingHeaderRejection, RejectionHandler }
+import spray.routing.{Directives, MissingHeaderRejection, RejectionHandler}
 
 trait AuthHeadersRejectionHandler {
 

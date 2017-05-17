@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.services.free.interpreter.googleoauth
 
 import cards.nine.commons.NineCardsErrors.GoogleOAuthError
@@ -41,7 +42,8 @@ object Services extends (Ops ~> Task) {
         Right(AccessToken(credential.getAccessToken()))
       } else {
         import account._
-        val message = s"Failed to obtain an OAuth Access Token for the service account $clientEmail to the scopes $scopes"
+        val message =
+          s"Failed to obtain an OAuth Access Token for the service account $clientEmail to the scopes $scopes"
         Left(GoogleOAuthError(message))
       }
     }.handle {

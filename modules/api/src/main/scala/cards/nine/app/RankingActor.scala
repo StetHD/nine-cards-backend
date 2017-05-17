@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.app
 
 import akka.actor.Actor
@@ -30,23 +31,25 @@ import cards.nine.processes.rankings.RankingProcesses
 import cards.nine.processes.rankings.messages.Reload._
 import cats.~>
 import cats.free.Free
-import org.joda.time.{ DateTime, DateTimeZone }
-import scalaz.{ -\/, \/, \/- }
+import org.joda.time.{DateTime, DateTimeZone}
+import scalaz.{-\/, \/, \/-}
 import scalaz.concurrent.Task
 import shapeless.LabelledGeneric
 
-class RankingActor[F[_]](interpreter: F ~> Task, log: LoggingAdapter)(implicit rankingProcesses: RankingProcesses[F]) extends Actor {
+class RankingActor[F[_]](interpreter: F ~> Task, log: LoggingAdapter)(
+    implicit rankingProcesses: RankingProcesses[F])
+    extends Actor {
 
   private[this] def generateRankings: Free[F, Result[SummaryResponse]] = {
     import nineCardsConfiguration.rankings._
 
-    val now = DateTime.now(DateTimeZone.UTC)
+    val now   = DateTime.now(DateTimeZone.UTC)
     val today = now.withTimeAtStartOfDay
 
     val pageNumber = ((now.getDayOfWeek - 1) * 24 + now.getHourOfDay) * countriesPerRequest
 
     val serviceAccount = {
-      val oauthConfigLG = LabelledGeneric[RankingsOAuthConfiguration]
+      val oauthConfigLG    = LabelledGeneric[RankingsOAuthConfiguration]
       val serviceAccountLG = LabelledGeneric[ServiceAccount]
       serviceAccountLG.from(oauthConfigLG.to(oauth))
     }
@@ -66,7 +69,7 @@ class RankingActor[F[_]](interpreter: F ~> Task, log: LoggingAdapter)(implicit r
 
   private[this] def showRankingGenerationInfo(result: Throwable \/ Result[SummaryResponse]) = {
     result match {
-      case -\/(e) ⇒ log.error(e, "An error was found while generating rankings")
+      case -\/(e)       ⇒ log.error(e, "An error was found while generating rankings")
       case \/-(Left(e)) ⇒ reportNineCardsError(e)
       case \/-(Right(summary)) ⇒
         showCountriesWithoutRankingInfo(summary.countriesWithoutRanking)
@@ -77,12 +80,14 @@ class RankingActor[F[_]](interpreter: F ~> Task, log: LoggingAdapter)(implicit r
 
   private[this] def showCountriesWithoutRankingInfo(countriesCode: List[CountryIsoCode]) =
     if (countriesCode.nonEmpty)
-      log.info(s"Skipped countries without ranking info: ${countriesCode.map(_.value).mkString(",")}")
+      log.info(
+        s"Skipped countries without ranking info: ${countriesCode.map(_.value).mkString(",")}")
 
   private[this] def showRankingSummary(summary: UpdateRankingSummary) =
     summary.countryCode match {
       case None ⇒ log.info(s"World ranking generated: ${summary.created} entries created")
-      case Some(code) ⇒ log.info(s"Ranking generated for ${code.value}: ${summary.created} entries created")
+      case Some(code) ⇒
+        log.info(s"Ranking generated for ${code.value}: ${summary.created} entries created")
     }
 
   private[this] def reportNineCardsError(error: NineCardsError): Unit = {
@@ -92,7 +97,8 @@ class RankingActor[F[_]](interpreter: F ~> Task, log: LoggingAdapter)(implicit r
         log.error("OAuth failure: there was a failure when retrieving an access token")
         log.error(message)
       case GoogleAnalyticsServerError(message) ⇒
-        log.error("Google Analytics failure: there was a problem in retrieving the Google Analytics Report")
+        log.error(
+          "Google Analytics failure: there was a problem in retrieving the Google Analytics Report")
         log.error(message)
       case _ ⇒ Unit
     }

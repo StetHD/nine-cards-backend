@@ -13,10 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.services.free.algebra
 
 import cards.nine.commons.NineCardsService
-import cards.nine.commons.NineCardsService.{ NineCardsService, Result }
+import cards.nine.commons.NineCardsService.{NineCardsService, Result}
 import cards.nine.domain.application.Package
 import cards.nine.domain.pagination.Page
 import cards.nine.services.free.domain
@@ -33,17 +34,21 @@ object SharedCollection {
 
   case class GetByPublicId(publicId: String) extends Ops[Result[domain.SharedCollection]]
 
-  case class GetByUser(user: Long) extends Ops[Result[List[domain.SharedCollectionWithAggregatedInfo]]]
+  case class GetByUser(user: Long)
+      extends Ops[Result[List[domain.SharedCollectionWithAggregatedInfo]]]
 
-  case class GetLatestByCategory(category: String, pageParams: Page) extends Ops[Result[List[domain.SharedCollection]]]
+  case class GetLatestByCategory(category: String, pageParams: Page)
+      extends Ops[Result[List[domain.SharedCollection]]]
 
-  case class GetTopByCategory(category: String, pageParams: Page) extends Ops[Result[List[domain.SharedCollection]]]
+  case class GetTopByCategory(category: String, pageParams: Page)
+      extends Ops[Result[List[domain.SharedCollection]]]
 
   case class IncreaseViewsByOne(id: Long) extends Ops[Result[Int]]
 
   case class Update(id: Long, title: String) extends Ops[Result[Int]]
 
-  case class UpdatePackages(collection: Long, packages: List[Package]) extends Ops[Result[(List[Package], List[Package])]]
+  case class UpdatePackages(collection: Long, packages: List[Package])
+      extends Ops[Result[(List[Package], List[Package])]]
 
   class Services[F[_]](implicit I: Ops :<: F) {
 
@@ -56,20 +61,29 @@ object SharedCollection {
     def getByPublicId(publicId: String): NineCardsService[F, domain.SharedCollection] =
       NineCardsService(GetByPublicId(publicId))
 
-    def getByUser(user: Long): NineCardsService[F, List[domain.SharedCollectionWithAggregatedInfo]] =
+    def getByUser(
+        user: Long): NineCardsService[F, List[domain.SharedCollectionWithAggregatedInfo]] =
       NineCardsService(GetByUser(user))
 
-    def getLatestByCategory(category: String, pageParams: Page): NineCardsService[F, List[domain.SharedCollection]] =
+    def getLatestByCategory(
+        category: String,
+        pageParams: Page): NineCardsService[F, List[domain.SharedCollection]] =
       NineCardsService(GetLatestByCategory(category, pageParams))
 
-    def getTopByCategory(category: String, pageParams: Page): NineCardsService[F, List[domain.SharedCollection]] =
+    def getTopByCategory(
+        category: String,
+        pageParams: Page): NineCardsService[F, List[domain.SharedCollection]] =
       NineCardsService(GetTopByCategory(category, pageParams))
 
-    def increaseViewsByOne(id: Long): NineCardsService[F, Int] = NineCardsService(IncreaseViewsByOne(id))
+    def increaseViewsByOne(id: Long): NineCardsService[F, Int] =
+      NineCardsService(IncreaseViewsByOne(id))
 
-    def update(id: Long, title: String): NineCardsService[F, Int] = NineCardsService(Update(id, title))
+    def update(id: Long, title: String): NineCardsService[F, Int] =
+      NineCardsService(Update(id, title))
 
-    def updatePackages(collection: Long, packages: List[Package]): NineCardsService[F, (List[Package], List[Package])] =
+    def updatePackages(
+        collection: Long,
+        packages: List[Package]): NineCardsService[F, (List[Package], List[Package])] =
       NineCardsService(UpdatePackages(collection, packages))
   }
 

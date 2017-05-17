@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.api.collections
 
 import cards.nine.domain.application.Package
@@ -22,56 +23,56 @@ import org.joda.time.DateTime
 package messages {
 
   case class ApiCreateCollectionRequest(
-    author: String,
-    name: String,
-    installations: Option[Int] = None,
-    views: Option[Int] = None,
-    category: String,
-    icon: String,
-    community: Boolean,
-    packages: List[Package]
+      author: String,
+      name: String,
+      installations: Option[Int] = None,
+      views: Option[Int] = None,
+      category: String,
+      icon: String,
+      community: Boolean,
+      packages: List[Package]
   )
 
   case class ApiCreateOrUpdateCollectionResponse(
-    publicIdentifier: String,
-    packagesStats: PackagesStats
+      publicIdentifier: String,
+      packagesStats: PackagesStats
   )
 
   case class ApiIncreaseViewsCountByOneResponse(
-    publicIdentifier: String
+      publicIdentifier: String
   )
 
   case class ApiSharedCollection(
-    publicIdentifier: String,
-    publishedOn: DateTime,
-    author: String,
-    name: String,
-    views: Int,
-    category: String,
-    icon: String,
-    community: Boolean,
-    owned: Boolean,
-    packages: List[Package],
-    appsInfo: List[ApiCollectionApp],
-    subscriptions: Option[Long] = None
+      publicIdentifier: String,
+      publishedOn: DateTime,
+      author: String,
+      name: String,
+      views: Int,
+      category: String,
+      icon: String,
+      community: Boolean,
+      owned: Boolean,
+      packages: List[Package],
+      appsInfo: List[ApiCollectionApp],
+      subscriptions: Option[Long] = None
   )
 
   // AppCollectionApp: FullCard without Screenshots
   case class ApiCollectionApp(
-    packageName: Package,
-    title: String,
-    free: Boolean,
-    icon: String,
-    stars: Double,
-    downloads: String,
-    categories: List[String]
+      packageName: Package,
+      title: String,
+      free: Boolean,
+      icon: String,
+      stars: Double,
+      downloads: String,
+      categories: List[String]
   )
 
   case class ApiSharedCollectionList(collections: List[ApiSharedCollection])
 
   case class ApiUpdateCollectionRequest(
-    collectionInfo: Option[SharedCollectionUpdateInfo],
-    packages: Option[List[Package]]
+      collectionInfo: Option[SharedCollectionUpdateInfo],
+      packages: Option[List[Package]]
   )
 
   case class ApiGetSubscriptionsByUser(subscriptions: List[String])

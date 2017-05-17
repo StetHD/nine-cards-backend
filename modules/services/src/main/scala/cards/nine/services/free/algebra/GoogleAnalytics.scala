@@ -13,37 +13,39 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.services.free.algebra
 
 import cards.nine.commons.NineCardsService
 import cards.nine.commons.NineCardsService._
-import cards.nine.domain.analytics.{ CountryIsoCode, RankingParams }
-import cards.nine.services.free.domain.Ranking.{ CountriesWithRanking, GoogleAnalyticsRanking }
-import cats.free.{ Free, Inject }
+import cards.nine.domain.analytics.{CountryIsoCode, RankingParams}
+import cards.nine.services.free.domain.Ranking.{CountriesWithRanking, GoogleAnalyticsRanking}
+import cats.free.{Free, Inject}
 
 object GoogleAnalytics {
 
   sealed trait Ops[A]
 
   case class GetRanking(
-    code: Option[CountryIsoCode],
-    categories: List[String],
-    rankingParams: RankingParams
+      code: Option[CountryIsoCode],
+      categories: List[String],
+      rankingParams: RankingParams
   ) extends Ops[Result[GoogleAnalyticsRanking]]
 
   case class GetCountriesWithRanking(
-    rankingParams: RankingParams
+      rankingParams: RankingParams
   ) extends Ops[Result[CountriesWithRanking]]
 
   class Services[F[_]](implicit I: Inject[Ops, F]) {
 
-    def getCountriesWithRanking(rankingParams: RankingParams): NineCardsService[F, CountriesWithRanking] =
+    def getCountriesWithRanking(
+        rankingParams: RankingParams): NineCardsService[F, CountriesWithRanking] =
       NineCardsService(Free.inject[Ops, F](GetCountriesWithRanking(rankingParams)))
 
     def getRanking(
-      code: Option[CountryIsoCode],
-      categories: List[String],
-      params: RankingParams
+        code: Option[CountryIsoCode],
+        categories: List[String],
+        params: RankingParams
     ): NineCardsService[F, GoogleAnalyticsRanking] =
       NineCardsService(Free.inject[Ops, F](GetRanking(code, categories, params)))
   }

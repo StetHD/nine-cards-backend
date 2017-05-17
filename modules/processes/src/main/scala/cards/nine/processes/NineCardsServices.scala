@@ -13,12 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.processes
 
 import cards.nine.services.free.algebra._
 import cards.nine.services.free.interpreter.Interpreters._
 import cats.data.Coproduct
-import cats.{ ApplicativeError, Monad, ~> }
+import cats.{~>, ApplicativeError, Monad}
 
 import scalaz.concurrent.Task
 
@@ -34,7 +35,7 @@ object NineCardsServices {
   type NineCardsServicesC03[A] = Coproduct[GooglePlay.Ops, NineCardsServicesC04, A]
   type NineCardsServicesC02[A] = Coproduct[GoogleApi.Ops, NineCardsServicesC03, A]
   type NineCardsServicesC01[A] = Coproduct[GoogleAnalytics.Ops, NineCardsServicesC02, A]
-  type NineCardsServices[A] = Coproduct[Firebase.Ops, NineCardsServicesC01, A]
+  type NineCardsServices[A]    = Coproduct[Firebase.Ops, NineCardsServicesC01, A]
 
   class NineCardsInterpreters {
 

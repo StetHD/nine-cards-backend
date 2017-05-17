@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 //
 // Source code from Pavel Chlupacek in http://stackoverflow.com/a/17377768/1002111
 // published under CC-SA license.
@@ -21,9 +22,9 @@
 //
 package cards.nine.commons.catscalaz
 
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.{ExecutionContext, Future}
 import scalaz.concurrent.Task
-import scalaz.std.{ `try` ⇒ TryF }
+import scalaz.std.{`try` ⇒ TryF}
 
 object ScalaFuture2Task {
 

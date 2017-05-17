@@ -13,11 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.services.free.interpreter.analytics
 
 import cards.nine.commons.NineCardsErrors.ReportNotFound
 import cards.nine.commons.NineCardsService.Result
-import cards.nine.domain.analytics.{ CountryIsoCode, DateRange }
+import cards.nine.domain.analytics.{CountryIsoCode, DateRange}
 import cards.nine.domain.analytics.Values._
 import cards.nine.domain.application.Package
 import cards.nine.services.free.domain.Ranking.CountriesWithRanking
@@ -30,16 +31,16 @@ object HttpMessagesFactory {
 
   object CountriesWithRankingReport {
     def buildRequest(
-      dateRange: DateRange,
-      viewId: String
+        dateRange: DateRange,
+        viewId: String
     ): RequestBody =
       RequestBody(
         ReportRequest(
-          viewId     = viewId,
+          viewId = viewId,
           dateRanges = List(dateRange),
           dimensions = List(Dimension.countryIsoCode),
-          metrics    = List(Metric.eventValue),
-          orderBys   = List(OrderBy.countryIsoCode)
+          metrics = List(Metric.eventValue),
+          orderBys = List(OrderBy.countryIsoCode)
         )
       )
 
@@ -47,7 +48,8 @@ object HttpMessagesFactory {
       Either.fromOption(response.reports.headOption, ReportNotFound("Report not found")) map {
         report ⇒
           CountriesWithRanking(
-            report.data.rows.getOrElse(Nil)
+            report.data.rows
+              .getOrElse(Nil)
               .flatMap(_.dimensions.headOption)
               .map(CountryIsoCode)
           )
@@ -57,11 +59,11 @@ object HttpMessagesFactory {
   object RankingsByCountryReport {
 
     def buildRequestsForCountry(
-      code: Option[CountryIsoCode],
-      categories: List[String],
-      dateRange: DateRange,
-      rankingSize: Int,
-      viewId: String
+        code: Option[CountryIsoCode],
+        categories: List[String],
+        dateRange: DateRange,
+        rankingSize: Int,
+        viewId: String
     ): Iterator[RequestBody] = {
       categories
         .map(buildRequestForCountryAndCategory(code, dateRange, rankingSize, viewId))
@@ -70,32 +72,35 @@ object HttpMessagesFactory {
     }
 
     def buildRequestForCountryAndCategory(
-      code: Option[CountryIsoCode],
-      dateRange: DateRange,
-      rankingSize: Int,
-      viewId: String
+        code: Option[CountryIsoCode],
+        dateRange: DateRange,
+        rankingSize: Int,
+        viewId: String
     )(category: String): ReportRequest =
       ReportRequest(
-        viewId                 = viewId,
-        dateRanges             = List(dateRange),
-        dimensions             = List(Dimension.category, Dimension.packageName),
+        viewId = viewId,
+        dateRanges = List(dateRange),
+        dimensions = List(Dimension.category, Dimension.packageName),
         dimensionFilterClauses = dimensionFiltersFor(code, category),
-        metrics                = List(Metric.eventValue),
-        orderBys               = List(OrderBy.category, OrderBy.eventValue),
-        pageSize               = rankingSize
+        metrics = List(Metric.eventValue),
+        orderBys = List(OrderBy.category, OrderBy.eventValue),
+        pageSize = rankingSize
       )
 
     def parseResponse(response: ResponseBody): List[(String, List[Package])] =
       response.reports.flatMap(parseReport)
 
     def parseReport(report: Report): List[(String, List[Package])] =
-      report.data.rows.getOrElse(Nil)
+      report.data.rows
+        .getOrElse(Nil)
         .map(toDimensionCell)
         .groupBy(_.category)
         .mapValues(_ map (_.packageName))
         .toList
 
-    private def dimensionFiltersFor(code: Option[CountryIsoCode], category: String): DimensionFilter.Clauses =
+    private def dimensionFiltersFor(
+        code: Option[CountryIsoCode],
+        category: String): DimensionFilter.Clauses =
       singleClause(Filter.isCategory(category)) ++
         code.fold(List.empty[Clause])(isoCode ⇒ singleClause(Filter.isCountry(isoCode)))
 

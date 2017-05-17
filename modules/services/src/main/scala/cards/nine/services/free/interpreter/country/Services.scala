@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.services.free.interpreter.country
 
 import cards.nine.commons.NineCardsErrors.CountryNotFound
@@ -32,7 +33,7 @@ class Services(persistence: Persistence[Country]) extends (Ops ~> ConnectionIO) 
   def getCountries(pageParams: Page): PersistenceService[List[Country]] =
     PersistenceService {
       persistence.fetchList(
-        sql    = Queries.getCountriesWithPaginationSql,
+        sql = Queries.getCountriesWithPaginationSql,
         values = (pageParams.pageSize, pageParams.pageNumber)
       )
     }
@@ -43,7 +44,7 @@ class Services(persistence: Persistence[Country]) extends (Ops ~> ConnectionIO) 
     }
 
   def apply[A](fa: Ops[A]): ConnectionIO[A] = fa match {
-    case GetCountries(pageParams) ⇒ getCountries(pageParams)
+    case GetCountries(pageParams)      ⇒ getCountries(pageParams)
     case GetCountryByIsoCode2(isoCode) ⇒ getCountryByIsoCode2(isoCode)
   }
 }

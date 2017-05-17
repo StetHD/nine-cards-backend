@@ -13,30 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.services.free.interpreter.user
 
-import cards.nine.commons.NineCardsErrors.{ InstallationNotFound, UserNotFound }
+import cards.nine.commons.NineCardsErrors.{InstallationNotFound, UserNotFound}
 import cards.nine.domain.account._
 import cards.nine.services.common.PersistenceService
 import cards.nine.services.common.PersistenceService._
 import cards.nine.services.free.algebra.User._
-import cards.nine.services.free.domain.Installation.{ Queries ⇒ InstallationQueries }
-import cards.nine.services.free.domain.User.{ Queries ⇒ UserQueries }
-import cards.nine.services.free.domain.{ Installation, User }
+import cards.nine.services.free.domain.Installation.{Queries ⇒ InstallationQueries}
+import cards.nine.services.free.domain.User.{Queries ⇒ UserQueries}
+import cards.nine.services.free.domain.{Installation, User}
 import cards.nine.services.persistence.Persistence
 import cats.syntax.either._
 import cats.~>
 import doobie.imports._
 
 class Services(
-  userPersistence: Persistence[User],
-  installationPersistence: Persistence[Installation]
+    userPersistence: Persistence[User],
+    installationPersistence: Persistence[Installation]
 ) extends (Ops ~> ConnectionIO) {
 
   def addUser(email: Email, apiKey: ApiKey, sessionToken: SessionToken): PersistenceService[User] =
     PersistenceService {
       userPersistence.updateWithGeneratedKeys(
-        sql    = UserQueries.insert,
+        sql = UserQueries.insert,
         fields = User.allFields,
         values = (email, sessionToken, apiKey)
       )
@@ -53,41 +54,47 @@ class Services(
     }
 
   def createInstallation(
-    userId: Long,
-    deviceToken: Option[DeviceToken],
-    androidId: AndroidId
+      userId: Long,
+      deviceToken: Option[DeviceToken],
+      androidId: AndroidId
   ): PersistenceService[Installation] =
     PersistenceService {
       installationPersistence.updateWithGeneratedKeys(
-        sql    = InstallationQueries.insert,
+        sql = InstallationQueries.insert,
         fields = Installation.allFields,
         values = (userId, deviceToken, androidId)
       )
     }
 
   def getInstallationByUserAndAndroidId(
-    userId: Long,
-    androidId: AndroidId
+      userId: Long,
+      androidId: AndroidId
   ): PersistenceService[Installation] =
     installationPersistence.fetchOption(
-      sql    = InstallationQueries.getByUserAndAndroidId,
+      sql = InstallationQueries.getByUserAndAndroidId,
       values = (userId, androidId)
     ) map {
-      Either.fromOption(_, InstallationNotFound(s"Installation for android id ${androidId.value} not found"))
+      Either.fromOption(
+        _,
+        InstallationNotFound(s"Installation for android id ${androidId.value} not found"))
     }
 
-  def getSubscribedInstallationByCollection(publicIdentifier: String): PersistenceService[List[Installation]] =
+  def getSubscribedInstallationByCollection(
+      publicIdentifier: String): PersistenceService[List[Installation]] =
     PersistenceService {
       installationPersistence.fetchList(
-        sql    = InstallationQueries.getSubscribedByCollection,
+        sql = InstallationQueries.getSubscribedByCollection,
         values = publicIdentifier
       )
     }
 
-  def updateInstallation(userId: Long, deviceToken: Option[DeviceToken], androidId: AndroidId): PersistenceService[Installation] =
+  def updateInstallation(
+      userId: Long,
+      deviceToken: Option[DeviceToken],
+      androidId: AndroidId): PersistenceService[Installation] =
     PersistenceService {
       installationPersistence.updateWithGeneratedKeys(
-        sql    = InstallationQueries.updateDeviceToken,
+        sql = InstallationQueries.updateDeviceToken,
         fields = Installation.allFields,
         values = (deviceToken, userId, androidId)
       )
@@ -114,15 +121,14 @@ class Services(
 object Services {
 
   case class UserData(
-    email: String,
-    sessionToken: String,
-    apiKey: String
+      email: String,
+      sessionToken: String,
+      apiKey: String
   )
 
   def services(
-    implicit
-    userPersistence: Persistence[User],
-    installationPersistence: Persistence[Installation]
+      implicit userPersistence: Persistence[User],
+      installationPersistence: Persistence[Installation]
   ) =
     new Services(userPersistence, installationPersistence)
 }

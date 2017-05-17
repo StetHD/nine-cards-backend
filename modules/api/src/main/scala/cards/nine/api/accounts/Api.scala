@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.api.accounts
 
 import cards.nine.api.NineCardsDirectives._
@@ -29,10 +30,9 @@ import spray.httpx.SprayJsonSupport
 import spray.routing._
 
 class AccountsApi(
-  implicit
-  config: NineCardsConfiguration,
-  accountProcesses: AccountProcesses[NineCardsServices],
-  executionContext: ExecutionContext
+    implicit config: NineCardsConfiguration,
+    accountProcesses: AccountProcesses[NineCardsServices],
+    executionContext: ExecutionContext
 ) extends SprayJsonSupport {
 
   import Converters._

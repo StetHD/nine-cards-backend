@@ -13,10 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.googleplay.service.free.algebra
 
-import cats.free.{ Free, Inject }
-import cards.nine.domain.application.{ FullCard, Package }
+import cats.free.{Free, Inject}
+import cards.nine.domain.application.{FullCard, Package}
 import cards.nine.googleplay.domain.webscrapper._
 
 object WebScraper {

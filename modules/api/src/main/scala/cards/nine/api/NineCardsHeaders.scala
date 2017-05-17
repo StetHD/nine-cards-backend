@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.api
 
 import cards.nine.domain.account.AndroidId
@@ -20,12 +21,12 @@ import org.joda.time.DateTime
 
 object NineCardsHeaders {
 
-  val headerAndroidId = "X-Android-ID"
-  val headerGooglePlayToken = "X-Google-Play-Token"
+  val headerAndroidId            = "X-Android-ID"
+  val headerGooglePlayToken      = "X-Google-Play-Token"
   val headerGoogleAnalyticsToken = "X-Google-Analytics-Token"
-  val headerMarketLocalization = "X-Android-Market-Localization"
-  val headerSessionToken = "X-Session-Token"
-  val headerAuthToken = "X-Auth-Token"
+  val headerMarketLocalization   = "X-Android-Market-Localization"
+  val headerSessionToken         = "X-Session-Token"
+  val headerAuthToken            = "X-Auth-Token"
   val headerHerokuForwardedProto = "x-forwarded-proto"
 
   object Domain {

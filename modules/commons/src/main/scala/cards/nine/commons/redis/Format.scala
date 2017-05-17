@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.commons.redis
 
 import io.circe.Encoder
@@ -29,4 +30,3 @@ object Format {
   }
 
 }
-

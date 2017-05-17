@@ -13,38 +13,43 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.googleplay.processes
 
 import cards.nine.domain.ScalaCheck._
-import cards.nine.domain.application.{ FullCard, Package }
+import cards.nine.domain.application.{FullCard, Package}
 import cards.nine.domain.market.MarketCredentials
-import cards.nine.googleplay.domain.{ apigoogle ⇒ ApiDom, webscrapper ⇒ WebDom }
-import cards.nine.googleplay.processes.GooglePlayApp.{ GooglePlayApp, Interpreters }
-import cards.nine.googleplay.service.free.algebra.{ Cache ⇒ CacheAlg, GoogleApi ⇒ ApiAlg, WebScraper ⇒ WebAlg }
-import cards.nine.googleplay.service.free.interpreter.{ cache ⇒ CacheInt, googleapi ⇒ ApiInt, webscrapper ⇒ WebInt }
+import cards.nine.googleplay.domain.{apigoogle ⇒ ApiDom, webscrapper ⇒ WebDom}
+import cards.nine.googleplay.processes.GooglePlayApp.{GooglePlayApp, Interpreters}
+import cards.nine.googleplay.service.free.algebra.{
+  Cache ⇒ CacheAlg,
+  GoogleApi ⇒ ApiAlg,
+  WebScraper ⇒ WebAlg
+}
+import cards.nine.googleplay.service.free.interpreter.{
+  cache ⇒ CacheInt,
+  googleapi ⇒ ApiInt,
+  webscrapper ⇒ WebInt
+}
 import cards.nine.googleplay.util.ScalaCheck._
-import cats.{ Id, ~> }
-import org.joda.time.{ DateTime, DateTimeZone }
+import cats.{~>, Id}
+import org.joda.time.{DateTime, DateTimeZone}
 import org.mockito.Mockito.reset
 import org.specs2.ScalaCheck
 import org.specs2.matcher.Matchers
 import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
 
-class CardsProcessesSpec
-  extends Specification
-  with Matchers
-  with ScalaCheck
-  with Mockito {
+class CardsProcessesSpec extends Specification with Matchers with ScalaCheck with Mockito {
 
   val apiGoogleIntServer: ApiInt.InterpreterServer[Id] = mock[ApiInt.InterpreterServer[Id]]
-  val apiGoogleInt: ApiAlg.Ops ~> Id = ApiInt.MockInterpreter(apiGoogleIntServer)
+  val apiGoogleInt: ApiAlg.Ops ~> Id                   = ApiInt.MockInterpreter(apiGoogleIntServer)
 
   val cacheIntServer: CacheInt.InterpreterServer[Id] = mock[CacheInt.InterpreterServer[Id]]
-  val cacheInt: CacheAlg.Ops ~> Id = CacheInt.MockInterpreter(cacheIntServer)
+  val cacheInt: CacheAlg.Ops ~> Id                   = CacheInt.MockInterpreter(cacheIntServer)
 
   val webScrapperIntServer: WebInt.InterpreterServer[Id] = mock[WebInt.InterpreterServer[Id]]
-  val webScrapperInt: WebAlg.Ops ~> Id = WebInt.MockInterpreter(webScrapperIntServer)
+  val webScrapperInt: WebAlg.Ops ~> Id                   = WebInt.MockInterpreter(webScrapperIntServer)
 
   val interpreter: GooglePlayApp ~> Id = Interpreters(apiGoogleInt, cacheInt, webScrapperInt)
 

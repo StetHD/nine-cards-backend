@@ -13,16 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.processes.rankings
 
-import cards.nine.commons.NineCardsErrors.{ CountryNotFound, RankingNotFound }
+import cards.nine.commons.NineCardsErrors.{CountryNotFound, RankingNotFound}
 import cards.nine.commons.NineCardsService
 import cards.nine.domain.analytics._
-import cards.nine.domain.application.{ Package, Widget }
+import cards.nine.domain.application.{Package, Widget}
 import cards.nine.processes.NineCardsServices.NineCardsServices
 import cards.nine.services.free.domain.Ranking.GoogleAnalyticsRanking
 import cards.nine.services.free.domain.Country
-import org.joda.time.{ DateTime, DateTimeZone }
+import org.joda.time.{DateTime, DateTimeZone}
 
 private[rankings] object TestData {
 
@@ -41,23 +42,23 @@ private[rankings] object TestData {
   val success = 1
 
   val country = Country(
-    isoCode2  = countryIsoCode2,
-    isoCode3  = Option(countryIsoCode3),
-    name      = countryName,
+    isoCode2 = countryIsoCode2,
+    isoCode3 = Option(countryIsoCode3),
+    name = countryName,
     continent = countryContinent
   )
 
   val countryNotFoundError = CountryNotFound(s"Country with ISO code2 US doesn't exist")
 
-  lazy val limit = 2
-  lazy val location = Option("US")
-  lazy val moments = List("HOME", "NIGHT")
+  lazy val limit         = 2
+  lazy val location      = Option("US")
+  lazy val moments       = List("HOME", "NIGHT")
   lazy val widgetMoments = moments map Converters.toWidgetMoment
-  lazy val params = RankingParams(DateRange(startDate, endDate), 5, AnalyticsToken("auth_token"))
-  lazy val scope = CountryScope(CountryIsoCode("ES"))
-  lazy val usaScope = CountryScope(CountryIsoCode("US"))
-  lazy val startDate = new DateTime(2016, 1, 1, 0, 0, DateTimeZone.UTC)
-  lazy val endDate = new DateTime(2016, 2, 1, 0, 0, DateTimeZone.UTC)
+  lazy val params        = RankingParams(DateRange(startDate, endDate), 5, AnalyticsToken("auth_token"))
+  lazy val scope         = CountryScope(CountryIsoCode("ES"))
+  lazy val usaScope      = CountryScope(CountryIsoCode("US"))
+  lazy val startDate     = new DateTime(2016, 1, 1, 0, 0, DateTimeZone.UTC)
+  lazy val endDate       = new DateTime(2016, 2, 1, 0, 0, DateTimeZone.UTC)
   lazy val googleAnalyticsRanking = GoogleAnalyticsRanking(
     Map("SOCIAL" → List(Package("socialite"), Package("socialist")))
   )
@@ -123,8 +124,9 @@ private[rankings] object TestData {
       widgetsWithRanking(countriesNZList, countriesNZCategory)
   }
 
-  val rankingForWidgetsEmptyResponse = NineCardsService.right[NineCardsServices, List[RankedWidget]] {
-    Nil
-  }
+  val rankingForWidgetsEmptyResponse =
+    NineCardsService.right[NineCardsServices, List[RankedWidget]] {
+      Nil
+    }
 
 }

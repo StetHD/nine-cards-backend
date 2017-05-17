@@ -13,10 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.processes.rankings
 
 import cards.nine.domain.analytics._
-import cards.nine.domain.application.{ Moment, Package }
+import cards.nine.domain.application.{Moment, Package}
 
 object Converters {
 

@@ -13,12 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.commons.redis
 
 import akka.actor.ActorSystem
 
 object TestUtils {
 
-  implicit val redisTestActorSystem: ActorSystem = ActorSystem("cards-nine-test-commons-redis-tests")
+  implicit val redisTestActorSystem: ActorSystem = ActorSystem(
+    "cards-nine-test-commons-redis-tests")
 
 }

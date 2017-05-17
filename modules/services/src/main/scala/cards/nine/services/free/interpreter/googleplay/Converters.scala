@@ -13,11 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.services.free.interpreter.googleplay
 
 import cards.nine.domain.application._
 import cards.nine.googleplay.domain._
-import cards.nine.googleplay.processes.{ getcard, ResolveMany, ResolvePending }
+import cards.nine.googleplay.processes.{getcard, ResolveMany, ResolvePending}
 import cats.instances.either._
 import cats.instances.list._
 import cats.syntax.monadCombine._
@@ -27,16 +28,16 @@ object Converters {
   def omitMissing[A](cardsList: CardList[A]): CardList[A] = cardsList.copy(missing = Nil)
 
   def toSearchAppsRequest(
-    query: String,
-    excludePackages: List[Package],
-    limit: Int
+      query: String,
+      excludePackages: List[Package],
+      limit: Int
   ): SearchAppsRequest = SearchAppsRequest(query, excludePackages, limit)
 
   def toRecommendByAppsRequest(
-    packages: List[Package],
-    limitByApp: Option[Int],
-    excludedPackages: List[Package],
-    limit: Int
+      packages: List[Package],
+      limitByApp: Option[Int],
+      excludedPackages: List[Package],
+      limit: Int
   ): RecommendByAppsRequest =
     RecommendByAppsRequest(
       packages,
@@ -46,10 +47,10 @@ object Converters {
     )
 
   def toRecommendByCategoryRequest(
-    category: String,
-    filter: PriceFilter,
-    excludedPackages: List[Package],
-    limit: Int
+      category: String,
+      filter: PriceFilter,
+      excludedPackages: List[Package],
+      limit: Int
   ): RecommendByCategoryRequest =
     RecommendByCategoryRequest(
       Category.withName(category),
@@ -77,8 +78,8 @@ object Converters {
   def toResolvePendingStats(response: ResolvePending.Response): ResolvePendingStats =
     ResolvePendingStats(
       resolved = response.solved.length,
-      pending  = response.pending.length,
-      errors   = response.unknown.length
+      pending = response.pending.length,
+      errors = response.unknown.length
     )
 
 }

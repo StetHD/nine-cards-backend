@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.services.free.interpreter.googleapi
 
 import cards.nine.commons.NineCardsErrors.WrongGoogleAuthToken
@@ -20,12 +21,12 @@ import cards.nine.commons.NineCardsService.Result
 import cards.nine.commons.config.Domain.GoogleApiConfiguration
 import cards.nine.domain.account.GoogleIdToken
 import cards.nine.services.free.algebra.GoogleApi._
-import cards.nine.services.free.domain.{ TokenInfo, WrongTokenInfo }
+import cards.nine.services.free.domain.{TokenInfo, WrongTokenInfo}
 import cats.syntax.either._
 import cats.~>
 import org.http4s.Http4s._
 import org.http4s.Uri
-import org.http4s.Uri.{ Authority, RegName }
+import org.http4s.Uri.{Authority, RegName}
 
 import scalaz.concurrent.Task
 

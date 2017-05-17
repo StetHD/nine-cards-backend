@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.commons
 
 import cards.nine.commons.config.NineCardsConfig
@@ -20,8 +21,8 @@ import org.specs2.mutable.Specification
 
 class NineCardsConfigSpec extends Specification {
 
-  val intValue = 123
-  val stringValue = "abc"
+  val intValue     = 123
+  val stringValue  = "abc"
   val stringValue2 = "xyz"
   val booleanValue = true
 
@@ -50,7 +51,7 @@ class NineCardsConfigSpec extends Specification {
 
   val config = new NineCardsConfig(Option(dummyConfigHocon))
 
-  private[this] val ifExists = "if the key exists in the config file"
+  private[this] val ifExists    = "if the key exists in the config file"
   private[this] val ifNotExists = "if the key doesn't exist in the config file"
 
   "getBoolean" should {

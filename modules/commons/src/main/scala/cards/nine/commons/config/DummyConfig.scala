@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.commons.config
 
 import cards.nine.commons.config.Domain.NineCardsConfiguration
@@ -21,21 +22,21 @@ trait DummyConfig {
 
   object common {
     val protocol = "http"
-    val port = 8080
-    val host = "localhost"
+    val port     = 8080
+    val host     = "localhost"
   }
 
   object db {
 
     object default {
-      val driver = "org.postgresql.Driver"
+      val driver    = "org.postgresql.Driver"
       val urlPrefix = "jdbc:postgresql://"
-      val url = "postgres://ninecards_tester@localhost/ninecards_test"
+      val url       = "postgres://ninecards_tester@localhost/ninecards_test"
     }
 
     object hikari {
       val maximumPoolSize = 1
-      val maxLifetime = 1
+      val maxLifetime     = 1
     }
 
   }
@@ -50,12 +51,12 @@ trait DummyConfig {
   }
 
   object googleanalytics {
-    val uri = "/v4/reports:batchGet"
+    val uri    = "/v4/reports:batchGet"
     val viewId = "12345"
   }
 
   object googleapi {
-    val tokenInfoUri = "/oauth2/v3/tokeninfo"
+    val tokenInfoUri         = "/oauth2/v3/tokeninfo"
     val tokenIdParameterName = "id_token"
   }
 
@@ -64,15 +65,15 @@ trait DummyConfig {
     object api {
 
       object paths {
-        val bulkDetails = "/fdfe/bulkDetails"
-        val details = "/fdfe/details"
-        val list = "/fdfe/list"
-        val search = "/fdfe/search"
+        val bulkDetails     = "/fdfe/bulkDetails"
+        val details         = "/fdfe/details"
+        val list            = "/fdfe/list"
+        val search          = "/fdfe/search"
         val recommendations = "/fdfe/rec"
       }
 
       val maxTotalConnections = 10
-      val detailsBatchSize = 5
+      val detailsBatchSize    = 5
     }
 
     object web {
@@ -85,28 +86,28 @@ trait DummyConfig {
 
     }
 
-    val resolveInterval = "1 second"
+    val resolveInterval  = "1 second"
     val resolveBatchSize = 1
   }
 
   object ninecards {
-    val salt = "0987654321"
+    val salt      = "0987654321"
     val secretKey = "1234567890"
   }
 
   object rankings {
-    val actorInterval = "1 hour"
-    val rankingPeriod = "30 days"
-    val countriesPerRequest = 2
+    val actorInterval              = "1 hour"
+    val rankingPeriod              = "30 days"
+    val countriesPerRequest        = 2
     val maxNumberOfAppsPerCategory = 100
 
     object oauth {
-      val clientId = "12345"
-      val clientEmail = "client@ema.il"
-      val privateKey = """----BEGIN PRIVATE KEY----\nBASE64+=TEXT\n-----END PRIVATE KEY -----"""
+      val clientId     = "12345"
+      val clientEmail  = "client@ema.il"
+      val privateKey   = """----BEGIN PRIVATE KEY----\nBASE64+=TEXT\n-----END PRIVATE KEY -----"""
       val privateKeyId = "abcdef0123456789"
-      val tokenUri = ""
-      val scopes = List("http://www.nine.cards/auth/testing.only")
+      val tokenUri     = ""
+      val scopes       = List("http://www.nine.cards/auth/testing.only")
     }
   }
 
@@ -125,9 +126,9 @@ trait DummyConfig {
   val loaderIOToken = "loaderio-localtest"
 
   object test {
-    val androidId = "androidId"
-    val token = "token"
-    val localization = "en-US"
+    val androidId               = "androidId"
+    val token                   = "token"
+    val localization            = "en-US"
     val googlePlayDetailsAppUrl = "https://play.google.com/store/apps/details"
   }
 
@@ -244,7 +245,8 @@ trait DummyConfig {
 
   def dummyConfig(debugMode: Boolean) = new NineCardsConfig(Option(dummyConfigHocon(debugMode)))
 
-  implicit val config: NineCardsConfiguration = NineCardsConfiguration(dummyConfig(debugMode = false))
+  implicit val config: NineCardsConfiguration = NineCardsConfiguration(
+    dummyConfig(debugMode = false))
 
   val debugConfig: NineCardsConfiguration = NineCardsConfiguration(dummyConfig(debugMode = true))
 }

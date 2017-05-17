@@ -13,11 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.api
 
 import cards.nine.commons.NineCardsErrors._
 import spray.http.StatusCodes._
-import spray.http.{ HttpEntity, HttpResponse }
+import spray.http.{HttpEntity, HttpResponse}
 import spray.httpx.marshalling.ToResponseMarshallingContext
 
 class NineCardsErrorHandler {

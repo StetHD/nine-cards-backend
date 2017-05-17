@@ -13,11 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.processes.applications
 
 import cards.nine.domain.account.AndroidId
-import cards.nine.domain.application.{ CardList, FullCard, Package, PriceFilter }
-import cards.nine.domain.market.{ Localization, MarketCredentials, MarketToken }
+import cards.nine.domain.application.{CardList, FullCard, Package, PriceFilter}
+import cards.nine.domain.market.{Localization, MarketCredentials, MarketToken}
 
 private[applications] object TestData {
 
@@ -44,12 +45,13 @@ private[applications] object TestData {
 
   val (missing, found) = packagesName.partition(_.value.length > 6)
 
-  val apps = found map (packageName ⇒ FullCard(packageName, title, List(category), downloads, free, icon, Nil, stars))
+  val apps = found map (packageName ⇒
+    FullCard(packageName, title, List(category), downloads, free, icon, Nil, stars))
 
   val marketAuth = {
-    val androidId = "12345"
+    val androidId    = "12345"
     val localization = "en_GB"
-    val token = "m52_9876"
+    val token        = "m52_9876"
     MarketCredentials(AndroidId(androidId), MarketToken(token), Some(Localization(localization)))
   }
 
@@ -65,7 +67,15 @@ object RecommendationsTestData {
   val screenshots = List("path-to-screenshot-1", "path-to-screenshot-2")
 
   val recommendedApps = TestData.packagesName map (packageName ⇒
-    FullCard(packageName, TestData.title, Nil, TestData.downloads, TestData.free, TestData.icon, screenshots, TestData.stars))
+    FullCard(
+      packageName,
+      TestData.title,
+      Nil,
+      TestData.downloads,
+      TestData.free,
+      TestData.icon,
+      screenshots,
+      TestData.stars))
 
   val limit = 20
 
@@ -85,13 +95,13 @@ object GooglePlayTestData {
   val apps = foundPackageNames map { packageName ⇒
     FullCard(
       packageName = packageName,
-      title       = "Title of app",
-      free        = true,
-      icon        = "Icon of app",
-      stars       = 5.0,
-      downloads   = "Downloads of app",
+      title = "Title of app",
+      free = true,
+      icon = "Icon of app",
+      stars = 5.0,
+      downloads = "Downloads of app",
       screenshots = Nil,
-      categories  = List("Country")
+      categories = List("Country")
     )
   }
 

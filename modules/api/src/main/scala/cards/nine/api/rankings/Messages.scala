@@ -13,11 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.api.rankings
 
 import cards.nine.domain.application.Package
 
-import org.joda.time.{ DateTime, DateTimeZone }
+import org.joda.time.{DateTime, DateTimeZone}
 import org.joda.time.format.DateTimeFormat
 
 object messages {
@@ -27,9 +28,9 @@ object messages {
   object Reload {
 
     case class Request(
-      startDate: DateTime,
-      endDate: DateTime,
-      rankingLength: Int
+        startDate: DateTime,
+        endDate: DateTime,
+        rankingLength: Int
     ) {
       if (!isValidDateRange(startDate, endDate))
         throw new InvalidDate(startDate, endDate)
@@ -39,7 +40,8 @@ object messages {
 
     class InvalidDate(startDate: DateTime, endDate: DateTime) extends Throwable {
       override def getMessage(): String = {
-        s"""Invalid date range { startDate=${formatter.print(startDate)}, endDate = ${formatter.print(endDate)} }
+        s"""Invalid date range { startDate=${formatter.print(startDate)}, endDate = ${formatter
+             .print(endDate)} }
           | For a date range to be valid,
           | * The startDate and endDate must be formatted as "YYYY-MM-DD", such as "2016-04-15".
           | * The startDate must be before the endDate
@@ -51,9 +53,8 @@ object messages {
     private[this] val googleAnalyticsLaunch: DateTime =
       new DateTime(2015, 1, 1, 0, 0, DateTimeZone.UTC)
 
-    def isValidDateRange(startDate: DateTime, endDate: DateTime): Boolean = {
+    def isValidDateRange(startDate: DateTime, endDate: DateTime): Boolean =
       (startDate isBefore endDate) && (startDate isAfter googleAnalyticsLaunch)
-    }
 
     case class Response()
 

@@ -13,18 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.api
 
 import cards.nine.domain.application.Package
 import spray.httpx.SprayJsonSupport
 import spray.json._
 
-trait JsonFormats
-  extends DefaultJsonProtocol
-  with SprayJsonSupport {
+trait JsonFormats extends DefaultJsonProtocol with SprayJsonSupport {
 
   implicit object PackageJsonFormat extends JsonFormat[Package] {
-    def read(json: JsValue): Package = Package(StringJsonFormat.read(json))
+    def read(json: JsValue): Package  = Package(StringJsonFormat.read(json))
     def write(pack: Package): JsValue = StringJsonFormat.write(pack.value)
   }
 

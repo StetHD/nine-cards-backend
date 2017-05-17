@@ -13,10 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.api.accounts
 
 import cards.nine.api.NineCardsHeaders._
-import cards.nine.api.accounts.messages.{ ApiLoginRequest, ApiUpdateInstallationRequest }
+import cards.nine.api.accounts.messages.{ApiLoginRequest, ApiUpdateInstallationRequest}
 import cards.nine.domain.account._
 import cards.nine.processes.account.messages._
 import org.joda.time.DateTime

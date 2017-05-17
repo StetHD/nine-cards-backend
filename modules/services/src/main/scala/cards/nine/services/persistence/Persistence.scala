@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.services.persistence
 
-import doobie.imports.{ Composite, ConnectionIO, Query, Query0, Update, Update0 }
+import doobie.imports.{Composite, ConnectionIO, Query, Query0, Update, Update0}
 import shapeless.HNil
 import scalaz.Foldable
 
@@ -42,7 +43,8 @@ class Persistence[K: Composite] {
     def apply(sql: String)(implicit L: Composite[L]): ConnectionIO[List[L]] =
       Query[HNil, L](sql).toQuery0(HNil).to[List]
 
-    def apply[A: Composite](sql: String, values: A)(implicit L: Composite[L]): ConnectionIO[List[L]] =
+    def apply[A: Composite](sql: String, values: A)(
+        implicit L: Composite[L]): ConnectionIO[List[L]] =
       Query[A, L](sql).to[List](values)
   }
 
@@ -61,7 +63,10 @@ class Persistence[K: Composite] {
   def update[A: Composite](sql: String, values: A): ConnectionIO[Int] =
     Update[A](sql).run(values)
 
-  def updateWithGeneratedKeys[A: Composite](sql: String, fields: List[String], values: A): ConnectionIO[K] =
+  def updateWithGeneratedKeys[A: Composite](
+      sql: String,
+      fields: List[String],
+      values: A): ConnectionIO[K] =
     Update[A](sql).withUniqueGeneratedKeys[K](fields: _*)(values)
 
   def updateMany[F[_]: Foldable, A: Composite](sql: String, values: F[A]): ConnectionIO[Int] =

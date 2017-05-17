@@ -13,10 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.commons.config
 
 import cards.nine.commons.config.Domain.NineCardsConfiguration
-import com.typesafe.config.{ Config, ConfigFactory, ConfigValue, ConfigValueType }
+import com.typesafe.config.{Config, ConfigFactory, ConfigValue, ConfigValueType}
 import java.util.Map.Entry
 
 class NineCardsConfig(hocon: Option[String] = None) {
@@ -34,13 +35,13 @@ class NineCardsConfig(hocon: Option[String] = None) {
   def getInt(key: String) = getSysPropKeyAsInt(key).getOrElse(config.getInt(key))
 
   def getOptionalInt(
-    key: String
+      key: String
   ) = getSysPropKeyAsInt(key).fold(config.getOptionalInt(key))(Option(_))
 
   def getString(key: String) = sys.props.getOrElse(key, config.getString(key))
 
   def getOptionalString(
-    key: String
+      key: String
   ) = sys.props.get(key).fold(config.getOptionalString(key))(Option(_))
 
   def getStringList(key: String): List[String] = {
@@ -51,7 +52,7 @@ class NineCardsConfig(hocon: Option[String] = None) {
   def getBoolean(key: String) = getSysPropKeyAsBoolean(key).getOrElse(config.getBoolean(key))
 
   def getOptionalBoolean(
-    key: String
+      key: String
   ) = getSysPropKeyAsBoolean(key).fold(config.getOptionalBoolean(key))(Option(_))
 
   def getMap(key: String): Map[String, String] = {
@@ -82,7 +83,8 @@ object ConfigOps {
         None
       }
 
-    def getOptionalBoolean(path: String): Option[Boolean] = getOptionalValue(path)(config.getBoolean)
+    def getOptionalBoolean(path: String): Option[Boolean] =
+      getOptionalValue(path)(config.getBoolean)
 
     def getOptionalInt(path: String): Option[Int] = getOptionalValue(path)(config.getInt)
 
@@ -95,5 +97,6 @@ object NineCardsConfig {
 
   val defaultConfig: NineCardsConfig = new NineCardsConfig
 
-  implicit val nineCardsConfiguration: NineCardsConfiguration = NineCardsConfiguration(defaultConfig)
+  implicit val nineCardsConfiguration: NineCardsConfiguration = NineCardsConfiguration(
+    defaultConfig)
 }

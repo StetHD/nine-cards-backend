@@ -13,15 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.services.free.interpreter.analytics
 
 import cards.nine.domain.analytics.DateRange
 import cards.nine.services.free.domain.Ranking.RankingError
 import cards.nine.services.common.EitherDecoder
-import enumeratum.{ Circe ⇒ CirceEnum }
+import enumeratum.{Circe ⇒ CirceEnum}
 import io.circe.generic.auto._
 import io.circe.generic.semiauto._
-import io.circe.{ Decoder, Encoder, Json }
+import io.circe.{Decoder, Encoder, Json}
 
 object Encoders {
   import model._
@@ -33,7 +34,7 @@ object Encoders {
 
     def apply(dateRange: DateRange): Json = Json.obj(
       "startDate" → Encoder.encodeString(dayFormatter.print(dateRange.startDate)),
-      "endDate" → Encoder.encodeString(dayFormatter.print(dateRange.endDate))
+      "endDate"   → Encoder.encodeString(dayFormatter.print(dateRange.endDate))
     )
   }
 

@@ -13,14 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.api.accounts
 
 import akka.actor.ActorSystem
 import akka.testkit._
-import cards.nine.api.{ AuthHeadersRejectionHandler, NineCardsExceptionHandler }
+import cards.nine.api.{AuthHeadersRejectionHandler, NineCardsExceptionHandler}
 import cards.nine.api.NineCardsHeaders._
 import cards.nine.api.accounts.TestData._
-import cards.nine.commons.NineCardsErrors.{ AuthTokenNotValid, WrongEmailAccount }
+import cards.nine.commons.NineCardsErrors.{AuthTokenNotValid, WrongEmailAccount}
 import cards.nine.commons.NineCardsService
 import cards.nine.commons.config.Domain.NineCardsConfiguration
 import cards.nine.commons.config.NineCardsConfig
@@ -29,13 +30,13 @@ import cards.nine.processes.NineCardsServices._
 import cards.nine.processes._
 import cards.nine.processes.account.AccountProcesses
 import cards.nine.processes.account.messages._
-import org.mockito.Matchers.{ eq ⇒ mockEq }
+import org.mockito.Matchers.{eq ⇒ mockEq}
 import org.specs2.matcher.Matchers
 import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
 import spray.http.HttpHeaders.RawHeader
-import spray.http.{ HttpRequest, StatusCodes }
+import spray.http.{HttpRequest, StatusCodes}
 import spray.httpx.SprayJsonSupport
 import spray.routing.HttpService
 import spray.testkit.Specs2RouteTest
@@ -43,15 +44,15 @@ import spray.testkit.Specs2RouteTest
 import scala.concurrent.duration.DurationInt
 
 trait AccountsApiSpecification
-  extends Specification
-  with AuthHeadersRejectionHandler
-  with HttpService
-  with JsonFormats
-  with SprayJsonSupport
-  with Matchers
-  with Mockito
-  with NineCardsExceptionHandler
-  with Specs2RouteTest {
+    extends Specification
+    with AuthHeadersRejectionHandler
+    with HttpService
+    with JsonFormats
+    with SprayJsonSupport
+    with Matchers
+    with Mockito
+    with NineCardsExceptionHandler
+    with Specs2RouteTest {
 
   implicit def default(implicit system: ActorSystem) = RouteTestTimeout(20.second dilated system)
 
@@ -59,7 +60,8 @@ trait AccountsApiSpecification
 
   trait BasicScope extends Scope {
 
-    implicit val accountProcesses: AccountProcesses[NineCardsServices] = mock[AccountProcesses[NineCardsServices]]
+    implicit val accountProcesses: AccountProcesses[NineCardsServices] =
+      mock[AccountProcesses[NineCardsServices]]
 
     implicit val config: NineCardsConfiguration = NineCardsConfig.nineCardsConfiguration
 
@@ -67,9 +69,9 @@ trait AccountsApiSpecification
 
     accountProcesses.checkAuthToken(
       sessionToken = SessionToken(mockEq(sessionToken.value)),
-      androidId    = AndroidId(mockEq(androidId.value)),
-      authToken    = mockEq(authToken),
-      requestUri   = any[String]
+      androidId = AndroidId(mockEq(androidId.value)),
+      authToken = mockEq(authToken),
+      requestUri = any[String]
     ) returns NineCardsService.right(userId)
   }
 
@@ -77,7 +79,8 @@ trait AccountsApiSpecification
 
     accountProcesses.checkGoogleTokenId(email, tokenId) returns NineCardsService.right(Unit)
 
-    accountProcesses.signUpUser(any[LoginRequest]) returns NineCardsService.right(Messages.loginResponse)
+    accountProcesses.signUpUser(any[LoginRequest]) returns NineCardsService.right(
+      Messages.loginResponse)
 
     accountProcesses.updateInstallation(mockEq(Messages.updateInstallationRequest)) returns
       NineCardsService.right(Messages.updateInstallationResponse)
@@ -91,9 +94,9 @@ trait AccountsApiSpecification
 
     accountProcesses.checkAuthToken(
       sessionToken = SessionToken(mockEq(sessionToken.value)),
-      androidId    = AndroidId(mockEq(androidId.value)),
-      authToken    = mockEq(failingAuthToken),
-      requestUri   = any[String]
+      androidId = AndroidId(mockEq(androidId.value)),
+      authToken = mockEq(failingAuthToken),
+      requestUri = any[String]
     ) returns NineCardsService.left(AuthTokenNotValid("The provided auth token is not valid"))
 
   }
@@ -104,12 +107,13 @@ trait AccountsApiSpecification
 
     accountProcesses.checkAuthToken(
       sessionToken = SessionToken(mockEq(sessionToken.value)),
-      androidId    = AndroidId(mockEq(androidId.value)),
-      authToken    = mockEq(failingAuthToken),
-      requestUri   = any[String]
+      androidId = AndroidId(mockEq(androidId.value)),
+      authToken = mockEq(failingAuthToken),
+      requestUri = any[String]
     ) returns NineCardsService.right(userId)
 
-    accountProcesses.signUpUser(any[LoginRequest]) returns NineCardsService.right(Messages.loginResponse)
+    accountProcesses.signUpUser(any[LoginRequest]) returns NineCardsService.right(
+      Messages.loginResponse)
 
     accountProcesses.updateInstallation(mockEq(Messages.updateInstallationRequest)) returns
       NineCardsService.right(Messages.updateInstallationResponse)
@@ -118,8 +122,7 @@ trait AccountsApiSpecification
 
 }
 
-class AccountsApiSpec
-  extends AccountsApiSpecification {
+class AccountsApiSpec extends AccountsApiSpecification {
 
   private[this] def unauthorizedNoHeaders(request: HttpRequest) = {
 

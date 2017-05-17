@@ -13,10 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.processes.applications
 
 import cards.nine.domain.analytics._
-import cards.nine.domain.application.{ CardList, FullCard, Package }
+import cards.nine.domain.application.{CardList, FullCard, Package}
 
 private[applications] object Converters {
 
@@ -25,7 +26,7 @@ private[applications] object Converters {
     CardList(
       missing = info.missing ++ appsWithoutCategories.map(_.packageName),
       pending = info.pending,
-      cards   = apps
+      cards = apps
     )
   }
 

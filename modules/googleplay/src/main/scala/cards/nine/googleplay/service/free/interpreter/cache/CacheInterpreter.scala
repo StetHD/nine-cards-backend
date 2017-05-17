@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.googleplay.service.free.interpreter.cache
 
 import cards.nine.commons.redis._
@@ -23,7 +24,7 @@ import cats.instances.list._
 import cats.syntax.cartesian._
 import cats.syntax.functor._
 import cats.syntax.traverse._
-import org.joda.time.{ DateTime, DateTimeZone }
+import org.joda.time.{DateTime, DateTimeZone}
 import scala.concurrent.ExecutionContext
 
 class CacheInterpreter(implicit ec: ExecutionContext) extends (Ops ~> RedisOps) {
@@ -35,7 +36,8 @@ class CacheInterpreter(implicit ec: ExecutionContext) extends (Ops ~> RedisOps) 
 
   private[this] val errorCache: CacheQueue[CacheKey, DateTime] = new CacheQueue
 
-  private[this] val pendingSet: CacheSet[PendingQueueKey.type, Package] = new CacheSet(PendingQueueKey)
+  private[this] val pendingSet: CacheSet[PendingQueueKey.type, Package] = new CacheSet(
+    PendingQueueKey)
 
   def apply[A](ops: Ops[A]): RedisOps[A] = ops match {
 
@@ -53,7 +55,8 @@ class CacheInterpreter(implicit ec: ExecutionContext) extends (Ops ~> RedisOps) 
 
     case PutResolvedMany(cards) ⇒
       val packs = cards.map(_.packageName)
-      wrap.mput(cards map CacheEntry.resolved) *> removeErrorMany(packs) *> pendingSet.remove(packs)
+      wrap.mput(cards map CacheEntry.resolved) *> removeErrorMany(packs) *> pendingSet.remove(
+        packs)
 
     case PutPermanent(card) ⇒
       val pack = card.packageName
@@ -71,8 +74,8 @@ class CacheInterpreter(implicit ec: ExecutionContext) extends (Ops ~> RedisOps) 
 
     case AddErrorMany(packages) ⇒
       val now = DateTime.now(DateTimeZone.UTC)
-      val putErrors = packages.traverse[RedisOps, Unit] {
-        pack ⇒ errorCache.enqueue(CacheKey.error(pack), now)
+      val putErrors = packages.traverse[RedisOps, Unit] { pack ⇒
+        errorCache.enqueue(CacheKey.error(pack), now)
       }
       putErrors *> pendingSet.remove(packages)
 

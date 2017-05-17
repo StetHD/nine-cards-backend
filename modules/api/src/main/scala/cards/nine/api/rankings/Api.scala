@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.api.rankings
 
 import cards.nine.api.utils.SprayMatchers._
@@ -28,11 +29,10 @@ import scala.concurrent.ExecutionContext
 import spray.routing._
 
 class RankingsApi(
-  implicit
-  config: NineCardsConfiguration,
-  accountProcesses: AccountProcesses[NineCardsServices],
-  rankingProcesses: RankingProcesses[NineCardsServices],
-  executionContext: ExecutionContext
+    implicit config: NineCardsConfiguration,
+    accountProcesses: AccountProcesses[NineCardsServices],
+    rankingProcesses: RankingProcesses[NineCardsServices],
+    executionContext: ExecutionContext
 ) {
 
   import messages._
@@ -66,13 +66,13 @@ class RankingsApi(
 
   private[this] lazy val reloadParams: Directive1[RankingParams] =
     for {
-      authToken ← headerValueByName(NineCardsHeaders.headerGoogleAnalyticsToken)
+      authToken  ← headerValueByName(NineCardsHeaders.headerGoogleAnalyticsToken)
       apiRequest ← entity(as[Reload.Request])
     } yield toRankingParams(authToken, apiRequest)
 
   private[this] def reloadRanking(
-    scope: GeoScope,
-    params: RankingParams
+      scope: GeoScope,
+      params: RankingParams
   ): NineCardsServed[Result[Reload.Response]] =
     rankingProcesses.reloadRankingByScope(scope, params).map(toApiReloadResponse)
 

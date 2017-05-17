@@ -13,35 +13,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.api.utils
 
-import cards.nine.domain.application.{ Category, Package, PackageRegex, PriceFilter }
-import enumeratum.{ Enum, EnumEntry }
+import cards.nine.domain.application.{Category, Package, PackageRegex, PriceFilter}
+import enumeratum.{Enum, EnumEntry}
 import shapeless._
 import spray.http.Uri.Path
-import spray.routing.PathMatcher.{ Matched, Unmatched }
-import spray.routing.PathMatchers.{ IntNumber, Segment }
+import spray.routing.PathMatcher.{Matched, Unmatched}
+import spray.routing.PathMatchers.{IntNumber, Segment}
 import spray.routing._
 
 object SprayMatchers {
 
   class EnumSegment[E <: EnumEntry](implicit En: Enum[E]) extends PathMatcher1[E] {
     def apply(path: Path) = path match {
-      case Path.Segment(segment, tail) ⇒ En.withNameOption(segment) match {
-        case Some(e) ⇒ Matched(tail, e :: HNil)
-        case None ⇒ Unmatched
-      }
+      case Path.Segment(segment, tail) ⇒
+        En.withNameOption(segment) match {
+          case Some(e) ⇒ Matched(tail, e :: HNil)
+          case None    ⇒ Unmatched
+        }
       case _ ⇒ Unmatched
     }
   }
 
-  val CategorySegment: PathMatcher1[Category] = new EnumSegment[Category]
+  val CategorySegment: PathMatcher1[Category]       = new EnumSegment[Category]
   val PriceFilterSegment: PathMatcher1[PriceFilter] = new EnumSegment[PriceFilter]
 
   class TypedSegment[T](implicit gen: Generic.Aux[T, String :: HNil]) extends PathMatcher1[T] {
     def apply(path: Path) = path match {
       case Path.Segment(segment, tail) ⇒ Matched(tail, gen.from(segment :: HNil) :: HNil)
-      case _ ⇒ Unmatched
+      case _                           ⇒ Unmatched
     }
   }
 

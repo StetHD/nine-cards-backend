@@ -13,10 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.googleplay.service.free.interpreter.webscrapper
 
 import cats.~>
-import cards.nine.domain.application.{ FullCard, Package }
+import cards.nine.domain.application.{FullCard, Package}
 import cards.nine.googleplay.domain.webscrapper.Failure
 import cards.nine.googleplay.service.free.algebra.WebScraper._
 
@@ -28,9 +29,8 @@ trait InterpreterServer[F[_]] {
 case class MockInterpreter[F[_]](server: InterpreterServer[F]) extends (Ops ~> F) {
 
   override def apply[A](ops: Ops[A]) = ops match {
-    case ExistsApp(pack) ⇒ server.existsApp(pack)
+    case ExistsApp(pack)  ⇒ server.existsApp(pack)
     case GetDetails(pack) ⇒ server.getDetails(pack)
   }
 
 }
-

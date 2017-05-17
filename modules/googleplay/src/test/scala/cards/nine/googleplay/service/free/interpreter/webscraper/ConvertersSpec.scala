@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.googleplay.service.free.interpreter.webscrapper
 
 import cards.nine.googleplay.service.free.interpreter.TestData._
@@ -29,8 +30,8 @@ class ConvertersSpec extends Specification {
 
   def readHtmlFile(fileName: String): Node = {
     val resource = getClass.getClassLoader.getResource(fileName + ".html")
-    val parser = new SAXFactoryImpl().newSAXParser()
-    val adapter = new NoBindingFactoryAdapter
+    val parser   = new SAXFactoryImpl().newSAXParser()
+    val adapter  = new NoBindingFactoryAdapter
     adapter.loadXML(new InputSource(new FileInputStream(resource.getFile)), parser)
   }
 

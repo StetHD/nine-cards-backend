@@ -13,32 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.googleplay.processes
 
 import akka.actor.ActorSystem
 import cards.nine.commons.config.Domain.NineCardsConfiguration
 import cards.nine.commons.redis.RedisOpsToTask
-import cards.nine.googleplay.processes.GooglePlayApp.{ GooglePlayApp, Interpreters }
-import cards.nine.googleplay.service.free.algebra.{ Cache, GoogleApi, WebScraper }
+import cards.nine.googleplay.processes.GooglePlayApp.{GooglePlayApp, Interpreters}
+import cards.nine.googleplay.service.free.algebra.{Cache, GoogleApi, WebScraper}
 import cards.nine.googleplay.service.free.interpreter._
 import cards.nine.googleplay.service.free.interpreter.cache.CacheInterpreter
 import cats._
 import org.http4s.client.blaze.PooledHttp1Client
-import org.http4s.client.{ Client ⇒ HttpClient }
+import org.http4s.client.{Client ⇒ HttpClient}
 import scalaz.concurrent.Task
 import scala.concurrent.ExecutionContext
 
 class Wiring(
-  config: NineCardsConfiguration
+    config: NineCardsConfiguration
 )(
-  implicit
-  actorSystem: ActorSystem, ec: ExecutionContext
+    implicit actorSystem: ActorSystem,
+    ec: ExecutionContext
 ) extends (GooglePlayApp ~> Task) {
 
   type WithHttpClient[+A] = HttpClient ⇒ Task[A]
 
-  class HttpToTask(httpClient: HttpClient)
-    extends (WithHttpClient ~> Task) {
+  class HttpToTask(httpClient: HttpClient) extends (WithHttpClient ~> Task) {
     override def apply[A](fa: WithHttpClient[A]): Task[A] = fa(httpClient)
   }
 
@@ -65,7 +65,8 @@ class Wiring(
     new CacheInterpreter() andThen toTask
   }
 
-  private[this] val interpreters: GooglePlayApp ~> Task = Interpreters(googleApiInt, cacheInt, webScrapperInt)
+  private[this] val interpreters: GooglePlayApp ~> Task =
+    Interpreters(googleApiInt, cacheInt, webScrapperInt)
 
   def apply[A](ops: GooglePlayApp[A]): Task[A] = interpreters(ops)
 

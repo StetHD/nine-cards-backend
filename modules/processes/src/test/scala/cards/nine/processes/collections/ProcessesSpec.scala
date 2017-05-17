@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.processes.collections
 
 import cards.nine.commons.NineCardsService
@@ -32,10 +33,10 @@ import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
 
 trait SharedCollectionProcessesSpecification
-  extends Specification
-  with Matchers
-  with Mockito
-  with TestInterpreters {
+    extends Specification
+    with Matchers
+    with Mockito
+    with TestInterpreters {
 
   trait BasicScope extends Scope {
 
@@ -56,8 +57,8 @@ trait SharedCollectionProcessesSpecification
 }
 
 class SharedCollectionProcessesSpec
-  extends SharedCollectionProcessesSpecification
-  with ScalaCheck {
+    extends SharedCollectionProcessesSpecification
+    with ScalaCheck {
 
   "createCollection" should {
     "return a valid response info when the shared collection is created" in new BasicScope {
@@ -77,11 +78,13 @@ class SharedCollectionProcessesSpec
       collectionServices.getByPublicId(publicIdentifier) returns NineCardsService.right(collection)
       googlePlayServices.resolveManyDetailed(any, any) returns NineCardsService.right(appsInfo)
 
-      sharedCollectionProcesses.getCollectionByPublicIdentifier(
-        userId           = publisherId,
-        publicIdentifier = publicIdentifier,
-        marketAuth       = marketAuth
-      ).foldMap(testInterpreters) must beRight(getCollectionByPublicIdentifierResponse)
+      sharedCollectionProcesses
+        .getCollectionByPublicIdentifier(
+          userId = publisherId,
+          publicIdentifier = publicIdentifier,
+          marketAuth = marketAuth
+        )
+        .foldMap(testInterpreters) must beRight(getCollectionByPublicIdentifierResponse)
     }
 
     "return a SharedCollectionNotFoundException when the shared collection doesn't exist" in
@@ -91,9 +94,9 @@ class SharedCollectionProcessesSpec
           NineCardsService.left(sharedCollectionNotFoundError)
 
         val collectionInfo = sharedCollectionProcesses.getCollectionByPublicIdentifier(
-          userId           = publisherId,
+          userId = publisherId,
           publicIdentifier = publicIdentifier,
-          marketAuth       = marketAuth
+          marketAuth = marketAuth
         )
 
         collectionInfo.foldMap(testInterpreters) must beLeft(sharedCollectionNotFoundError)
@@ -104,17 +107,19 @@ class SharedCollectionProcessesSpec
 
     "return a list of Shared collections of the given category" in new BasicScope {
 
-      collectionServices.getLatestByCategory(category, pageParams) returns NineCardsService.right(List(collection))
+      collectionServices.getLatestByCategory(category, pageParams) returns NineCardsService.right(
+        List(collection))
       googlePlayServices.resolveManyBasic(any, any) returns NineCardsService.right(appsInfoBasic)
 
       sharedCollectionProcesses
         .getLatestCollectionsByCategory(
-          userId     = publisherId,
-          category   = category,
+          userId = publisherId,
+          category = category,
           marketAuth = marketAuth,
           pageParams = pageParams
         )
-        .foldMap(testInterpreters) must beRight(GetCollectionsResponse(List(sharedCollectionWithAppsInfoBasic)))
+        .foldMap(testInterpreters) must beRight(
+        GetCollectionsResponse(List(sharedCollectionWithAppsInfoBasic)))
     }
 
   }
@@ -123,12 +128,14 @@ class SharedCollectionProcessesSpec
 
     "return a list of shared collections of an user" in new BasicScope {
 
-      collectionServices.getByUser(publisherId) returns NineCardsService.right(List(collectionWithSubscriptions))
+      collectionServices.getByUser(publisherId) returns NineCardsService.right(
+        List(collectionWithSubscriptions))
       googlePlayServices.resolveManyBasic(any, any) returns NineCardsService.right(appsInfoBasic)
 
       sharedCollectionProcesses
         .getPublishedCollections(publisherId, marketAuth)
-        .foldMap(testInterpreters) must beRight(GetCollectionsResponse(List(sharedCollectionWithAppsInfoAndSubscriptions)))
+        .foldMap(testInterpreters) must beRight(
+        GetCollectionsResponse(List(sharedCollectionWithAppsInfoAndSubscriptions)))
     }
   }
 
@@ -136,11 +143,13 @@ class SharedCollectionProcessesSpec
 
     "return a list of public identifiers of collections which the user is subscribed to" in new BasicScope {
 
-      subscriptionServices.getByUser(subscriberId) returns NineCardsService.right(List(subscription))
+      subscriptionServices.getByUser(subscriberId) returns NineCardsService.right(
+        List(subscription))
 
       sharedCollectionProcesses
         .getSubscriptionsByUser(subscriberId)
-        .foldMap(testInterpreters) must beRight(GetSubscriptionsByUserResponse(List(publicIdentifier)))
+        .foldMap(testInterpreters) must beRight(
+        GetSubscriptionsByUserResponse(List(publicIdentifier)))
     }
 
   }
@@ -148,15 +157,16 @@ class SharedCollectionProcessesSpec
   "getTopCollectionsByCategory" should {
 
     "return a list of Shared collections of the given category" in new BasicScope {
-      collectionServices.getTopByCategory(category, pageParams) returns NineCardsService.right(List(collection))
+      collectionServices.getTopByCategory(category, pageParams) returns NineCardsService.right(
+        List(collection))
       googlePlayServices.resolveManyBasic(any, any) returns NineCardsService.right(appsInfoBasic)
 
       val response = GetCollectionsResponse(List(sharedCollectionWithAppsInfoBasic))
 
       sharedCollectionProcesses
         .getTopCollectionsByCategory(
-          userId     = publisherId,
-          category   = category,
+          userId = publisherId,
+          category = category,
           marketAuth = marketAuth,
           pageParams = pageParams
         )
@@ -179,7 +189,8 @@ class SharedCollectionProcessesSpec
     "return a valid response if the subscription already exists  " in new BasicScope {
 
       collectionServices.getByPublicId(publicIdentifier) returns NineCardsService.right(collection)
-      subscriptionServices.getByCollectionAndUser(any, any) returns NineCardsService.right(Option(subscription))
+      subscriptionServices.getByCollectionAndUser(any, any) returns NineCardsService.right(
+        Option(subscription))
 
       sharedCollectionProcesses
         .subscribe(publicIdentifier, subscriberId)
@@ -189,7 +200,8 @@ class SharedCollectionProcessesSpec
     "return a valid response if it has created a subscription " in new BasicScope {
 
       collectionServices.getByPublicId(publicIdentifier) returns NineCardsService.right(collection)
-      subscriptionServices.add(any, any, any) returns NineCardsService.right(updatedSubscriptionsCount)
+      subscriptionServices.add(any, any, any) returns NineCardsService.right(
+        updatedSubscriptionsCount)
       subscriptionServices.getByCollectionAndUser(any, any) returns NineCardsService.right(None)
 
       sharedCollectionProcesses
@@ -233,14 +245,17 @@ class SharedCollectionProcessesSpec
     "increase the number of views by 1 if the shared collection exists" in
       new BasicScope {
 
-        collectionServices.getByPublicId(publicIdentifier) returns NineCardsService.right(collection)
-        collectionServices.increaseViewsByOne(id = collectionId) returns NineCardsService.right(updatedCollectionsCount)
+        collectionServices.getByPublicId(publicIdentifier) returns NineCardsService.right(
+          collection)
+        collectionServices.increaseViewsByOne(id = collectionId) returns NineCardsService.right(
+          updatedCollectionsCount)
 
         val collectionInfo = sharedCollectionProcesses.increaseViewsCountByOne(publicIdentifier)
 
-        collectionInfo.foldMap(testInterpreters) must beRight[IncreaseViewsCountByOneResponse].which {
-          response ⇒ response.publicIdentifier must_== publicIdentifier
-        }
+        collectionInfo.foldMap(testInterpreters) must beRight[IncreaseViewsCountByOneResponse]
+          .which { response ⇒
+            response.publicIdentifier must_== publicIdentifier
+          }
       }
 
     "return a SharedCollectionNotFound error when the shared collection doesn't exist" in
@@ -259,40 +274,51 @@ class SharedCollectionProcessesSpec
     "return the public identifier and the added and removed packages if the shared collection exists" in
       new BasicScope {
 
-        collectionServices.getByPublicId(publicIdentifier) returns NineCardsService.right(collection)
-        collectionServices.update(collectionId, name) returns NineCardsService.right(updatedCollectionsCount)
-        collectionServices.updatePackages(collectionId, updatePackagesName) returns NineCardsService.right(updatedPackages)
-        firebaseServices.sendUpdatedCollectionNotification(any) returns NineCardsService.right(sendNotificationResponse)
-        userServices.getSubscribedInstallationByCollection(any) returns NineCardsService.right(List(installation))
+        collectionServices.getByPublicId(publicIdentifier) returns NineCardsService.right(
+          collection)
+        collectionServices.update(collectionId, name) returns NineCardsService.right(
+          updatedCollectionsCount)
+        collectionServices.updatePackages(collectionId, updatePackagesName) returns NineCardsService
+          .right(updatedPackages)
+        firebaseServices.sendUpdatedCollectionNotification(any) returns NineCardsService.right(
+          sendNotificationResponse)
+        userServices.getSubscribedInstallationByCollection(any) returns NineCardsService.right(
+          List(installation))
 
-        sharedCollectionProcesses.updateCollection(
-          publicIdentifier = publicIdentifier,
-          collectionInfo   = Option(sharedCollectionUpdateInfo),
-          packages         = Option(updatePackagesName)
-        ).foldMap(testInterpreters) must beRight[CreateOrUpdateCollectionResponse].which {
-            response ⇒
-              response.publicIdentifier must_== publicIdentifier
-              response.packagesStats.added must_== addedPackagesCount
-              response.packagesStats.removed must beSome(removedPackagesCount)
-          }
+        sharedCollectionProcesses
+          .updateCollection(
+            publicIdentifier = publicIdentifier,
+            collectionInfo = Option(sharedCollectionUpdateInfo),
+            packages = Option(updatePackagesName)
+          )
+          .foldMap(testInterpreters) must beRight[CreateOrUpdateCollectionResponse].which {
+          response ⇒
+            response.publicIdentifier must_== publicIdentifier
+            response.packagesStats.added must_== addedPackagesCount
+            response.packagesStats.removed must beSome(removedPackagesCount)
+        }
       }
 
     "return added and removed packages counts equal to 0 if the package list is not given" in
       new BasicScope {
 
-        collectionServices.getByPublicId(publicIdentifier) returns NineCardsService.right(collection)
-        collectionServices.update(collectionId, name) returns NineCardsService.right(updatedCollectionsCount)
+        collectionServices.getByPublicId(publicIdentifier) returns NineCardsService.right(
+          collection)
+        collectionServices.update(collectionId, name) returns NineCardsService.right(
+          updatedCollectionsCount)
 
-        sharedCollectionProcesses.updateCollection(
-          publicIdentifier = publicIdentifier,
-          collectionInfo   = Option(sharedCollectionUpdateInfo),
-          packages         = None
-        ).foldMap(testInterpreters) must beRight[CreateOrUpdateCollectionResponse].which {
-            response ⇒
-              response.publicIdentifier must_== publicIdentifier
-              response.packagesStats.added must_== 0
-              response.packagesStats.removed must beSome(0)
-          }
+        sharedCollectionProcesses
+          .updateCollection(
+            publicIdentifier = publicIdentifier,
+            collectionInfo = Option(sharedCollectionUpdateInfo),
+            packages = None
+          )
+          .foldMap(testInterpreters) must beRight[CreateOrUpdateCollectionResponse].which {
+          response ⇒
+            response.publicIdentifier must_== publicIdentifier
+            response.packagesStats.added must_== 0
+            response.packagesStats.removed must beSome(0)
+        }
       }
 
     "return a SharedCollectionNotFound error when the shared collection doesn't exist" in
@@ -301,11 +327,13 @@ class SharedCollectionProcessesSpec
         collectionServices.getByPublicId(publicId = publicIdentifier) returns
           NineCardsService.left(sharedCollectionNotFoundError)
 
-        sharedCollectionProcesses.updateCollection(
-          publicIdentifier = publicIdentifier,
-          collectionInfo   = Option(sharedCollectionUpdateInfo),
-          packages         = Option(updatePackagesName)
-        ).foldMap(testInterpreters) must beLeft(sharedCollectionNotFoundError)
+        sharedCollectionProcesses
+          .updateCollection(
+            publicIdentifier = publicIdentifier,
+            collectionInfo = Option(sharedCollectionUpdateInfo),
+            packages = Option(updatePackagesName)
+          )
+          .foldMap(testInterpreters) must beLeft(sharedCollectionNotFoundError)
       }
   }
 }

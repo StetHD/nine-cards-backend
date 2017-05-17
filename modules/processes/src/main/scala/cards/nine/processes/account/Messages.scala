@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.processes.account
 
 import cards.nine.domain.account._
@@ -20,26 +21,26 @@ import cards.nine.domain.account._
 package messages {
 
   case class LoginRequest(
-    email: Email,
-    androidId: AndroidId,
-    sessionToken: SessionToken,
-    tokenId: GoogleIdToken
+      email: Email,
+      androidId: AndroidId,
+      sessionToken: SessionToken,
+      tokenId: GoogleIdToken
   )
 
   case class LoginResponse(
-    apiKey: ApiKey,
-    sessionToken: SessionToken
+      apiKey: ApiKey,
+      sessionToken: SessionToken
   )
 
   case class UpdateInstallationRequest(
-    userId: Long,
-    androidId: AndroidId,
-    deviceToken: Option[DeviceToken]
+      userId: Long,
+      androidId: AndroidId,
+      deviceToken: Option[DeviceToken]
   )
 
   case class UpdateInstallationResponse(
-    androidId: AndroidId,
-    deviceToken: Option[DeviceToken]
+      androidId: AndroidId,
+      deviceToken: Option[DeviceToken]
   )
 
 }

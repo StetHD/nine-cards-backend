@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.commons.catscalaz
 
-import cats.{ Applicative, ApplicativeError, Monad }
+import cats.{Applicative, ApplicativeError, Monad}
 
 import scalaz.concurrent.Task
 
@@ -33,9 +34,11 @@ trait TaskInstances {
       override def handleErrorWith[A](fa: Task[A])(f: (Throwable) ⇒ Task[A]): Task[A] =
         fa.handleWith({ case x ⇒ f(x) })
 
-      override def flatMap[A, B](fa: Task[A])(f: (A) ⇒ Task[B]): Task[B] = monadInstance.flatMap(fa)(f)
+      override def flatMap[A, B](fa: Task[A])(f: (A) ⇒ Task[B]): Task[B] =
+        monadInstance.flatMap(fa)(f)
 
-      override def tailRecM[A, B](a: A)(f: (A) ⇒ Task[Either[A, B]]): Task[B] = monadInstance.tailRecM(a)(f)
+      override def tailRecM[A, B](a: A)(f: (A) ⇒ Task[Either[A, B]]): Task[B] =
+        monadInstance.tailRecM(a)(f)
 
       override def pure[A](x: A): Task[A] = monadInstance.pure(x)
     }

@@ -13,16 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.googleplay.service.free.interpreter.cache
 
-import cards.nine.domain.application.{ FullCard, Package }
-import enumeratum.{ Enum, EnumEntry }
+import cards.nine.domain.application.{FullCard, Package}
+import enumeratum.{Enum, EnumEntry}
 
 sealed trait KeyType extends EnumEntry
 object KeyType extends Enum[KeyType] {
-  case object Resolved extends KeyType
+  case object Resolved  extends KeyType
   case object Permanent extends KeyType
-  case object Error extends KeyType
+  case object Error     extends KeyType
 
   val values = super.findValues
 }
@@ -51,4 +52,3 @@ object CacheEntry {
 }
 
 object PendingQueueKey
-

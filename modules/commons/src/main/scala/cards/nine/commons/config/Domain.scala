@@ -13,31 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.commons.config
 
 import cards.nine.commons.config.ParserUtils.cache.CacheConnectionInfo
 import cards.nine.commons.config.ParserUtils.database.PersistenceConnectionInfo
-import cats.data.Validated.{ Invalid, Valid }
+import cats.data.Validated.{Invalid, Valid}
 import org.joda.time.Period
 import org.joda.time.format.PeriodFormat
 
-import scala.concurrent.duration.{ Duration, FiniteDuration }
+import scala.concurrent.duration.{Duration, FiniteDuration}
 
 object Domain {
 
   case class NineCardsConfiguration(
-    db: DatabaseConfiguration,
-    debugMode: Option[Boolean],
-    editors: Map[String, String],
-    google: GoogleConfiguration,
-    http: HttpConfiguration,
-    rankings: RankingsConfiguration,
-    redis: RedisConfiguration,
-    secretKey: String,
-    salt: Option[String],
-    loaderIO: LoaderIoConfiguration,
-    webmainpage: String,
-    test: TestConfiguration
+      db: DatabaseConfiguration,
+      debugMode: Option[Boolean],
+      editors: Map[String, String],
+      google: GoogleConfiguration,
+      http: HttpConfiguration,
+      rankings: RankingsConfiguration,
+      redis: RedisConfiguration,
+      secretKey: String,
+      salt: Option[String],
+      loaderIO: LoaderIoConfiguration,
+      webmainpage: String,
+      test: TestConfiguration
   )
 
   object NineCardsConfiguration {
@@ -62,8 +63,8 @@ object Domain {
   }
 
   case class DatabaseConfiguration(
-    default: DatabaseDefaultConfiguration,
-    hikari: DatabaseHikariConfiguration
+      default: DatabaseDefaultConfiguration,
+      hikari: DatabaseHikariConfiguration
   )
 
   object DatabaseConfiguration {
@@ -78,10 +79,10 @@ object Domain {
   }
 
   case class DatabaseDefaultConfiguration(
-    driver: String,
-    url: String,
-    user: String,
-    password: String
+      driver: String,
+      url: String,
+      user: String,
+      password: String
   )
 
   object DatabaseDefaultConfiguration {
@@ -91,20 +92,21 @@ object Domain {
       ParserUtils.database.parseConnectionString(config.getString(s"$prefix.url")) match {
         case Valid(PersistenceConnectionInfo(user, password, url)) ⇒
           DatabaseDefaultConfiguration(
-            driver   = config.getString(s"$prefix.driver"),
-            url      = s"${config.getString(s"$prefix.urlPrefix")}$url",
-            user     = user,
+            driver = config.getString(s"$prefix.driver"),
+            url = s"${config.getString(s"$prefix.urlPrefix")}$url",
+            user = user,
             password = password
           )
         case Invalid(errors) ⇒
-          throw new RuntimeException(s"Database configuration not valid:\n${errors.toList.mkString("\n")}")
+          throw new RuntimeException(
+            s"Database configuration not valid:\n${errors.toList.mkString("\n")}")
       }
     }
   }
 
   case class DatabaseHikariConfiguration(
-    maximumPoolSize: Int,
-    maxLifetime: Int
+      maximumPoolSize: Int,
+      maxLifetime: Int
   )
 
   object DatabaseHikariConfiguration {
@@ -119,10 +121,10 @@ object Domain {
   }
 
   case class GoogleConfiguration(
-    analytics: GoogleAnalyticsConfiguration,
-    api: GoogleApiConfiguration,
-    firebase: GoogleFirebaseConfiguration,
-    play: GooglePlayConfiguration
+      analytics: GoogleAnalyticsConfiguration,
+      api: GoogleApiConfiguration,
+      firebase: GoogleFirebaseConfiguration,
+      play: GooglePlayConfiguration
   )
 
   object GoogleConfiguration {
@@ -139,11 +141,11 @@ object Domain {
   }
 
   case class GoogleAnalyticsConfiguration(
-    protocol: String,
-    host: String,
-    port: Option[Int],
-    path: String,
-    viewId: String
+      protocol: String,
+      host: String,
+      port: Option[Int],
+      path: String,
+      viewId: String
   )
 
   object GoogleAnalyticsConfiguration {
@@ -161,10 +163,10 @@ object Domain {
   }
 
   case class GoogleApiConfiguration(
-    protocol: String,
-    host: String,
-    port: Option[Int],
-    tokenInfo: GoogleApiTokenInfo
+      protocol: String,
+      host: String,
+      port: Option[Int],
+      tokenInfo: GoogleApiTokenInfo
   )
 
   object GoogleApiConfiguration {
@@ -181,8 +183,8 @@ object Domain {
   }
 
   case class GoogleApiTokenInfo(
-    path: String,
-    tokenIdQueryParameter: String
+      path: String,
+      tokenIdQueryParameter: String
   )
 
   object GoogleApiTokenInfo {
@@ -197,11 +199,11 @@ object Domain {
   }
 
   case class GoogleFirebaseConfiguration(
-    protocol: String,
-    host: String,
-    port: Option[Int],
-    authorizationKey: String,
-    paths: GoogleFirebasePaths
+      protocol: String,
+      host: String,
+      port: Option[Int],
+      authorizationKey: String,
+      paths: GoogleFirebasePaths
   )
 
   object GoogleFirebaseConfiguration {
@@ -231,10 +233,10 @@ object Domain {
   }
 
   case class GooglePlayConfiguration(
-    api: GooglePlayApiConfiguration,
-    web: GooglePlayWebConfiguration,
-    resolveInterval: FiniteDuration,
-    resolveBatchSize: Int
+      api: GooglePlayApiConfiguration,
+      web: GooglePlayWebConfiguration,
+      resolveInterval: FiniteDuration,
+      resolveBatchSize: Int
   )
 
   object GooglePlayConfiguration {
@@ -251,12 +253,12 @@ object Domain {
   }
 
   case class GooglePlayApiConfiguration(
-    protocol: String,
-    host: String,
-    port: Int,
-    detailsBatchSize: Int,
-    maxTotalConnections: Int,
-    paths: GooglePlayApiPaths
+      protocol: String,
+      host: String,
+      port: Int,
+      detailsBatchSize: Int,
+      maxTotalConnections: Int,
+      paths: GooglePlayApiPaths
   )
 
   object GooglePlayApiConfiguration {
@@ -275,11 +277,11 @@ object Domain {
   }
 
   case class GooglePlayApiPaths(
-    bulkDetails: String,
-    details: String,
-    list: String,
-    search: String,
-    recommendations: String
+      bulkDetails: String,
+      details: String,
+      list: String,
+      search: String,
+      recommendations: String
   )
 
   object GooglePlayApiPaths {
@@ -297,11 +299,11 @@ object Domain {
   }
 
   case class GooglePlayWebConfiguration(
-    maxTotalConnections: Int,
-    protocol: String,
-    host: String,
-    port: Int,
-    paths: GooglePlayWebPaths
+      maxTotalConnections: Int,
+      protocol: String,
+      host: String,
+      port: Int,
+      paths: GooglePlayWebPaths
   )
 
   object GooglePlayWebConfiguration {
@@ -331,8 +333,8 @@ object Domain {
   }
 
   case class HttpConfiguration(
-    host: String,
-    port: Int
+      host: String,
+      port: Int
   )
 
   object HttpConfiguration {
@@ -347,11 +349,11 @@ object Domain {
   }
 
   case class RankingsConfiguration(
-    oauth: RankingsOAuthConfiguration,
-    actorInterval: FiniteDuration,
-    rankingPeriod: Period,
-    countriesPerRequest: Int,
-    maxNumberOfAppsPerCategory: Int
+      oauth: RankingsOAuthConfiguration,
+      actorInterval: FiniteDuration,
+      rankingPeriod: Period,
+      countriesPerRequest: Int,
+      maxNumberOfAppsPerCategory: Int
   )
 
   object RankingsConfiguration {
@@ -371,12 +373,12 @@ object Domain {
   }
 
   case class RankingsOAuthConfiguration(
-    clientId: String,
-    clientEmail: String,
-    privateKey: String,
-    privateKeyId: String,
-    tokenUri: String,
-    scopes: List[String]
+      clientId: String,
+      clientEmail: String,
+      privateKey: String,
+      privateKeyId: String,
+      tokenUri: String,
+      scopes: List[String]
   )
 
   object RankingsOAuthConfiguration {
@@ -384,20 +386,20 @@ object Domain {
     def apply(config: NineCardsConfig, parentPrefix: String): RankingsOAuthConfiguration = {
       val prefix = s"$parentPrefix.oauth"
       RankingsOAuthConfiguration(
-        clientId     = config.getString(s"$prefix.clientId"),
-        clientEmail  = config.getString(s"$prefix.clientEmail"),
-        privateKey   = config.getString(s"$prefix.privateKey"),
+        clientId = config.getString(s"$prefix.clientId"),
+        clientEmail = config.getString(s"$prefix.clientEmail"),
+        privateKey = config.getString(s"$prefix.privateKey"),
         privateKeyId = config.getString(s"$prefix.privateKeyId"),
-        tokenUri     = config.getString(s"$prefix.tokenUri"),
-        scopes       = config.getStringList(s"$prefix.scopes")
+        tokenUri = config.getString(s"$prefix.tokenUri"),
+        scopes = config.getStringList(s"$prefix.scopes")
       )
     }
   }
 
   case class RedisConfiguration(
-    host: String,
-    port: Int,
-    secret: Option[String]
+      host: String,
+      port: Int,
+      secret: Option[String]
   )
 
   object RedisConfiguration {
@@ -407,21 +409,22 @@ object Domain {
       ParserUtils.cache.parseConnectionString(config.getString(s"$prefix.url")) match {
         case Valid(CacheConnectionInfo(secret, host, port)) ⇒
           RedisConfiguration(
-            host   = host,
-            port   = port,
+            host = host,
+            port = port,
             secret = secret
           )
         case Invalid(errors) ⇒
-          throw new RuntimeException(s"Cache configuration not valid:\n${errors.toList.mkString("\n")}")
+          throw new RuntimeException(
+            s"Cache configuration not valid:\n${errors.toList.mkString("\n")}")
       }
     }
   }
 
   case class TestConfiguration(
-    androidId: String,
-    token: String,
-    localization: String,
-    googlePlayDetailsUrl: String
+      androidId: String,
+      token: String,
+      localization: String,
+      googlePlayDetailsUrl: String
   )
 
   object TestConfiguration {
@@ -433,7 +436,6 @@ object Domain {
         config.getString(s"$prefix.token"),
         config.getString(s"$prefix.localization"),
         config.getString(s"$prefix.googlePlayDetailsAppUrl")
-
       )
     }
   }
@@ -444,7 +446,7 @@ object Domain {
   }
 
   case class LoaderIoConfiguration(
-    verificationToken: String
+      verificationToken: String
   )
 
   object LoaderIoConfiguration {

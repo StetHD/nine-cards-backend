@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cards.nine.api
 
 import akka.actor.ActorRefFactory
@@ -33,13 +34,12 @@ import spray.http.StatusCodes.SeeOther
 import spray.routing._
 
 class NineCardsRoutes(
-  implicit
-  config: NineCardsConfiguration,
-  accountProcesses: AccountProcesses[NineCardsServices],
-  applicationProcesses: ApplicationProcesses[NineCardsServices],
-  rankingProcesses: RankingProcesses[NineCardsServices],
-  refFactory: ActorRefFactory,
-  executionContext: ExecutionContext
+    implicit config: NineCardsConfiguration,
+    accountProcesses: AccountProcesses[NineCardsServices],
+    applicationProcesses: ApplicationProcesses[NineCardsServices],
+    rankingProcesses: RankingProcesses[NineCardsServices],
+    refFactory: ActorRefFactory,
+    executionContext: ExecutionContext
 ) {
 
   import Directives._
@@ -55,7 +55,7 @@ class NineCardsRoutes(
 
   private[this] lazy val loaderIoRoute = {
     val loaderIoToken = config.loaderIO.verificationToken
-    val loaderIoFile = s"loaderio-${loaderIoToken}.txt"
+    val loaderIoFile  = s"loaderio-${loaderIoToken}.txt"
 
     pathPrefix(loaderIoFile)(complete(s"loaderio-${loaderIoToken}"))
   }
@@ -78,4 +78,3 @@ class NineCardsRoutes(
       }
 
 }
-
