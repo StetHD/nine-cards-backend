@@ -52,9 +52,9 @@ object ProjectPlugin extends AutoPlugin {
       LicenseBadge.apply,
       ScalaLangBadge.apply
     ),
-    scalaVersion := "2.11.8",
+    scalaVersion := "2.12.1",
     scalaOrganization := "org.scala-lang",
-    crossScalaVersions := Seq("2.11.8"),
+    crossScalaVersions := Seq("2.12.1"),
     organization := "com.fortysevendeg",
     organizationName := "47 Degrees",
     organizationHomepage := Some(new URL("http://47deg.com")),

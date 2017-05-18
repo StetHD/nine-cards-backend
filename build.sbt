@@ -17,20 +17,20 @@ lazy val api = project
   .settings( apiSettings)
   .settings(RevolverPlugin.settings )
   .settings(libraryDependencies ++= Seq(
-    akka("-actor"),
+    %%("akka-actor"),
     akka("-testkit") % "test",
     %%("cats") % "test",
-    circe("-core"),
+    %%("circe-core"),
     circe("-spray"),
     hasher,
     newRelic,
-    scalacheckShapeless,
+    %%("scheckShapeless"),
     scalaz("-concurrent"),
     scalaz("-core"),
     specs2("-cats"),
     specs2("-mock"),
-    specs2("-scalacheck"),
-    specs2Core,
+    %%("specs2-scalacheck"),
+    %%("specs2-core"),
     spray("-can"),
     spray("-routing-shapeless2"),
     sprayJson,
@@ -44,19 +44,19 @@ lazy val commons = project
   .settings(noPublishSettings: _*)
   .settings(libraryDependencies ++= Seq(
     %%("cats"),
-    circe("-core"),
-    circe("-generic"),
-    circe("-parser"),
+    %%("circe-core"),
+    %%("circe-generic"),
+    %%("circe-parser"),
     embeddedRedis,
     enumeratum(""),
     jodaConvert,
     jodaTime,
     scredis,
     scalaz("-concurrent"),
-    specs2Core,
-    specs2("-scalacheck"),
-    scalacheckDateTime,
-    scalacheckShapeless,
+    %%("specs2-core"),
+    %%("specs2-scalacheck"),
+    %%("scheckToolboxDatetime"),
+    %%("scheckShapeless"),
     typesafeConfig
   ))
 
@@ -67,23 +67,24 @@ lazy val googleplay = project
   .settings(googleplaySettings)
   .settings(libraryDependencies ++= Seq(
     %%("cats"),
-    circe("-core"),
-    circe("-generic"),
-    circe("-parser"),
+    %%("circe-core"),
+    %%("circe-generic"),
+    %%("circe-parser"),
     embeddedRedis,
     enumeratum(""),
     enumeratum("-circe"),
-    http4s("-blaze-client"),
-    jodaConvert,
-    jodaTime,
+    %%("http4s-blaze-client"),
+    %%("joda-convert"),
+    %%("joda-time"),
     mockserver,
     newRelic,
     scredis,
-    scalacheckShapeless,
-    specs2Core,
+    %%("scheckShapeless"),
+    %%("specs2-core"),
     specs2("-matcher-extra"),
     specs2("-mock"),
-    specs2("-scalacheck"),
+    %%("specs2-scalacheck"),
+    %%("specs2-scalacheck"),
     tagSoup
   ))
   .dependsOn(commons % "compile -> compile; test -> test")
@@ -96,30 +97,30 @@ lazy val services = project
   .settings(flywayTestSettings9C)
   .settings(libraryDependencies ++= Seq(
     %%("cats"),
-    circe("-core"),
-    circe("-generic"),
-    doobie("-contrib-h2"),
-    doobie("-contrib-hikari"),
-    doobie("-contrib-postgresql"),
-    doobie("-contrib-specs2") % "test",
-    doobie("-core"),
+    %%("circe-core"),
+    %%("circe-generic"),
+    %%("doobie-core"),
+    %%("doobie-h2"),
+    %%("doobie-hikari"),
+    %%("doobie-postgres"),
+    %%("doobie-specs2") % "test",
     enumeratum(""),
     enumeratum("-circe"),
     flywaydbCore % "test",
     googleApiClient,
     hasher,
-    http4s("-blaze-client"),
-    http4s("-circe"),
-    jodaConvert,
-    jodaTime,
+    %%("http4s-blaze-client"),
+    %%("http4s-circe"),
+    %%("joda-convert"),
+    %%("joda-time"),
     mockserver,
-    scalacheckShapeless,
-    scalaz("-concurrent"),
+    %%("scheckShapeless"),
+    %%("scalaz-concurrent"),
     scalaz("-core"),
     specs2("-cats"),
     specs2("-mock"),
-    specs2("-scalacheck"),
-    specs2Core
+    %%("specs2-scalacheck"),
+    %%("specs2-core")
   ))
   .dependsOn(googleplay, commons % "compile -> compile; test -> test")
 
@@ -134,13 +135,13 @@ lazy val processes = project
     ))
   .settings(libraryDependencies ++= Seq(
     hasher,
-    scalacheckShapeless,
-    scalaz("-concurrent"),
+    %%("scheckShapeless"),
+    %%("scalaz-concurrent"),
     scalaz("-core"),
     specs2("-cats"),
-    specs2Core,
+    %%("specs2-core"),
     specs2("-mock"),
-    specs2("-scalacheck")
+    %%("specs2-scalacheck")
   ))
   .dependsOn(services, commons)
 
