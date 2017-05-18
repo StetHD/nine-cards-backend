@@ -52,8 +52,6 @@ object ProjectPlugin extends AutoPlugin {
       LicenseBadge.apply,
       ScalaLangBadge.apply
     ),
-    addCompilerPlugin("org.spire-math" %% "kind-projector" % Versions.kindProjector),
-
     scalaVersion := "2.11.8",
     scalaOrganization := "org.scala-lang",
     crossScalaVersions := Seq("2.11.8"),
@@ -98,6 +96,8 @@ object Settings9C {
   import org.flywaydb.sbt.FlywayPlugin._
   import org.flywaydb.sbt.FlywayPlugin.autoImport._
 
+  lazy val buildVersion = "1.0.0-SNAPSHOT"
+
   lazy val flywayTestSettings9C = flywayBaseSettings(Test) ++ Seq(
     flywayDriver := "org.postgresql.Driver",
     flywayUrl := "jdbc:postgresql://localhost/ninecards_test",
@@ -130,7 +130,7 @@ object Settings9C {
     import sbtassembly.MergeStrategy._
 
     assemblySettings ++ Seq(
-      assemblyJarName in assembly := s"9cards-${Versions.buildVersion}.jar",
+      assemblyJarName in assembly := s"9cards-$buildVersion.jar",
       assembleArtifact in assemblyPackageScala := true,
       Keys.test in assembly := {},
       assemblyMergeStrategy in assembly := {
