@@ -19,7 +19,7 @@ lazy val api = project
   .settings(libraryDependencies ++= Seq(
     akka("-actor"),
     akka("-testkit") % "test",
-    cats % "test",
+    %%("cats") % "test",
     circe("-core"),
     circe("-spray"),
     hasher,
@@ -43,7 +43,7 @@ lazy val commons = project
   .disablePlugins(FlywayPlugin)
   .settings(noPublishSettings: _*)
   .settings(libraryDependencies ++= Seq(
-    cats,
+    %%("cats"),
     circe("-core"),
     circe("-generic"),
     circe("-parser"),
@@ -66,7 +66,7 @@ lazy val googleplay = project
   .settings(noPublishSettings: _*)
   .settings(googleplaySettings)
   .settings(libraryDependencies ++= Seq(
-    cats,
+    %%("cats"),
     circe("-core"),
     circe("-generic"),
     circe("-parser"),
@@ -91,10 +91,11 @@ lazy val googleplay = project
 lazy val services = project
   .in(file("modules/services"))
   .disablePlugins(FlywayPlugin)
+  .settings(noPublishSettings: _*)
   .settings(serviceSettings)
   .settings(flywayTestSettings9C)
   .settings(libraryDependencies ++= Seq(
-    cats,
+    %%("cats"),
     circe("-core"),
     circe("-generic"),
     doobie("-contrib-h2"),
@@ -120,7 +121,6 @@ lazy val services = project
     specs2("-scalacheck"),
     specs2Core
   ))
-  .settings(noPublishSettings: _*)
   .dependsOn(googleplay, commons % "compile -> compile; test -> test")
 
 lazy val processes = project

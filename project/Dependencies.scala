@@ -17,16 +17,15 @@ object Dependencies {
 
   import sbt._
 
-  def akka(suff: String)  = "com.typesafe.akka" %% s"akka$suff"  % "2.4.8"
-  def circe(suff: String) = "io.circe"          %% s"circe$suff" % "0.6.1"
+  def akka(suff: String)  = "com.typesafe.akka" %% s"akka$suff"  % "2.5.1"
+  def circe(suff: String) = "io.circe"          %% s"circe$suff" % "0.8.0"
   def doobie(suff: String) = "org.tpolecat" %% s"doobie$suff" % "0.3.0" exclude ("org.scalaz", "*")
   def enumeratum(suff: String) = "com.beachape" %% s"enumeratum$suff" % "1.5.1"
   def http4s(suff: String)     = "org.http4s"   %% s"http4s$suff"     % "0.15.0a"
-  def scalaz(suff: String)     = "org.scalaz"   %% s"scalaz$suff"     % "7.2.7"
+  def scalaz(suff: String)     = "org.scalaz"   %% s"scalaz$suff"     % "7.2.12"
   def specs2(suff: String)     = "org.specs2"   %% s"specs2$suff"     % "3.8.4" % "test"
   def spray(suff: String)      = "io.spray"     %% s"spray$suff"      % "1.3.3"
 
-  val cats                = "org.typelevel" %% "cats" % "0.8.1"
   val embeddedRedis       = "com.orange.redis-embedded" % "embedded-redis" % "0.6" % "test"
   val flywaydbCore        = "org.flywaydb" % "flyway-core" % "3.2.1"
   val googleApiClient     = "com.google.api-client" % "google-api-client" % "1.20.0" exclude ("com.google.guava", "*")
