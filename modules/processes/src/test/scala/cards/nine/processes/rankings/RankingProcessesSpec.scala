@@ -15,7 +15,7 @@
  */
 package cards.nine.processes.rankings
 
-import cards.nine.commons.NineCardsService.Result
+import cards.nine.commons.NineCardsService._
 import cards.nine.commons.NineCardsErrors.{ CountryNotFound, NineCardsError }
 import cards.nine.domain.analytics._
 import cards.nine.processes.NineCardsServices._

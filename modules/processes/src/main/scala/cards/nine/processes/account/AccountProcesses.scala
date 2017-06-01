@@ -88,12 +88,12 @@ class AccountProcesses[F[_]](
     requestUri: String
   ): NineCardsService[F, Long] = {
 
-    def validateAuthToken(user: User) = {
+    def validateAuthToken(user: User): NineCardsService[F, Unit] = {
       val debugMode = config.debugMode.getOrElse(false)
       val expectedAuthToken = hashUtils.hashValue(requestUri, user.apiKey.value, None)
 
       if (debugMode || expectedAuthToken.equals(authToken))
-        NineCardsService.right[F, Unit](Unit)
+        NineCardsService.pure[F, Unit](Unit)
       else
         NineCardsService.left[F, Unit](AuthTokenNotValid("The provided auth token is not valid"))
     }

@@ -17,7 +17,7 @@ package cards.nine.api.rankings
 
 import cards.nine.api.utils.SprayMatchers._
 import cards.nine.api.NineCardsHeaders
-import cards.nine.commons.NineCardsService.Result
+import cards.nine.commons.NineCardsService._
 import cards.nine.commons.config.Domain.NineCardsConfiguration
 import cards.nine.domain.analytics._
 import cards.nine.processes._
@@ -35,11 +35,11 @@ class RankingsApi(
   executionContext: ExecutionContext
 ) {
 
-  import messages._
-  import Directives._
-
-  import NineCardsMarshallers._
   import Converters._
+  import Directives._
+  import NineCardsMarshallers._
+  import cards.nine.api.utils.SprayMarshallers._
+  import messages._
 
   lazy val route: Route =
     pathPrefix("rankings") {
@@ -52,8 +52,6 @@ class RankingsApi(
           }
       }
     }
-
-  private type NineCardsServed[A] = cats.free.Free[NineCardsServices, A]
 
   private[this] lazy val geographicScope: Directive1[GeoScope] = {
     val country: Directive1[GeoScope] =
@@ -73,10 +71,10 @@ class RankingsApi(
   private[this] def reloadRanking(
     scope: GeoScope,
     params: RankingParams
-  ): NineCardsServed[Result[Reload.Response]] =
+  ): NineCardsService[NineCardsServices, Reload.Response] =
     rankingProcesses.reloadRankingByScope(scope, params).map(toApiReloadResponse)
 
-  private[this] def getRanking(scope: GeoScope): NineCardsServed[Result[Ranking]] =
+  private[this] def getRanking(scope: GeoScope): NineCardsService[NineCardsServices, Ranking] =
     rankingProcesses.getRanking(scope).map(toApiRanking)
 
 }

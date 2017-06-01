@@ -22,8 +22,8 @@ import cards.nine.domain.analytics._
 import cards.nine.domain.application.{ Category, Moment, Package }
 import cards.nine.services.free.algebra._
 import cards.nine.services.free.domain.Ranking.GoogleAnalyticsRanking
-import cats.free.Free
-import cats.instances.all._
+import cats.instances.list._
+import cats.instances.map._
 import cats.syntax.semigroup._
 import cats.syntax.traverse._
 import freestyle.FreeS
@@ -37,33 +37,30 @@ class RankingProcesses[F[_]](
 ) {
   private[this] val allCategories = Category.valuesName ++ Moment.valuesName ++ Moment.widgetValuesName
 
+  implicit val v = NineCardsService.monadError[F]
+
   import messages._
   import Converters._
 
   def toNCS[A](fs: FreeS.Par[F, Result[A]]): NineCardsService[F, A] = NineCardsService[F, A](fs.monad)
 
-  def getRanking(scope: GeoScope): Free[F, Result[Get.Response]] =
-    (toNCS(rankingS.getRanking(scope)) map Get.Response).value
+  def getRanking(scope: GeoScope): NineCardsService[F, Get.Response] =
+    (toNCS(rankingS.getRanking(scope)) map Get.Response)
 
-  def reloadRankingForCountries(request: Reload.Request): Free[F, Result[Reload.SummaryResponse]] = {
+  def reloadRankingForCountries(request: Reload.Request): NineCardsService[F, Reload.SummaryResponse] = {
     import request._
 
     def generateRankings(
       countries: List[CountryIsoCode], params: RankingParams
     ): NineCardsService[F, List[UpdateRankingSummary]] = {
 
-      def generateRanking(countryCode: CountryIsoCode) = {
+      def generateRanking(countryCode: CountryIsoCode): NineCardsService[F, UpdateRankingSummary] = {
         for {
           ranking ← toNCS(analytics.getRanking(Option(countryCode), allCategories, params))
           summary ← toNCS(rankingS.updateRanking(CountryScope(countryCode), ranking))
         } yield summary
-      }.value
-
-      NineCardsService {
-        countries
-          .traverse[Free[F, ?], Result[UpdateRankingSummary]](generateRanking)
-          .map(_.sequenceU)
       }
+      countries.traverse[NineCardsService[F, ?], UpdateRankingSummary](generateRanking)
     }
 
     for {
@@ -78,9 +75,9 @@ class RankingProcesses[F[_]](
       countriesWithoutRanking = countriesCode diff selectedCountries,
       countriesWithRanking    = updateRankingsSummary
     )
-  }.value
+  }
 
-  def reloadRankingByScope(scope: GeoScope, params: RankingParams): Free[F, Result[Reload.Response]] = {
+  def reloadRankingByScope(scope: GeoScope, params: RankingParams): NineCardsService[F, Reload.Response] = {
 
     def hasRankingInfo(code: CountryIsoCode, countries: List[CountryIsoCode]) =
       countries.exists(_.value.equalsIgnoreCase(code.value))
@@ -99,12 +96,12 @@ class RankingProcesses[F[_]](
       ranking ← generateRanking(scope, countriesWithRanking.countries)
       _ ← toNCS(rankingS.updateRanking(scope, ranking))
     } yield Reload.Response()
-  }.value
+  }
 
   def getRankedDeviceApps(
     location: Option[String],
     deviceApps: Map[String, List[Package]]
-  ): Free[F, Result[List[RankedAppsByCategory]]] = {
+  ): NineCardsService[F, List[RankedAppsByCategory]] = {
 
     def unifyDeviceApps(deviceApps: Map[String, List[Package]]) = {
       val (games, otherApps) = deviceApps.partition { case (cat, _) ⇒ cat.matches("GAME\\_.*") }
@@ -116,7 +113,7 @@ class RankingProcesses[F[_]](
     }
 
     if (deviceApps.isEmpty)
-      NineCardsService.right(List.empty[RankedAppsByCategory]).value
+      NineCardsService.pure(List.empty[RankedAppsByCategory])
     else {
       val unifiedDeviceApps = unifyDeviceApps(deviceApps)
       val unrankedApps = unifiedDeviceApps.flatMap {
@@ -124,7 +121,7 @@ class RankingProcesses[F[_]](
       }.toSet
 
       for {
-        geoScope ← location.fold(NineCardsService.right[F, GeoScope](WorldScope))(geoScopeFromLocation)
+        geoScope ← location.fold(NineCardsService.pure[F, GeoScope](WorldScope))(geoScopeFromLocation)
         rankedApps ← toNCS(rankingS.rankApps(geoScope, unrankedApps))
         rankedAppsByCategory = rankedApps.groupBy(_.category)
         unrankedDeviceApps = unifiedDeviceApps map {
@@ -138,7 +135,7 @@ class RankingProcesses[F[_]](
         .map(toRankedAppsByCategory(limit = None))
         .toList
         .sortBy(r ⇒ Category.sortedValues.indexOf(r.category))
-    }.value
+    }
   }
 
   def getRankedAppsByMoment(
@@ -146,32 +143,30 @@ class RankingProcesses[F[_]](
     deviceApps: List[Package],
     moments: List[String],
     limit: Int
-  ): Free[F, Result[List[RankedAppsByCategory]]] = {
+  ): NineCardsService[F, List[RankedAppsByCategory]] =
     if (deviceApps.isEmpty)
-      NineCardsService.right(List.empty[RankedAppsByCategory]).value
-    else {
+      NineCardsService.pure(List.empty[RankedAppsByCategory])
+    else
       for {
-        geoScope ← location.fold(NineCardsService.right[F, GeoScope](WorldScope))(geoScopeFromLocation)
+        geoScope ← location.fold(NineCardsService.pure[F, GeoScope](WorldScope))(geoScopeFromLocation)
         rankedApps ← toNCS(rankingS.rankAppsWithinMoments(geoScope, deviceApps, moments))
       } yield rankedApps
         .groupBy(_.category)
         .map(toRankedAppsByCategory(limit = Option(limit)))
         .toList
-    }.value
-  }
 
   def getRankedWidgets(
     location: Option[String],
     apps: List[Package],
     moments: List[String],
     limit: Int
-  ): Free[F, Result[List[RankedWidgetsByMoment]]] = {
+  ): NineCardsService[F, List[RankedWidgetsByMoment]] =
     if (apps.isEmpty)
-      NineCardsService.right(List.empty[RankedWidgetsByMoment]).value
+      NineCardsService.pure(List.empty[RankedWidgetsByMoment])
     else {
       for {
         geoScope ← location match {
-          case None ⇒ NineCardsService.right[F, GeoScope](WorldScope)
+          case None ⇒ NineCardsService.pure[F, GeoScope](WorldScope)
           case Some(loc) ⇒ geoScopeFromLocation(loc)
         }
         rankedWidgets ← toNCS(rankingS.rankWidgets(geoScope, apps, moments map toWidgetMoment))
@@ -179,8 +174,7 @@ class RankingProcesses[F[_]](
         .groupBy(_.moment)
         .map(toRankedWidgetsByMoment(limit))
         .toList
-    }.value
-  }
+    }
 
   private[this] def geoScopeFromLocation(isoCode: String): NineCardsService[F, GeoScope] =
     toNCS(countryR.getCountryByIsoCode2(isoCode.toUpperCase))

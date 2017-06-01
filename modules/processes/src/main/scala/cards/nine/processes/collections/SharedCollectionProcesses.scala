@@ -92,7 +92,7 @@ class SharedCollectionProcesses[F[_]](
     ): NineCardsService[F, Int] =
       subscription match {
         case None ⇒ toNCS(subscriptionServices.add(collectionId, user, publicIdentifier))
-        case Some(_) ⇒ NineCardsService.right(1)
+        case Some(_) ⇒ NineCardsService.pure(1)
       }
 
     for {
@@ -113,7 +113,7 @@ class SharedCollectionProcesses[F[_]](
     packagesName: List[Package]
   ): NineCardsService[F, SendNotificationResponse] =
     if (packagesName.isEmpty)
-      NineCardsService.right[F, SendNotificationResponse](SendNotificationResponse.emptyResponse)
+      NineCardsService.pure[F, SendNotificationResponse](SendNotificationResponse.emptyResponse)
     else {
       for {
         subscribers ← toNCS(userServices.getSubscribedInstallationByCollection(publicIdentifier))
@@ -143,13 +143,13 @@ class SharedCollectionProcesses[F[_]](
 
     def updateCollectionInfo(collectionId: Long, info: Option[SharedCollectionUpdateInfo]) =
       info
-        .fold(NineCardsService.right[F, Int](0))(
+        .fold(NineCardsService.pure[F, Int](0))(
           updateInfo ⇒ toNCS(collectionServices.update(collectionId, updateInfo.title))
         )
 
     def updatePackages(collectionId: Long, packagesName: Option[List[Package]]) =
       packagesName
-        .fold(NineCardsService.right[F, (List[Package], List[Package])]((Nil, Nil)))(
+        .fold(NineCardsService.pure[F, (List[Package], List[Package])]((Nil, Nil)))(
           packages ⇒ toNCS(collectionServices.updatePackages(collectionId, packages))
         )
 

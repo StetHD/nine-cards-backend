@@ -209,12 +209,14 @@ class ApplicationsApi(
     request: ApiRankAppsRequest
   ): Free[NineCardsServices, Result[ApiRankAppsResponse]] =
     rankingProcesses.getRankedDeviceApps(request.location, request.items)
+      .value
       .map(toApiRankAppsResponse)
 
   private[this] def rankAppsByMoments(
     request: ApiRankByMomentsRequest
   ): Free[NineCardsServices, Result[ApiRankAppsResponse]] =
     rankingProcesses.getRankedAppsByMoment(request.location, request.items, request.moments, request.limit)
+      .value
       .map(toApiRankAppsResponse)
 
   private[this] def getRecommendationsByCategory(
@@ -251,6 +253,7 @@ class ApplicationsApi(
     request: ApiRankByMomentsRequest
   ): Free[NineCardsServices, Result[ApiRankWidgetsResponse]] =
     rankingProcesses.getRankedWidgets(request.location, request.items, request.moments, request.limit)
+      .value
       .map(toApiRankWidgetsResponse)
 
 }

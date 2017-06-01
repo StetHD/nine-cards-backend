@@ -61,7 +61,7 @@ class RankingActor[F[_]](interpreter: F ~> Task, log: LoggingAdapter)(implicit r
         serviceAccount,
         Page(pageNumber, countriesPerRequest)
       )
-    )
+    ).value
   }
 
   private[this] def showRankingGenerationInfo(result: Throwable \/ Result[SummaryResponse]) = {

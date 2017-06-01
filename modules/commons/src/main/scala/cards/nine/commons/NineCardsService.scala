@@ -35,11 +35,14 @@ object NineCardsService {
   def apply[Ops[_], F[_], A](op: Ops[Result[A]])(implicit I: Ops :<: F): NineCardsService[F, A] =
     apply[F, A](Free.inject[Ops, F](op))
 
-  def fromEither[F[_], A](e: Result[A]) = NineCardsService[F, A](Free.pure(e))
-
   def left[F[_], A](e: NineCardsError) = NineCardsService[F, A](Free.pure(Either.left(e)))
 
-  def right[F[_], A](a: A): NineCardsService[F, A] = NineCardsService[F, A](Free.pure(Either.right(a)))
+  def pure[F[_], A](a: A): NineCardsService[F, A] = NineCardsService[F, A](Free.pure(Either.right(a)))
+
+  def monadError[F[_]]: Monad[NineCardsService[F, ?]] =
+    EitherT.catsDataMonadErrorForEitherT[Free[F, ?], NineCardsError](
+      Free.catsFreeMonadForFree[F]
+    )
 
   implicit class NineCardsServiceOps[F[_], A](service: NineCardsService[F, A]) {
 

@@ -15,17 +15,15 @@
  */
 package cards.nine.api.rankings
 
-import cards.nine.commons.NineCardsService.Result
 import cards.nine.domain.analytics.{ AnalyticsToken, DateRange, RankingParams }
 import cards.nine.processes.rankings.{ messages ⇒ Proc }
-import cats.syntax.either._
 
 object Converters {
 
   import messages._
 
-  def toApiRanking(response: Result[Proc.Get.Response]): Result[Ranking] =
-    response map (r ⇒ Ranking(r.ranking.categories))
+  def toApiRanking(response: Proc.Get.Response): Ranking =
+    Ranking(response.ranking.categories)
 
   def toRankingParams(token: String, request: Reload.Request): RankingParams = {
     val length = request.rankingLength
@@ -33,7 +31,7 @@ object Converters {
     RankingParams(dateRange, length, AnalyticsToken(token))
   }
 
-  def toApiReloadResponse(response: Result[Proc.Reload.Response]): Result[Reload.Response] =
-    response map (_ ⇒ Reload.Response())
+  def toApiReloadResponse(response: Proc.Reload.Response): Reload.Response =
+    Reload.Response()
 
 }

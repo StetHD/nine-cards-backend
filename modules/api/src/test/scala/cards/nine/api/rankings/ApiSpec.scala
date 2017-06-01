@@ -25,8 +25,6 @@ import cards.nine.commons.config.NineCardsConfig
 import cards.nine.processes.NineCardsServices._
 import cards.nine.processes.account.AccountProcesses
 import cards.nine.processes.rankings.RankingProcesses
-import cats.free.Free
-import cats.syntax.either._
 import org.specs2.matcher.Matchers
 import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
@@ -64,23 +62,23 @@ trait RankingsApiSpecification
 
   trait SuccessfulScope extends BasicScope {
 
-    rankingProcesses.getRanking(any) returns Free.pure(Either.right(Messages.getResponse))
+    rankingProcesses.getRanking(any) returns NineCardsService.pure(Messages.getResponse)
 
     rankingProcesses.reloadRankingByScope(any, any) returns
-      Free.pure(Either.right(Messages.reloadResponse))
+      NineCardsService.pure(Messages.reloadResponse)
 
     rankingProcesses.getRankedWidgets(any, any, any, any) returns
-      NineCardsService.right(Messages.getRankedWidgetsResponse).value
+      NineCardsService.pure(Messages.getRankedWidgetsResponse)
 
   }
 
   trait FailingScope extends BasicScope {
 
     rankingProcesses.getRanking(any) returns
-      Free.pure(Either.right(Messages.getResponse))
+      NineCardsService.pure(Messages.getResponse)
 
     rankingProcesses.reloadRankingByScope(any, any) returns
-      Free.pure(Either.right(Messages.reloadResponse))
+      NineCardsService.pure(Messages.reloadResponse)
 
   }
 

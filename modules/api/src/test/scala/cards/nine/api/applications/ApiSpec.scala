@@ -74,28 +74,28 @@ trait ApplicationsApiSpecification
       androidId    = AndroidId(mockEq(androidId.value)),
       authToken    = mockEq(authToken),
       requestUri   = any[String]
-    ) returns NineCardsService.right(userId)
+    ) returns NineCardsService.pure(userId)
   }
 
   trait SuccessfulScope extends BasicScope {
 
     applicationProcesses.getAppsInfo(any, any) returns
-      NineCardsService.right(getAppsInfoResponse)
+      NineCardsService.pure(getAppsInfoResponse)
 
     applicationProcesses.getRecommendationsByCategory(any, any, any, any, any) returns
-      NineCardsService.right(getRecommendationsByCategoryResponse)
+      NineCardsService.pure(getRecommendationsByCategoryResponse)
 
     applicationProcesses.getRecommendationsForApps(any, any, any, any, any) returns
-      NineCardsService.right(getRecommendationsByCategoryResponse)
+      NineCardsService.pure(getRecommendationsByCategoryResponse)
 
     rankingProcesses.getRankedDeviceApps(any, any) returns
-      NineCardsService.right(getRankedAppsResponse).value
+      NineCardsService.pure(getRankedAppsResponse)
 
     rankingProcesses.getRankedAppsByMoment(any, any, any, any) returns
-      NineCardsService.right(getRankedAppsResponse).value
+      NineCardsService.pure(getRankedAppsResponse)
 
     rankingProcesses.getRankedWidgets(any, any, any, any) returns
-      NineCardsService.right(getRankedWidgetsResponse).value
+      NineCardsService.pure(getRankedWidgetsResponse)
 
   }
 
@@ -117,9 +117,9 @@ trait ApplicationsApiSpecification
       androidId    = AndroidId(mockEq(androidId.value)),
       authToken    = mockEq(failingAuthToken),
       requestUri   = any[String]
-    ) returns NineCardsService.right(userId)
+    ) returns NineCardsService.pure(userId)
 
-    rankingProcesses.getRankedDeviceApps(any, any) returns NineCardsService.right(getRankedAppsResponse).value
+    rankingProcesses.getRankedDeviceApps(any, any) returns NineCardsService.pure(getRankedAppsResponse)
   }
 
 }
@@ -263,7 +263,7 @@ class ApplicationsApiSpec
     }
 
     "respond OK if the Basic Http Credentials are in the config " in new SuccessfulScope {
-      applicationProcesses.storeCard(any) returns NineCardsService.right(Unit)
+      applicationProcesses.storeCard(any) returns NineCardsService.pure(Unit)
 
       val (user, password) = config.editors.head
       val credentials = BasicHttpCredentials(user, password)

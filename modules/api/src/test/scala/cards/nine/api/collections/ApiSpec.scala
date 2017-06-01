@@ -71,40 +71,40 @@ trait CollectionsApiSpecification
       androidId    = AndroidId(mockEq(androidId.value)),
       authToken    = mockEq(authToken),
       requestUri   = any[String]
-    ) returns NineCardsService.right(userId)
+    ) returns NineCardsService.pure(userId)
   }
 
   trait SuccessfulScope extends BasicScope {
 
     sharedCollectionProcesses.createCollection(any) returns
-      NineCardsService.right(Messages.createOrUpdateCollectionResponse)
+      NineCardsService.pure(Messages.createOrUpdateCollectionResponse)
 
     sharedCollectionProcesses.getCollectionByPublicIdentifier(any, any[String], any) returns
-      NineCardsService.right(Messages.getCollectionByPublicIdentifierResponse)
+      NineCardsService.pure(Messages.getCollectionByPublicIdentifierResponse)
 
     sharedCollectionProcesses.subscribe(any[String], any[Long]) returns
-      NineCardsService.right(Messages.subscribeResponse)
+      NineCardsService.pure(Messages.subscribeResponse)
 
     sharedCollectionProcesses.unsubscribe(any[String], any[Long]) returns
-      NineCardsService.right(Messages.unsubscribeResponse)
+      NineCardsService.pure(Messages.unsubscribeResponse)
 
     sharedCollectionProcesses.getLatestCollectionsByCategory(any, any, any, any) returns
-      NineCardsService.right(Messages.getCollectionsResponse)
+      NineCardsService.pure(Messages.getCollectionsResponse)
 
     sharedCollectionProcesses.getPublishedCollections(any[Long], any) returns
-      NineCardsService.right(Messages.getCollectionsResponse)
+      NineCardsService.pure(Messages.getCollectionsResponse)
 
     sharedCollectionProcesses.getSubscriptionsByUser(any) returns
-      NineCardsService.right(Messages.getSubscriptionsByUserResponse)
+      NineCardsService.pure(Messages.getSubscriptionsByUserResponse)
 
     sharedCollectionProcesses.getTopCollectionsByCategory(any, any, any, any) returns
-      NineCardsService.right(Messages.getCollectionsResponse)
+      NineCardsService.pure(Messages.getCollectionsResponse)
 
     sharedCollectionProcesses.updateCollection(any, any, any) returns
-      NineCardsService.right(Messages.createOrUpdateCollectionResponse)
+      NineCardsService.pure(Messages.createOrUpdateCollectionResponse)
 
     sharedCollectionProcesses.increaseViewsCountByOne(any) returns
-      NineCardsService.right(Messages.increaseViewsCountByOneResponse)
+      NineCardsService.pure(Messages.increaseViewsCountByOneResponse)
 
   }
 
@@ -140,37 +140,37 @@ trait CollectionsApiSpecification
       androidId    = AndroidId(mockEq(androidId.value)),
       authToken    = mockEq(failingAuthToken),
       requestUri   = any[String]
-    ) returns NineCardsService.right(userId)
+    ) returns NineCardsService.pure(userId)
 
     sharedCollectionProcesses.createCollection(any) returns
-      NineCardsService.right(Messages.createOrUpdateCollectionResponse)
+      NineCardsService.pure(Messages.createOrUpdateCollectionResponse)
 
     sharedCollectionProcesses.getCollectionByPublicIdentifier(any, any[String], any) returns
-      NineCardsService.right(Messages.getCollectionByPublicIdentifierResponse)
+      NineCardsService.pure(Messages.getCollectionByPublicIdentifierResponse)
 
     sharedCollectionProcesses.getLatestCollectionsByCategory(any, any, any, any) returns
-      NineCardsService.right(Messages.getCollectionsResponse)
+      NineCardsService.pure(Messages.getCollectionsResponse)
 
     sharedCollectionProcesses.getPublishedCollections(any[Long], any) returns
-      NineCardsService.right(Messages.getCollectionsResponse)
+      NineCardsService.pure(Messages.getCollectionsResponse)
 
     sharedCollectionProcesses.getSubscriptionsByUser(any) returns
-      NineCardsService.right(Messages.getSubscriptionsByUserResponse)
+      NineCardsService.pure(Messages.getSubscriptionsByUserResponse)
 
     sharedCollectionProcesses.getTopCollectionsByCategory(any, any, any, any) returns
-      NineCardsService.right(Messages.getCollectionsResponse)
+      NineCardsService.pure(Messages.getCollectionsResponse)
 
     sharedCollectionProcesses.subscribe(any[String], any[Long]) returns
-      NineCardsService.right(Messages.subscribeResponse)
+      NineCardsService.pure(Messages.subscribeResponse)
 
     sharedCollectionProcesses.unsubscribe(any[String], any[Long]) returns
-      NineCardsService.right(Messages.unsubscribeResponse)
+      NineCardsService.pure(Messages.unsubscribeResponse)
 
     sharedCollectionProcesses.updateCollection(any, any, any) returns
-      NineCardsService.right(Messages.createOrUpdateCollectionResponse)
+      NineCardsService.pure(Messages.createOrUpdateCollectionResponse)
 
     sharedCollectionProcesses.increaseViewsCountByOne(any) returns
-      NineCardsService.right(Messages.increaseViewsCountByOneResponse)
+      NineCardsService.pure(Messages.increaseViewsCountByOneResponse)
 
   }
 
