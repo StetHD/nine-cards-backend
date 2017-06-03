@@ -22,13 +22,19 @@ import cats.syntax.either._
 import doobie.imports._
 
 object PersistenceService {
-  type PersistenceService[A] = ConnectionIO[NineCardsError Either A]
+  type PersistenceService[A] = EitherT[ConnectionIO, NineCardsError, A]
 
-  def apply[A](connectionIO: ConnectionIO[A]): PersistenceService[A] = connectionIO map Either.right
-  def apply[A](value: A): PersistenceService[A] =
-    ScalazInstances[ConnectionIO].monadInstance.pure(value) map Either.right
+  val instances: ScalazInstances[ConnectionIO] = ScalazInstances[ConnectionIO]
 
-  implicit class PersistenceServiceOps[A](service: PersistenceService[A]) {
-    def toEitherT = EitherT[ConnectionIO, NineCardsError, A](service)
-  }
+  import instances._
+
+  def pure[A](value: A): PersistenceService[A] =
+    EitherT.pure(value)(applicativeInstance)
+
+  def apply[A](connectionIO: ConnectionIO[A]): PersistenceService[A] =
+    EitherT.right(connectionIO)(instances.applicativeInstance)
+
+  def fromOptionF[A](ciOpt: ConnectionIO[Option[A]], err: NineCardsError): PersistenceService[A] =
+    EitherT(instances.monadInstance.map(ciOpt)(opt ⇒ Either.fromOption(opt, err)))
+
 }

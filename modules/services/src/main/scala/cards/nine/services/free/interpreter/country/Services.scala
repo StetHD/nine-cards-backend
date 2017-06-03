@@ -15,6 +15,7 @@
  */
 package cards.nine.services.free.interpreter.country
 
+import cards.nine.commons.NineCardsService.Result
 import cards.nine.commons.NineCardsErrors.CountryNotFound
 import cards.nine.domain.pagination.Page
 import cards.nine.services.common.PersistenceService
@@ -23,23 +24,23 @@ import cards.nine.services.free.algebra.CountryR._
 import cards.nine.services.free.domain.Country
 import cards.nine.services.free.domain.Country.Queries
 import cards.nine.services.persistence.Persistence
-import cats.syntax.either._
 import doobie.imports.ConnectionIO
 
 class Services(persistence: Persistence[Country]) extends Handler[ConnectionIO] {
 
-  def getCountries(pageParams: Page): PersistenceService[List[Country]] =
+  def getCountries(pageParams: Page): ConnectionIO[Result[List[Country]]] =
     PersistenceService {
       persistence.fetchList(
         sql    = Queries.getCountriesWithPaginationSql,
         values = (pageParams.pageSize, pageParams.pageNumber)
       )
-    }
+    }.value
 
-  def getCountryByIsoCode2(isoCode: String): PersistenceService[Country] =
-    persistence.fetchOption(Queries.getByIsoCode2Sql, isoCode.toUpperCase) map {
-      Either.fromOption(_, CountryNotFound(s"Country with ISO code2 $isoCode doesn't exist"))
-    }
+  def getCountryByIsoCode2(isoCode: String): ConnectionIO[Result[Country]] =
+    PersistenceService.fromOptionF(
+      persistence.fetchOption(Queries.getByIsoCode2Sql, isoCode.toUpperCase),
+      CountryNotFound(s"Country with ISO code2 $isoCode doesn't exist")
+    ).value
 
 }
 

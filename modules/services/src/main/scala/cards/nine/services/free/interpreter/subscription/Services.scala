@@ -15,8 +15,8 @@
  */
 package cards.nine.services.free.interpreter.subscription
 
+import cards.nine.commons.NineCardsService.Result
 import cards.nine.services.common.PersistenceService
-import cards.nine.services.common.PersistenceService._
 import cards.nine.services.free.algebra.SubscriptionR._
 import cards.nine.services.free.domain.SharedCollectionSubscription
 import cards.nine.services.free.domain.SharedCollectionSubscription.Queries
@@ -25,45 +25,45 @@ import doobie.imports.ConnectionIO
 
 class Services(persistence: Persistence[SharedCollectionSubscription]) extends Handler[ConnectionIO] {
 
-  def add(collectionId: Long, userId: Long, collectionPublicId: String): PersistenceService[Int] =
+  def add(collectionId: Long, userId: Long, collectionPublicId: String): ConnectionIO[Result[Int]] =
     PersistenceService {
       persistence.update(
         sql    = Queries.insert,
         values = (collectionId, userId, collectionPublicId)
       )
-    }
+    }.value
 
-  def getByCollection(collectionId: Long): PersistenceService[List[SharedCollectionSubscription]] =
+  def getByCollection(collectionId: Long): ConnectionIO[Result[List[SharedCollectionSubscription]]] =
     PersistenceService {
       persistence.fetchList(
         sql    = Queries.getByCollection,
         values = collectionId
       )
-    }
+    }.value
 
-  def getByCollectionAndUser(collectionId: Long, userId: Long): PersistenceService[Option[SharedCollectionSubscription]] =
+  def getByCollectionAndUser(collectionId: Long, userId: Long): ConnectionIO[Result[Option[SharedCollectionSubscription]]] =
     PersistenceService {
       persistence.fetchOption(
         sql    = Queries.getByCollectionAndUser,
         values = (collectionId, userId)
       )
-    }
+    }.value
 
-  def getByUser(userId: Long): PersistenceService[List[SharedCollectionSubscription]] =
+  def getByUser(userId: Long): ConnectionIO[Result[List[SharedCollectionSubscription]]] =
     PersistenceService {
       persistence.fetchList(
         sql    = Queries.getByUser,
         values = userId
       )
-    }
+    }.value
 
-  def removeByCollectionAndUser(collectionId: Long, userId: Long): PersistenceService[Int] =
+  def removeByCollectionAndUser(collectionId: Long, userId: Long): ConnectionIO[Result[Int]] =
     PersistenceService {
       persistence.update(
         sql    = Queries.deleteByCollectionAndUser,
         values = (collectionId, userId)
       )
-    }
+    }.value
 
 }
 

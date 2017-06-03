@@ -21,13 +21,11 @@ private[account] object Converters {
 
   import messages._
 
-  def toLoginResponse(info: (User, Installation)): LoginResponse = {
-    val (user, _) = info
+  def toLoginResponse(user: User): LoginResponse =
     LoginResponse(
       apiKey       = user.apiKey,
       sessionToken = user.sessionToken
     )
-  }
 
   def toUpdateInstallationResponse(installation: Installation): UpdateInstallationResponse =
     UpdateInstallationResponse(

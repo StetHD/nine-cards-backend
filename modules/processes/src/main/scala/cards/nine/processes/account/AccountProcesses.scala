@@ -52,8 +52,8 @@ class AccountProcesses[F[_]](
 
       for {
         user ← toNCS(userR.add(request.email, apiKey, request.sessionToken))
-        installation ← toNCS(userR.addInstallation(user.id, deviceToken = None, androidId = request.androidId))
-      } yield (user, installation)
+        inst ← toNCS(userR.addInstallation(user.id, deviceToken = None, androidId = request.androidId))
+      } yield user
     }
 
     def signUpInstallation(androidId: AndroidId, user: User) =
@@ -63,9 +63,9 @@ class AccountProcesses[F[_]](
         }
 
     val userInfo = for {
-      u ← toNCS(userR.getByEmail(request.email))
-      i ← signUpInstallation(request.androidId, u)
-    } yield (u, i)
+      user ← toNCS(userR.getByEmail(request.email))
+      inst ← signUpInstallation(request.androidId, user)
+    } yield user
 
     userInfo
       .recoverWith {

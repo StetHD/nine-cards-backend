@@ -16,6 +16,7 @@
 package cards.nine.services.free.interpreter.collection
 
 import cards.nine.commons.catscalaz.ScalazInstances
+import cards.nine.commons.NineCardsService.Result
 import cards.nine.commons.NineCardsErrors.SharedCollectionNotFound
 import cards.nine.domain.application.Package
 import cards.nine.domain.pagination.Page
@@ -25,7 +26,6 @@ import cards.nine.services.free.algebra.CollectionR
 import cards.nine.services.free.domain.SharedCollection.Queries
 import cards.nine.services.free.domain._
 import cards.nine.services.persistence.Persistence
-import cats.syntax.either._
 import cats.Monad
 import doobie.contrib.postgresql.pgtypes._
 import doobie.imports.ConnectionIO
@@ -35,83 +35,93 @@ class Services(
   collectionPersistence: Persistence[SharedCollection]
 )(implicit connectionIOMonad: Monad[ConnectionIO]) extends CollectionR.Handler[ConnectionIO] {
 
-  override def add(data: SharedCollectionData): PersistenceService[SharedCollection] =
+  override def add(data: SharedCollectionData): ConnectionIO[Result[SharedCollection]] =
     PersistenceService {
       collectionPersistence.updateWithGeneratedKeys(
         sql    = Queries.insert,
         fields = SharedCollection.allFields,
         values = data.toTuple
       )
-    }
+    }.value
 
-  override def getById(id: Long): PersistenceService[SharedCollection] =
-    collectionPersistence.fetchOption(Queries.getById, id) map (
-      Either.fromOption(_, SharedCollectionNotFound("Shared collection not found"))
+  override def getById(id: Long): ConnectionIO[Result[SharedCollection]] = getByIdAux(id).value
+
+  private[this] def getByIdAux(id: Long): PersistenceService[SharedCollection] =
+    PersistenceService.fromOptionF(
+      collectionPersistence.fetchOption(Queries.getById, id),
+      SharedCollectionNotFound("Shared collection not found")
     )
 
-  override def getByPublicId(publicIdentifier: String): PersistenceService[SharedCollection] =
-    collectionPersistence.fetchOption(
-      sql    = Queries.getByPublicIdentifier,
-      values = publicIdentifier
-    ) map (
-      Either.fromOption(_, SharedCollectionNotFound(s"Shared collection with public identifier $publicIdentifier doesn't exist"))
-    )
+  override def getByPublicId(publicIdentifier: String): ConnectionIO[Result[SharedCollection]] =
+    PersistenceService.fromOptionF(
+      collectionPersistence.fetchOption(
+        sql    = Queries.getByPublicIdentifier,
+        values = publicIdentifier
+      ),
+      SharedCollectionNotFound(s"Shared collection with public identifier $publicIdentifier doesn't exist")
+    ).value
 
-  override def getByUser(user: Long): PersistenceService[List[SharedCollectionWithAggregatedInfo]] =
+  override def getByUser(user: Long): ConnectionIO[Result[List[SharedCollectionWithAggregatedInfo]]] =
     PersistenceService {
       collectionPersistence.fetchListAs[SharedCollectionWithAggregatedInfo](
         sql    = Queries.getByUser,
         values = user
       )
-    }
+    }.value
 
-  override def getLatestByCategory(category: String, pageParams: Page): PersistenceService[List[SharedCollection]] =
+  override def getLatestByCategory(
+    category: String, pageParams: Page
+  ): ConnectionIO[Result[List[SharedCollection]]] =
     PersistenceService {
       collectionPersistence.fetchList(
         sql    = Queries.getLatestByCategory,
         values = (category, pageParams.pageSize, pageParams.pageNumber)
       )
-    }
+    }.value
 
-  override def getTopByCategory(category: String, pageParams: Page): PersistenceService[List[SharedCollection]] =
+  override def getTopByCategory(category: String, pageParams: Page): ConnectionIO[Result[List[SharedCollection]]] =
     PersistenceService {
       collectionPersistence.fetchList(
         sql    = Queries.getTopByCategory,
         values = (category, pageParams.pageSize, pageParams.pageNumber)
       )
-    }
+    }.value
 
-  override def increaseViewsByOne(id: Long): PersistenceService[Int] =
-    PersistenceService {
+  override def increaseViewsByOne(id: Long): ConnectionIO[Result[Int]] =
+    PersistenceService(
       collectionPersistence.update(
         sql    = Queries.increaseViewsByOne,
         values = id
       )
-    }
+    ).value
 
-  override def update(id: Long, title: String): PersistenceService[Int] =
-    PersistenceService {
+  override def update(id: Long, title: String): ConnectionIO[Result[Int]] =
+    PersistenceService(
       collectionPersistence.update(
         sql    = Queries.update,
         values = (title, id)
       )
-    }
+    ).value
 
-  override def updatePackages(collectionId: Long, packages: List[Package]): PersistenceService[(List[Package], List[Package])] = {
+  override def updatePackages(
+    collectionId: Long, packages: List[Package]
+  ): ConnectionIO[Result[(List[Package], List[Package])]] = {
 
-    def updatePackagesInfo(newPackages: List[Package], removedPackages: List[Package]) =
+    def updatePackagesInfo(newPackages: List[Package], removedPackages: List[Package]): PersistenceService[Int] =
       if (newPackages.nonEmpty || removedPackages.nonEmpty)
-        PersistenceService(collectionPersistence
-          .update(Queries.updatePackages, (packages map (_.value), collectionId)))
+        PersistenceService(
+          collectionPersistence
+            .update(Queries.updatePackages, (packages map (_.value), collectionId))
+        )
       else
-        PersistenceService(0)
+        PersistenceService.pure(0)
 
     for {
-      collection ← getById(collectionId).toEitherT
+      collection ← getByIdAux(collectionId)
       existingPackages = collection.packages map Package
       newPackages = packages diff existingPackages
       removedPackages = existingPackages diff packages
-      _ ← updatePackagesInfo(newPackages, removedPackages).toEitherT
+      _ ← updatePackagesInfo(newPackages, removedPackages)
     } yield (newPackages, removedPackages)
   }.value
 

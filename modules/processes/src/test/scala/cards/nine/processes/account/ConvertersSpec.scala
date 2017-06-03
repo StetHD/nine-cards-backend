@@ -28,10 +28,9 @@ class ConvertersSpec
 
   "toLoginResponse" should {
     "convert an User to a LoginResponse object" in {
-      prop { info: (User, Installation) ⇒
-
+      prop { info: User ⇒
         val processLoginResponse = toLoginResponse(info)
-        processLoginResponse.sessionToken shouldEqual info._1.sessionToken
+        processLoginResponse.sessionToken shouldEqual info.sessionToken
       }
     }
   }
