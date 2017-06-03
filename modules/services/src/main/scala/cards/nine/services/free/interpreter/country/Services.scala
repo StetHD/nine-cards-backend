@@ -19,7 +19,6 @@ import cards.nine.commons.NineCardsService.Result
 import cards.nine.commons.NineCardsErrors.CountryNotFound
 import cards.nine.domain.pagination.Page
 import cards.nine.services.common.PersistenceService
-import cards.nine.services.common.PersistenceService._
 import cards.nine.services.free.algebra.CountryR._
 import cards.nine.services.free.domain.Country
 import cards.nine.services.free.domain.Country.Queries
@@ -29,12 +28,12 @@ import doobie.imports.ConnectionIO
 class Services(persistence: Persistence[Country]) extends Handler[ConnectionIO] {
 
   def getCountries(pageParams: Page): ConnectionIO[Result[List[Country]]] =
-    PersistenceService {
+    PersistenceService.right(
       persistence.fetchList(
         sql    = Queries.getCountriesWithPaginationSql,
         values = (pageParams.pageSize, pageParams.pageNumber)
       )
-    }.value
+    ).value
 
   def getCountryByIsoCode2(isoCode: String): ConnectionIO[Result[Country]] =
     PersistenceService.fromOptionF(
@@ -45,6 +44,5 @@ class Services(persistence: Persistence[Country]) extends Handler[ConnectionIO] 
 }
 
 object Services {
-
   def services(implicit persistence: Persistence[Country]) = new Services(persistence)
 }

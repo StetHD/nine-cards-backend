@@ -26,44 +26,44 @@ import doobie.imports.ConnectionIO
 class Services(persistence: Persistence[SharedCollectionSubscription]) extends Handler[ConnectionIO] {
 
   def add(collectionId: Long, userId: Long, collectionPublicId: String): ConnectionIO[Result[Int]] =
-    PersistenceService {
+    PersistenceService.right(
       persistence.update(
         sql    = Queries.insert,
         values = (collectionId, userId, collectionPublicId)
       )
-    }.value
+    ).value
 
   def getByCollection(collectionId: Long): ConnectionIO[Result[List[SharedCollectionSubscription]]] =
-    PersistenceService {
+    PersistenceService.right(
       persistence.fetchList(
         sql    = Queries.getByCollection,
         values = collectionId
       )
-    }.value
+    ).value
 
   def getByCollectionAndUser(collectionId: Long, userId: Long): ConnectionIO[Result[Option[SharedCollectionSubscription]]] =
-    PersistenceService {
+    PersistenceService.right(
       persistence.fetchOption(
         sql    = Queries.getByCollectionAndUser,
         values = (collectionId, userId)
       )
-    }.value
+    ).value
 
   def getByUser(userId: Long): ConnectionIO[Result[List[SharedCollectionSubscription]]] =
-    PersistenceService {
+    PersistenceService.right(
       persistence.fetchList(
         sql    = Queries.getByUser,
         values = userId
       )
-    }.value
+    ).value
 
   def removeByCollectionAndUser(collectionId: Long, userId: Long): ConnectionIO[Result[Int]] =
-    PersistenceService {
+    PersistenceService.right(
       persistence.update(
         sql    = Queries.deleteByCollectionAndUser,
         values = (collectionId, userId)
       )
-    }.value
+    ).value
 
 }
 

@@ -36,13 +36,13 @@ class Services(
 )(implicit connectionIOMonad: Monad[ConnectionIO]) extends CollectionR.Handler[ConnectionIO] {
 
   override def add(data: SharedCollectionData): ConnectionIO[Result[SharedCollection]] =
-    PersistenceService {
+    PersistenceService.right(
       collectionPersistence.updateWithGeneratedKeys(
         sql    = Queries.insert,
         fields = SharedCollection.allFields,
         values = data.toTuple
       )
-    }.value
+    ).value
 
   override def getById(id: Long): ConnectionIO[Result[SharedCollection]] = getByIdAux(id).value
 
@@ -62,33 +62,33 @@ class Services(
     ).value
 
   override def getByUser(user: Long): ConnectionIO[Result[List[SharedCollectionWithAggregatedInfo]]] =
-    PersistenceService {
+    PersistenceService.right(
       collectionPersistence.fetchListAs[SharedCollectionWithAggregatedInfo](
         sql    = Queries.getByUser,
         values = user
       )
-    }.value
+    ).value
 
   override def getLatestByCategory(
     category: String, pageParams: Page
   ): ConnectionIO[Result[List[SharedCollection]]] =
-    PersistenceService {
+    PersistenceService.right(
       collectionPersistence.fetchList(
         sql    = Queries.getLatestByCategory,
         values = (category, pageParams.pageSize, pageParams.pageNumber)
       )
-    }.value
+    ).value
 
   override def getTopByCategory(category: String, pageParams: Page): ConnectionIO[Result[List[SharedCollection]]] =
-    PersistenceService {
+    PersistenceService.right(
       collectionPersistence.fetchList(
         sql    = Queries.getTopByCategory,
         values = (category, pageParams.pageSize, pageParams.pageNumber)
       )
-    }.value
+    ).value
 
   override def increaseViewsByOne(id: Long): ConnectionIO[Result[Int]] =
-    PersistenceService(
+    PersistenceService.right(
       collectionPersistence.update(
         sql    = Queries.increaseViewsByOne,
         values = id
@@ -96,7 +96,7 @@ class Services(
     ).value
 
   override def update(id: Long, title: String): ConnectionIO[Result[Int]] =
-    PersistenceService(
+    PersistenceService.right(
       collectionPersistence.update(
         sql    = Queries.update,
         values = (title, id)
@@ -109,7 +109,7 @@ class Services(
 
     def updatePackagesInfo(newPackages: List[Package], removedPackages: List[Package]): PersistenceService[Int] =
       if (newPackages.nonEmpty || removedPackages.nonEmpty)
-        PersistenceService(
+        PersistenceService.right(
           collectionPersistence
             .update(Queries.updatePackages, (packages map (_.value), collectionId))
         )

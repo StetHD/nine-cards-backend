@@ -32,7 +32,7 @@ class Services(
 ) extends Handler[ConnectionIO] {
 
   override def add(email: Email, apiKey: ApiKey, sessionToken: SessionToken): ConnectionIO[Result[User]] =
-    PersistenceService(
+    PersistenceService.right(
       userPersistence.updateWithGeneratedKeys(
         sql    = UserQueries.insert,
         fields = User.allFields,
@@ -57,7 +57,7 @@ class Services(
     deviceToken: Option[DeviceToken],
     androidId: AndroidId
   ): ConnectionIO[Result[Installation]] =
-    PersistenceService(
+    PersistenceService.right(
       installationPersistence.updateWithGeneratedKeys(
         sql    = InstallationQueries.insert,
         fields = Installation.allFields,
@@ -75,7 +75,7 @@ class Services(
     ).value
 
   def getSubscribedInstallationByCollection(publicIdentifier: String): ConnectionIO[Result[List[Installation]]] =
-    PersistenceService(
+    PersistenceService.right(
       installationPersistence.fetchList(
         sql    = InstallationQueries.getSubscribedByCollection,
         values = publicIdentifier
@@ -83,7 +83,7 @@ class Services(
     ).value
 
   def updateInstallation(userId: Long, deviceToken: Option[DeviceToken], androidId: AndroidId): ConnectionIO[Result[Installation]] =
-    PersistenceService(
+    PersistenceService.right(
       installationPersistence.updateWithGeneratedKeys(
         sql    = InstallationQueries.updateDeviceToken,
         fields = Installation.allFields,

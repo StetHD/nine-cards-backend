@@ -31,7 +31,7 @@ object PersistenceService {
   def pure[A](value: A): PersistenceService[A] =
     EitherT.pure(value)(applicativeInstance)
 
-  def apply[A](connectionIO: ConnectionIO[A]): PersistenceService[A] =
+  def right[A](connectionIO: ConnectionIO[A]): PersistenceService[A] =
     EitherT.right(connectionIO)(instances.applicativeInstance)
 
   def fromOptionF[A](ciOpt: ConnectionIO[Option[A]], err: NineCardsError): PersistenceService[A] =
